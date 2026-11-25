@@ -2,7 +2,7 @@
 
 A mobile-first, zero-cost Progressive Web App (PWA) for India connecting patients, voluntary blood donors, verified blood banks, and offline emergency first-aid guidance.
 
-**Live Demo:** `[https://your-lifedrop-app.web.app](https://your-lifedrop-app.web.app)` *(replace after Firebase Hosting deploy)*  
+**Live Demo:** [https://your-lifedrop-app.web.app](https://your-lifedrop-app.web.app) *(replace after Firebase Hosting deploy)*  
 **License:** [MIT](./LICENSE) · **Security Policy:** [SECURITY.md](./SECURITY.md)
 
 ---
