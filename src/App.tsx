@@ -68,6 +68,11 @@ const LazyAdminPortalModal = React.lazy(() =>
     default: m.AdminPortalModal,
   })),
 );
+const LazyCompatibilityCheckerModal = React.lazy(() =>
+  import('./components/CompatibilityCheckerModal').then((m) => ({
+    default: m.CompatibilityCheckerModal,
+  })),
+);
 
 function LifeDropApp() {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
@@ -80,7 +85,15 @@ function LifeDropApp() {
   const [isEligibilityOpen, setIsEligibilityOpen] = useState(false);
   const [isBankDashboardOpen, setIsBankDashboardOpen] = useState(false);
   const [isAdminPortalOpen, setIsAdminPortalOpen] = useState(false);
+  const [isCompatOpen, setIsCompatOpen] = useState(false);
+  const [compatInitialGroup, setCompatInitialGroup] =
+    useState<BloodGroup>('O+');
   const [legalTab, setLegalTab] = useState<LegalTab | null>(null);
+
+  const openCompatibilityChecker = (group?: BloodGroup) => {
+    if (group) setCompatInitialGroup(group);
+    setIsCompatOpen(true);
+  };
 
   const isOnline = useOnlineStatus();
   const pwa = usePWA();
@@ -183,6 +196,7 @@ function LifeDropApp() {
                 setMapBloodGroup(group);
                 setActiveTab('map');
               }}
+              onOpenCompatibilityChecker={openCompatibilityChecker}
               globalStats={homeStats.globalStats}
               stateStats={homeStats.stateStats}
               goals={homeStats.goals}
@@ -244,6 +258,7 @@ function LifeDropApp() {
                   setMapBloodGroup(group);
                   setActiveTab('map');
                 }}
+                onOpenCompatibilityChecker={openCompatibilityChecker}
               />
             </Suspense>
           )}
@@ -266,6 +281,9 @@ function LifeDropApp() {
                 onOpenAbout={() => setIsAboutOpen(true)}
                 onOpenLegal={(tab) => setLegalTab(tab)}
                 onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
+                onOpenCompatibilityChecker={() =>
+                  openCompatibilityChecker(authProfile.profile?.bloodGroup ?? 'O+')
+                }
                 onOpenBankDashboard={() => setIsBankDashboardOpen(true)}
                 onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
                 onToggleCanDonate={authProfile.toggleCanDonate}
@@ -416,6 +434,18 @@ function LifeDropApp() {
                   authProfile.user?.email === 'punithreddy9010@gmail.com'
                 }
                 isOnline={isOnline}
+              />
+            )}
+
+            {isCompatOpen && (
+              <LazyCompatibilityCheckerModal
+                isOpen={isCompatOpen}
+                initialGroup={compatInitialGroup}
+                onClose={() => setIsCompatOpen(false)}
+                onFindOnMap={(group) => {
+                  setMapBloodGroup(group);
+                  setActiveTab('map');
+                }}
               />
             )}
           </Suspense>

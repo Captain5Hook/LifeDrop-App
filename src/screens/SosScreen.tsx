@@ -19,6 +19,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import { MEDICAL_REVIEW_CONFIG } from '../config/medicalReview';
 import { INDIA_STATES_AND_UTS } from '../data/indiaLocations';
 import { ORDERED_BLOOD_GROUPS, type BloodGroup } from '../data/seedStats';
 import type { SavedLocation } from '../services/interfaces';
@@ -638,7 +639,7 @@ const SosScreen: React.FC<SosScreenProps> = ({
             {/* Instant Compatible Blood Banks Preview (works even signed out or offline!) */}
             <section className="ld-glass space-y-3 rounded-[28px] p-5 text-slate-900 dark:text-white">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Building2
                     className="h-5 w-5 text-[#34D399]"
                     aria-hidden="true"
@@ -646,11 +647,16 @@ const SosScreen: React.FC<SosScreenProps> = ({
                   <h2 className="text-[15px] font-semibold">
                     Compatible Blood Banks in {selectedStateMeta.name}
                   </h2>
+                  {matchedBanks.allStateMatches.some((m) => m.bank.isDemo) && (
+                    <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
+                      Demo data
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={() => onOpenMapWithGroup(bloodGroup)}
-                  className="inline-flex items-center gap-1 text-[12px] font-medium text-[#5B3FE0] dark:text-[#C4B5FD]"
+                  className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-[#5B3FE0] dark:text-[#C4B5FD]"
                 >
                   Map <ArrowUpRight className="h-3.5 w-3.5" />
                 </button>
@@ -895,13 +901,20 @@ const SosScreen: React.FC<SosScreenProps> = ({
 
                 {/* Compatible Blood Banks within Active Radius */}
                 <div className="space-y-2">
-                  <p className="text-[12px] font-semibold text-slate-700 dark:text-white/80">
-                    Compatible Blood Banks within{' '}
-                    {activeRequest.radiusKm >= 250
-                      ? 'State'
-                      : `${activeRequest.radiusKm} km`}{' '}
-                    ({matchedBanks.withinRadius.length})
-                  </p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[12px] font-semibold text-slate-700 dark:text-white/80">
+                      Compatible Blood Banks within{' '}
+                      {activeRequest.radiusKm >= 250
+                        ? 'State'
+                        : `${activeRequest.radiusKm} km`}{' '}
+                      ({matchedBanks.withinRadius.length})
+                    </p>
+                    {matchedBanks.withinRadius.some((m) => m.bank.isDemo) && (
+                      <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
+                        Demo data
+                      </span>
+                    )}
+                  </div>
                   {matchedBanks.withinRadius.length === 0 ? (
                     <p className="text-[12px] text-slate-600 dark:text-white/70">
                       No matching bank inside {activeRequest.radiusKm} km yet — escalating radius expands to {matchedBanks.allStateMatches.length} statewide banks.
@@ -1230,6 +1243,9 @@ const SosScreen: React.FC<SosScreenProps> = ({
 
               <p className="text-[11px] leading-relaxed text-slate-600 dark:text-white/75">
                 {getCompatibilitySummary(matrixGroup, matrixComponent)} Final transfusion compatibility is always confirmed by laboratory cross-matching at the blood centre.
+              </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/60">
+                {MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()}
               </p>
             </div>
           </section>

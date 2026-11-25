@@ -10,6 +10,7 @@ import {
   Sparkles,
   WifiOff,
 } from 'lucide-react';
+import { MEDICAL_REVIEW_CONFIG } from '../config/medicalReview';
 import { ORDERED_BLOOD_GROUPS, type BloodGroup } from '../data/seedStats';
 import type { AppLanguage } from '../hooks/useAppSettings';
 import {
@@ -29,6 +30,7 @@ interface ChatScreenProps {
   onOpenBleedingEmergency: () => void;
   onOpenSosWithGroup?: () => void;
   onFindGroupOnMap: (group: BloodGroup) => void;
+  onOpenCompatibilityChecker?: (group?: BloodGroup) => void;
 }
 
 interface ChatMessage {
@@ -67,6 +69,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   isOnline,
   onOpenBleedingEmergency,
   onFindGroupOnMap,
+  onOpenCompatibilityChecker,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -160,6 +163,9 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
                   </>
                 )}
               </p>
+              <p className="text-[10px] text-slate-500 dark:text-white/60">
+                {MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()}
+              </p>
             </div>
           </div>
 
@@ -249,17 +255,28 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         {/* Inline Compatibility Quick-Checker Widget */}
         {showCompatWidget && (
           <div className="ld-glass space-y-3 rounded-[24px] p-4 text-slate-900 dark:text-white">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-[13px] font-semibold">
                 Quick Compatibility Checker
               </p>
-              <button
-                type="button"
-                onClick={() => onFindGroupOnMap(widgetGroup)}
-                className="text-[11px] font-semibold text-[#5B3FE0] underline dark:text-[#C4B5FD]"
-              >
-                Find {widgetGroup} on Map
-              </button>
+              <div className="flex items-center gap-2.5">
+                {onOpenCompatibilityChecker && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenCompatibilityChecker(widgetGroup)}
+                    className="text-[11px] font-semibold text-[#059669] underline dark:text-[#34D399]"
+                  >
+                    Full Offline Screen
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onFindGroupOnMap(widgetGroup)}
+                  className="text-[11px] font-semibold text-[#5B3FE0] underline dark:text-[#C4B5FD]"
+                >
+                  Find {widgetGroup} on Map
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-4 gap-1.5">

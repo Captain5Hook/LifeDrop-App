@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Download,
+  Droplets,
   HeartHandshake,
   Info,
   LogIn,
@@ -51,6 +52,7 @@ interface ProfileScreenProps {
   onOpenAbout: () => void;
   onOpenLegal: (tab: LegalTab) => void;
   onOpenBleedingEmergency: () => void;
+  onOpenCompatibilityChecker: () => void;
   onOpenBankDashboard: () => void;
   onOpenAdminPortal: () => void;
   onToggleCanDonate: (val: boolean) => Promise<void>;
@@ -87,6 +89,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onOpenAbout,
   onOpenLegal,
   onOpenBleedingEmergency,
+  onOpenCompatibilityChecker,
   onOpenBankDashboard,
   onOpenAdminPortal,
   onToggleCanDonate,
@@ -669,6 +672,20 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
               Bleeding Emergency First Aid (Offline)
             </span>
             <span className="text-[12px]">108 / 112</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenCompatibilityChecker}
+            className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/65 px-4 text-[13px] font-semibold text-slate-900 dark:border-white/15 dark:bg-white/[0.08] dark:text-white"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Droplets className="h-4 w-4 text-[#F43F5E]" aria-hidden="true" />
+              Blood Compatibility Checker (Offline · No AI)
+            </span>
+            <span className="text-[11px] text-slate-600 dark:text-white/65">
+              ABO / Rh
+            </span>
           </button>
 
           <button

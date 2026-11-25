@@ -86,7 +86,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               {MEDICAL_REVIEW_CONFIG.disclaimer}
             </p>
             <p className="mt-1 text-[12px] text-slate-600 dark:text-white/65">
-              Review status: {MEDICAL_REVIEW_CONFIG.reviewedDate}
+              {MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()}
             </p>
           </div>
 

@@ -235,6 +235,14 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
               {/* TAB 1: KPIs */}
               {activeTab === 'kpis' && kpi && (
                 <>
+                  {kpi.globalStats.isDemo && (
+                    <div className="flex items-center justify-between text-[12px] text-slate-700 dark:text-white/75">
+                      <span>Platform Metrics Overview</span>
+                      <span className="rounded-full border border-black/15 bg-white/70 px-2.5 py-0.5 text-[11px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/15 dark:text-white/90">
+                        Demo data
+                      </span>
+                    </div>
+                  )}
                   <section className="grid grid-cols-2 gap-2.5">
                     {[
                       {

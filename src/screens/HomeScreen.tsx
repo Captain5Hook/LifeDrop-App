@@ -49,6 +49,7 @@ interface HomeScreenProps {
   onOpenBleedingEmergency: () => void;
   onOpenSettings: () => void;
   onFindGroupOnMap: (group: BloodGroup) => void;
+  onOpenCompatibilityChecker: (group?: BloodGroup) => void;
   globalStats: GlobalStats;
   stateStats: StateStats;
   goals: MissionGoal[];
@@ -80,6 +81,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenBleedingEmergency,
   onOpenSettings,
   onFindGroupOnMap,
+  onOpenCompatibilityChecker,
   globalStats,
   stateStats,
   goals,
@@ -156,7 +158,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             All India
           </button>
 
-          {globalStats.isDemo && (
+          {(globalStats.isDemo || stateStats.isDemo) && (
             <span className="rounded-full border border-black/15 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-slate-700 whitespace-nowrap dark:border-white/20 dark:bg-white/15 dark:text-white/90">
               Demo data
             </span>
@@ -372,6 +374,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     selectedGroup={selectedGroup}
                     onSelectGroup={setSelectedGroup}
                     onFindOnMap={onFindGroupOnMap}
+                    onOpenCompatibilityChecker={onOpenCompatibilityChecker}
+                    isDemo={Boolean(stateStats.isDemo || globalStats.isDemo)}
                     stateName={stateStats.stateName}
                   />
                 ) : (
@@ -414,41 +418,51 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
 
               {/* App stats strip */}
-              <div
-                aria-label="LifeDrop national impact summary"
-                className="mt-3.5 grid grid-cols-4 gap-2 rounded-[24px] border border-black/10 bg-white/50 px-2 py-2.5 text-center dark:border-white/15 dark:bg-white/[0.07]"
-              >
-                <div>
-                  <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {globalStats.totalUsers.toLocaleString('en-IN')}
-                  </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
-                    Users
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {globalStats.activeDonorsMonth.toLocaleString('en-IN')}
-                  </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
-                    Active/mo
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {globalStats.requestsFulfilled.toLocaleString('en-IN')}
-                  </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
-                    Fulfilled
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {globalStats.banksOnboarded.toLocaleString('en-IN')}
-                  </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
-                    Banks
-                  </p>
+              <div className="mt-3.5 space-y-1.5">
+                {globalStats.isDemo && (
+                  <div className="flex items-center justify-between px-1 text-[11px] text-slate-600 dark:text-white/70">
+                    <span>National Impact Summary</span>
+                    <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium dark:border-white/20 dark:bg-white/10">
+                      Demo data
+                    </span>
+                  </div>
+                )}
+                <div
+                  aria-label="LifeDrop national impact summary"
+                  className="grid grid-cols-4 gap-2 rounded-[24px] border border-black/10 bg-white/50 px-2 py-2.5 text-center dark:border-white/15 dark:bg-white/[0.07]"
+                >
+                  <div>
+                    <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
+                      {globalStats.totalUsers.toLocaleString('en-IN')}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
+                      Users
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
+                      {globalStats.activeDonorsMonth.toLocaleString('en-IN')}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
+                      Active/mo
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
+                      {globalStats.requestsFulfilled.toLocaleString('en-IN')}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
+                      Fulfilled
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-semibold tabular-nums text-slate-900 dark:text-white">
+                      {globalStats.banksOnboarded.toLocaleString('en-IN')}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-slate-600 dark:text-white/70">
+                      Banks
+                    </p>
+                  </div>
                 </div>
               </div>
             </section>

@@ -1,5 +1,11 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Droplet, MapPin } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Droplet,
+  Droplets,
+  MapPin,
+} from 'lucide-react';
 import type { BloodGroup, BloodGroupStat } from '../data/seedStats';
 
 interface BloodGroupPillsProps {
@@ -7,6 +13,8 @@ interface BloodGroupPillsProps {
   selectedGroup: BloodGroup;
   onSelectGroup: (group: BloodGroup) => void;
   onFindOnMap?: (group: BloodGroup) => void;
+  onOpenCompatibilityChecker?: (group: BloodGroup) => void;
+  isDemo?: boolean;
   stateName: string;
 }
 
@@ -22,6 +30,8 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
   selectedGroup,
   onSelectGroup,
   onFindOnMap,
+  onOpenCompatibilityChecker,
+  isDemo = false,
   stateName,
 }) => {
   const activeStat =
@@ -116,6 +126,11 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
                     · Most common
                   </span>
                 )}
+                {isDemo && (
+                  <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
+                    Demo data
+                  </span>
+                )}
               </div>
               <p className="mt-0.5 text-[12px] text-slate-700 tabular-nums dark:text-white/78">
                 {activeStat.users.toLocaleString('en-IN')} registered donors ({activeStat.sharePercent}%) ·{' '}
@@ -142,16 +157,28 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
             </div>
           </div>
 
-          {onFindOnMap && (
-            <button
-              type="button"
-              onClick={() => onFindOnMap(activeStat.group)}
-              className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white transition hover:bg-[#6A4FF0]"
-            >
-              <MapPin className="h-4 w-4" aria-hidden="true" />
-              Find {activeStat.group} blood banks on Map
-            </button>
-          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {onFindOnMap && (
+              <button
+                type="button"
+                onClick={() => onFindOnMap(activeStat.group)}
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white transition hover:bg-[#6A4FF0]"
+              >
+                <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>Find {activeStat.group} on Map</span>
+              </button>
+            )}
+            {onOpenCompatibilityChecker && (
+              <button
+                type="button"
+                onClick={() => onOpenCompatibilityChecker(activeStat.group)}
+                className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-black/15 bg-white/75 px-3.5 text-[12px] font-semibold text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+              >
+                <Droplets className="h-3.5 w-3.5 text-[#F43F5E]" aria-hidden="true" />
+                <span>Compatibility</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

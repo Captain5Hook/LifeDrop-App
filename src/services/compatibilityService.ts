@@ -1,39 +1,34 @@
+import compatibilityData from '../data/knowledge/compatibility.json';
 import { ORDERED_BLOOD_GROUPS, type BloodGroup } from '../data/seedStats';
 
 export type BloodComponent = 'Whole Blood' | 'PRBC' | 'Platelets' | 'Plasma';
 
-// Red Cell / Whole Blood compatibility: key = patient blood group, value = compatible donor groups
-const RED_CELL_COMPATIBILITY: Record<BloodGroup, BloodGroup[]> = {
-  'O-': ['O-'],
-  'O+': ['O-', 'O+'],
-  'A-': ['O-', 'A-'],
-  'A+': ['O-', 'O+', 'A-', 'A+'],
-  'B-': ['O-', 'B-'],
-  'B+': ['O-', 'O+', 'B-', 'B+'],
-  'AB-': ['O-', 'A-', 'B-', 'AB-'],
-  'AB+': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
-};
+export interface ComponentCompatibilitySpec {
+  label: string;
+  clinicalNote: string;
+  compatibleDonorsByRecipient: Record<BloodGroup, BloodGroup[]>;
+}
 
-// Fresh Frozen Plasma compatibility reverses ABO rules (Rh matching less critical, AB is universal plasma donor)
-const PLASMA_COMPATIBILITY: Record<BloodGroup, BloodGroup[]> = {
-  'AB+': ['AB+', 'AB-'],
-  'AB-': ['AB-', 'AB+'],
-  'A+': ['A+', 'A-', 'AB+', 'AB-'],
-  'A-': ['A-', 'A+', 'AB-', 'AB+'],
-  'B+': ['B+', 'B-', 'AB+', 'AB-'],
-  'B-': ['B-', 'B+', 'AB-', 'AB+'],
-  'O+': ORDERED_BLOOD_GROUPS,
-  'O-': ORDERED_BLOOD_GROUPS,
-};
+const COMPONENT_SPECS = compatibilityData.components as Record<
+  BloodComponent,
+  ComponentCompatibilitySpec
+>;
+
+export const COMPATIBILITY_KB_VERSION = compatibilityData.version;
+export const COMPATIBILITY_DISCLAIMER = compatibilityData.disclaimer;
+
+export function getComponentCompatibilitySpec(
+  component: BloodComponent = 'Whole Blood',
+): ComponentCompatibilitySpec {
+  return COMPONENT_SPECS[component] ?? COMPONENT_SPECS['Whole Blood'];
+}
 
 export function getCompatibleDonorGroups(
   recipientGroup: BloodGroup,
   component: BloodComponent = 'Whole Blood',
 ): BloodGroup[] {
-  if (component === 'Plasma') {
-    return PLASMA_COMPATIBILITY[recipientGroup];
-  }
-  return RED_CELL_COMPATIBILITY[recipientGroup];
+  const spec = getComponentCompatibilitySpec(component);
+  return spec.compatibleDonorsByRecipient[recipientGroup] ?? [];
 }
 
 export function getCompatibleRecipientGroups(

@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "disclaimer": "Reference guidance only. Always verify ABO/Rh compatibility via blood bank cross-match before transfusion.",
+  "bloodGroups": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+  "components": {
+    "Whole Blood": {
+      "label": "Whole Blood",
+      "clinicalNote": "Standard red-cell and plasma unit matching recipient ABO/Rh rules. O- is the emergency universal red-cell donor; AB+ is the universal recipient.",
+      "compatibleDonorsByRecipient": {
+        "O-": ["O-"],
+        "O+": ["O-", "O+"],
+        "A-": ["O-", "A-"],
+        "A+": ["O-", "O+", "A-", "A+"],
+        "B-": ["O-", "B-"],
+        "B+": ["O-", "O+", "B-", "B+"],
+        "AB-": ["O-", "A-", "B-", "AB-"],
+        "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"]
+      }
+    },
+    "PRBC": {
+      "label": "Packed Red Blood Cells (PRBC)",
+      "clinicalNote": "Contains concentrated red blood cells. Follows red-cell antigen rules: O- donates to all groups; AB+ receives from all 8 groups.",
+      "compatibleDonorsByRecipient": {
+        "O-": ["O-"],
+        "O+": ["O-", "O+"],
+        "A-": ["O-", "A-"],
+        "A+": ["O-", "O+", "A-", "A+"],
+        "B-": ["O-", "B-"],
+        "B+": ["O-", "O+", "B-", "B+"],
+        "AB-": ["O-", "A-", "B-", "AB-"],
+        "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"]
+      }
+    },
+    "Platelets": {
+      "label": "Platelets (RDP / SDP)",
+      "clinicalNote": "ABO-compatible platelets are preferred first; Rh-negative female recipients under 50 should receive Rh-negative platelets (or anti-D prophylaxis) when possible.",
+      "compatibleDonorsByRecipient": {
+        "O-": ["O-"],
+        "O+": ["O-", "O+"],
+        "A-": ["O-", "A-"],
+        "A+": ["O-", "O+", "A-", "A+"],
+        "B-": ["O-", "B-"],
+        "B+": ["O-", "O+", "B-", "B+"],
+        "AB-": ["O-", "A-", "B-", "AB-"],
+        "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"]
+      }
+    },
+    "Plasma": {
+      "label": "Fresh Frozen Plasma (FFP)",
+      "clinicalNote": "Plasma compatibility reverses red-cell ABO rules because plasma carries antibodies instead of red-cell antigens. AB plasma is the universal donor; O patients can receive plasma from any group.",
+      "compatibleDonorsByRecipient": {
+        "AB+": ["AB+", "AB-"],
+        "AB-": ["AB-", "AB+"],
+        "A+": ["A+", "A-", "AB+", "AB-"],
+        "A-": ["A-", "A+", "AB-", "AB+"],
+        "B+": ["B+", "B-", "AB+", "AB-"],
+        "B-": ["B-", "B+", "AB-", "AB+"],
+        "O+": ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"],
+        "O-": ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"]
+      }
+    }
+  }
+}
