@@ -20,6 +20,7 @@ import {
   type IndiaState,
 } from '../data/indiaLocations';
 import type { LocationFlowStep } from '../hooks/useLocationFlow';
+import { useVisualViewportHeight } from '../hooks/useVisualViewport';
 import type {
   BrowserPermissionState,
   LocationOutcomeStatus,
@@ -54,6 +55,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedState, setSelectedState] = useState<IndiaState | null>(null);
   const [showHelpCard, setShowHelpCard] = useState(false);
+  const vvHeight = useVisualViewportHeight();
 
   const filteredStates = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -87,7 +89,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
     return (
       <div
         role="alert"
-        className={`mt-4 rounded-2xl border p-3.5 text-[13px] ${
+        className={`mt-3 rounded-2xl border p-3.5 text-[13px] ${
           isOutside || isDenied
             ? 'border-[#F43F5E]/40 bg-[#F43F5E]/15 text-slate-900 dark:text-white'
             : 'border-[#FBBF24]/40 bg-[#FBBF24]/15 text-slate-900 dark:text-white'
@@ -105,7 +107,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
               <button
                 type="button"
                 onClick={() => setShowHelpCard((v) => !v)}
-                className="inline-flex min-h-[36px] items-center gap-1 font-medium text-[#5B3FE0] underline dark:text-[#C4B5FD]"
+                className="inline-flex min-h-[40px] items-center gap-1 font-medium text-[#5B3FE0] underline dark:text-[#C4B5FD]"
               >
                 <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
                 {showHelpCard ? 'Hide browser help' : 'How to enable location on Android & iPhone'}
@@ -153,9 +155,12 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
       aria-modal="true"
       aria-labelledby="location-modal-title"
     >
-      <div className="ld-glass-sheet relative flex max-h-[90dvh] w-full max-w-[440px] flex-col overflow-hidden rounded-t-[32px] border border-white/20 p-5 text-slate-900 shadow-2xl sm:rounded-[32px] dark:text-white">
-        {/* Top handle & close */}
-        <div className="mb-2 flex items-center justify-between">
+      <div
+        style={vvHeight ? { maxHeight: `${vvHeight}px` } : undefined}
+        className="ld-glass-sheet relative flex max-h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[32px] border border-white/20 text-slate-900 shadow-2xl sm:max-h-[90dvh] sm:rounded-[32px] dark:text-white"
+      >
+        {/* Fixed header */}
+        <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-2">
           {flowStep === 'manual' && selectedState ? (
             <button
               type="button"
@@ -196,19 +201,19 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
         </div>
 
         {flowStep === 'explainer' ? (
-          <div className="overflow-y-auto pb-2">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5B3FE0]/20 text-[#5B3FE0] dark:bg-[#5B3FE0]/40 dark:text-white">
-              <Compass className="h-7 w-7" aria-hidden="true" />
+          <div className="ld-scroll-area flex-1 min-h-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#5B3FE0]/20 text-[#5B3FE0] dark:bg-[#5B3FE0]/40 dark:text-white">
+              <Compass className="h-6 w-6" aria-hidden="true" />
             </div>
 
             <h2
               id="location-modal-title"
-              className="text-center text-[24px] font-light leading-tight tracking-tight text-slate-900 dark:text-white"
+              className="text-center text-[22px] font-light leading-tight tracking-tight text-slate-900 dark:text-white"
             >
               Allow LifeDrop to find blood banks near you
             </h2>
 
-            <ul className="mt-5 space-y-3 rounded-[24px] border border-black/10 bg-white/60 p-4 text-[14px] dark:border-white/15 dark:bg-white/[0.08]">
+            <ul className="mt-4 space-y-2.5 rounded-[24px] border border-black/10 bg-white/60 p-4 text-[14px] dark:border-white/15 dark:bg-white/[0.08]">
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#34D399]" aria-hidden="true" />
                 <span>Find the nearest verified blood banks sorted by approximate distance</span>
@@ -228,7 +233,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
             {renderOutcomeBanner()}
             {renderHelpCard()}
 
-            <div className="mt-5 flex flex-col gap-2.5">
+            <div className="mt-4 flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={onAllowLocation}
@@ -257,7 +262,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowHelpCard(true)}
-                  className="mt-1 min-h-[40px] text-center text-[13px] text-slate-600 underline dark:text-white/70"
+                  className="min-h-[44px] text-center text-[13px] text-slate-600 underline dark:text-white/70"
                 >
                   Location not prompting? View Android &amp; iPhone help
                 </button>
@@ -265,10 +270,10 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <h2
               id="location-modal-title"
-              className="text-[22px] font-light tracking-tight text-slate-900 dark:text-white"
+              className="shrink-0 text-[20px] font-light tracking-tight text-slate-900 dark:text-white"
             >
               {selectedState
                 ? `Select city in ${selectedState.name}`
@@ -277,8 +282,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
 
             {renderOutcomeBanner()}
 
-            {/* Search bar */}
-            <div className="relative mt-3">
+            <div className="relative mt-3 shrink-0">
               <Search
                 className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
                 aria-hidden="true"
@@ -308,7 +312,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
                   setSearchQuery('');
                   onSelectManual(ALL_INDIA_CODE, 'All Cities');
                 }}
-                className="mt-3 flex min-h-[48px] w-full items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2.5 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
+                className="mt-2.5 flex min-h-[46px] w-full shrink-0 items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
               >
                 <span className="inline-flex items-center gap-2">
                   <Globe className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
@@ -318,7 +322,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
               </button>
             )}
 
-            <div className="mt-3 min-h-[220px] flex-1 space-y-1.5 overflow-y-auto pr-1 pb-2">
+            <div className="ld-scroll-area mt-2.5 min-h-[160px] flex-1 space-y-1.5 pr-1 pb-2">
               {selectedState ? (
                 filteredCities.length > 0 ? (
                   filteredCities.map((city) => (
@@ -354,13 +358,13 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
                     }}
                     className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/60 px-4 py-2.5 text-left text-[14px] hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.15]"
                   >
-                    <div>
+                    <div className="min-w-0 truncate">
                       <span className="font-medium">{st.name}</span>
                       <span className="ml-2 text-[12px] text-slate-600 dark:text-white/60">
                         · {st.type === 'ut' ? 'Union Territory' : 'State'}
                       </span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-500 dark:text-white/60" aria-hidden="true" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-500 dark:text-white/60" aria-hidden="true" />
                   </button>
                 ))
               ) : (

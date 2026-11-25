@@ -10,19 +10,18 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) => {
   const navItemClass = (tab: NavTab) =>
-    `flex min-h-[44px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-xl px-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+    `flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
       activeTab === tab
-        ? 'text-white dark:text-white'
+        ? 'text-white'
         : 'text-white/65 hover:text-white/95'
     }`;
 
   return (
     <nav
       aria-label="Primary navigation"
-      className="relative z-30 shrink-0 select-none"
+      className="pointer-events-auto absolute right-0 bottom-0 left-0 z-30 select-none"
     >
-      {/* Sculpted curved dock matching the reference image */}
-      <div className="relative flex h-[74px] items-end justify-between px-4 pb-safe pt-2">
+      <div className="relative flex h-[calc(72px+env(safe-area-inset-bottom,0px))] items-end justify-between px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
         <svg
           viewBox="0 0 400 74"
           preserveAspectRatio="none"
@@ -31,18 +30,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
         >
           <path
             d="M 0 12 L 122 12 C 148 12 158 46 200 46 C 242 46 252 12 278 12 L 400 12 L 400 74 L 0 74 Z"
-            className="fill-[#251E54]/92 dark:fill-[#251E54]/92"
+            className="fill-[#251E54]/95"
           />
           <path
             d="M 0 12 L 122 12 C 148 12 158 46 200 46 C 242 46 252 12 278 12 L 400 12"
             fill="none"
-            stroke="rgba(255,255,255,0.20)"
+            stroke="rgba(255,255,255,0.22)"
             strokeWidth="1"
           />
         </svg>
 
-        {/* Left cluster */}
-        <div className="relative z-10 flex items-center gap-3 sm:gap-5">
+        <div className="relative z-10 flex items-center gap-2 sm:gap-4">
           <button
             type="button"
             onClick={() => onSelectTab('home')}
@@ -67,7 +65,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
         </div>
 
         {/* Center raised circular + SOS button */}
-        <div className="relative z-20 -mt-7 flex flex-col items-center">
+        <div className="relative z-20 -translate-y-4 flex flex-col items-center">
           <button
             type="button"
             onClick={() => onSelectTab('sos')}
@@ -81,13 +79,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
           >
             <Plus className="h-7 w-7" strokeWidth={2.5} />
           </button>
-          <span className="mt-0.5 text-[10px] font-semibold tracking-wide text-white/85 whitespace-nowrap">
+          <span className="mt-0.5 text-[10px] font-semibold tracking-wide text-white/90 whitespace-nowrap">
             SOS
           </span>
         </div>
 
-        {/* Right cluster */}
-        <div className="relative z-10 flex items-center gap-3 sm:gap-5">
+        <div className="relative z-10 flex items-center gap-2 sm:gap-4">
           <button
             type="button"
             onClick={() => onSelectTab('chat')}

@@ -12,8 +12,10 @@ import {
   Volume2,
   X,
 } from 'lucide-react';
+import { MEDICAL_REVIEW_CONFIG } from '../config/medicalReview';
 import bleedingData from '../data/knowledge/bleedingFirstAid.json';
 import type { AppLanguage } from '../hooks/useAppSettings';
+import { useVisualViewportHeight } from '../hooks/useVisualViewport';
 
 interface BleedingEmergencyModalProps {
   isOpen: boolean;
@@ -42,6 +44,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
   const [stepIndex, setStepIndex] = useState(0);
   const [showSpecialCases, setShowSpecialCases] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const vvHeight = useVisualViewportHeight();
 
   const stopSpeech = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -87,13 +90,16 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
       aria-modal="true"
       aria-labelledby="bleeding-emergency-title"
     >
-      <div className="flex max-h-[94dvh] w-full max-w-[460px] flex-col overflow-hidden rounded-t-[32px] border border-[#F43F5E]/40 bg-[#1B1330] text-white shadow-2xl sm:rounded-[32px]">
-        {/* Top permanent red emergency header */}
-        <div className="bg-gradient-to-r from-[#BE123C] to-[#E11D48] px-4 py-3.5">
+      <div
+        style={vvHeight ? { maxHeight: `${vvHeight}px` } : undefined}
+        className="flex h-full max-h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#1B1330] text-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:rounded-[32px] sm:border sm:border-[#F43F5E]/40"
+      >
+        {/* Top emergency header */}
+        <div className="shrink-0 bg-gradient-to-r from-[#BE123C] to-[#E11D48] px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <AlertTriangle className="h-5 w-5 shrink-0 text-white" aria-hidden="true" />
-              <h2 id="bleeding-emergency-title" className="text-[17px] font-semibold">
+              <h2 id="bleeding-emergency-title" className="truncate text-[17px] font-semibold">
                 Bleeding Emergency First Aid
               </h2>
             </div>
@@ -101,33 +107,18 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
               type="button"
               onClick={onClose}
               aria-label="Close Bleeding Emergency guide"
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/35"
+              className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/35"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
-
-          <p className="mt-1.5 text-[13px] font-medium leading-snug text-white/95">
+          <p className="mt-1 text-[13px] font-medium leading-snug text-white/95">
             {bleedingData.openingLine[language]}
           </p>
-
-          {/* Permanent one-tap call buttons */}
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {bleedingData.emergencyNumbers.map((item) => (
-              <a
-                key={item.number}
-                href={`tel:${item.number}`}
-                className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-white px-2.5 py-2 text-[13px] font-semibold text-[#BE123C] shadow-sm transition active:scale-95"
-              >
-                <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="whitespace-nowrap">Call {item.number}</span>
-              </a>
-            ))}
-          </div>
         </div>
 
         {/* Language & Mode Switcher */}
-        <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-2.5">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-4 py-2">
           <div className="flex items-center gap-1 rounded-full bg-white/10 p-1" role="group" aria-label="Language">
             {(
               [
@@ -140,7 +131,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                 key={lang.code}
                 type="button"
                 onClick={() => onChangeLanguage(lang.code)}
-                className={`min-h-[34px] rounded-full px-3 text-[12px] font-medium transition ${
+                className={`min-h-[36px] rounded-full px-3 text-[12px] font-medium transition ${
                   language === lang.code
                     ? 'bg-[#5B3FE0] text-white'
                     : 'text-white/75 hover:text-white'
@@ -154,19 +145,18 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
           <button
             type="button"
             onClick={() => setShowSpecialCases((v) => !v)}
-            className="min-h-[38px] rounded-full border border-white/20 px-3 text-[12px] font-medium text-white/90 hover:bg-white/10"
+            className="min-h-[40px] rounded-full border border-white/20 px-3 text-[12px] font-medium text-white/90 hover:bg-white/10 whitespace-nowrap"
           >
             {showSpecialCases ? 'Back to Step Cards' : 'Special Cases (6)'}
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Internal scrollable body */}
+        <div className="ld-scroll-area flex-1 min-h-0 p-4">
           {!showSpecialCases ? (
             <div className="space-y-4">
-              {/* Big step card */}
               <div className="rounded-[28px] border border-white/15 bg-white/[0.08] p-5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-[13px] font-semibold text-[#FB7185]">
                     Step {stepIndex + 1} of {steps.length}
                   </span>
@@ -174,7 +164,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                   <button
                     type="button"
                     onClick={handleReadAloud}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 text-[13px] font-medium text-white hover:bg-white/25"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 text-[13px] font-medium text-white hover:bg-white/25"
                   >
                     {isSpeaking ? (
                       <>
@@ -190,16 +180,22 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                   </button>
                 </div>
 
-                <div className="mt-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F43F5E]/15">
+                <div className="mt-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F43F5E]/15">
                   {STEP_ICONS[currentStep.icon] ?? STEP_ICONS.shield}
                 </div>
 
-                <h3 className="mt-4 text-[22px] font-medium leading-snug text-white">
+                <h3 className="mt-3 text-[20px] font-medium leading-snug text-white">
                   {currentStep.title[language]}
                 </h3>
 
-                <p className="mt-2.5 text-[16px] leading-relaxed text-white/90">
+                <p className="mt-2 text-[15px] leading-relaxed text-white/90">
                   {currentStep.body[language]}
+                </p>
+
+                <p className="mt-3 border-t border-white/10 pt-2.5 text-[12px] font-medium text-white/75">
+                  {language === 'en'
+                    ? MEDICAL_REVIEW_CONFIG.disclaimer
+                    : bleedingData.medicalDisclaimer[language]}
                 </p>
               </div>
 
@@ -220,7 +216,6 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                 ))}
               </div>
 
-              {/* Prev / Next step controls */}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -257,17 +252,37 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                   <p className="mt-1.5 text-[14px] leading-relaxed text-white/85">
                     {sc.body[language]}
                   </p>
+                  <p className="mt-2 text-[12px] font-medium text-white/70">
+                    {language === 'en'
+                      ? MEDICAL_REVIEW_CONFIG.disclaimer
+                      : bleedingData.medicalDisclaimer[language]}
+                  </p>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Mandatory safety disclaimer & review notice */}
-          <div className="mt-4 space-y-1.5 rounded-2xl border border-white/10 bg-black/25 p-3 text-[12px] text-white/75">
-            <p className="font-medium text-white/90">
-              {bleedingData.medicalDisclaimer[language]}
-            </p>
-            <p>{bleedingData.reviewNotice[language]}</p>
+          {/* Review attribution (A3) */}
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-3 text-[12px] text-white/75">
+            {language === 'en'
+              ? MEDICAL_REVIEW_CONFIG.getReviewLine()
+              : bleedingData.reviewNotice[language]}
+          </div>
+        </div>
+
+        {/* Permanent Call 108 & 112 (+ 104) pinned at the bottom (A0) */}
+        <div className="shrink-0 border-t border-white/15 bg-[#160F29] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-3 gap-2">
+            {bleedingData.emergencyNumbers.map((item) => (
+              <a
+                key={item.number}
+                href={`tel:${item.number}`}
+                className="flex min-h-[48px] items-center justify-center gap-1 rounded-full bg-[#F43F5E] px-2 py-2 text-[13px] font-semibold text-white shadow-sm transition active:scale-95"
+              >
+                <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="whitespace-nowrap">Call {item.number}</span>
+              </a>
+            ))}
           </div>
         </div>
       </div>

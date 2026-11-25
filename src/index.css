@@ -32,14 +32,21 @@
     --ld-critical: #F43F5E;
   }
 
-  html {
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overflow-x: hidden;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    margin: 0;
-    min-height: 100dvh;
     background: linear-gradient(180deg, var(--ld-bg-start) 0%, var(--ld-bg-end) 100%);
     color: var(--ld-text-primary);
   }
@@ -57,14 +64,14 @@
 }
 
 .ld-glass-sheet {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(45, 34, 102, 0.58) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(45, 34, 102, 0.66) 100%);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 :root:not(.dark) .ld-glass-sheet {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(236, 232, 254, 0.92) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(236, 232, 254, 0.94) 100%);
   border-top: 1px solid rgba(91, 63, 224, 0.18);
 }
 
@@ -95,6 +102,14 @@
     radial-gradient(1px 1px at 88% 9%, rgba(91, 63, 224, 0.15) 50%, transparent 100%);
 }
 
+/* Smooth touch scroll container */
+.ld-scroll-area {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Hide scrollbars cleanly for horizontal pill scrollers while preserving scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -105,8 +120,45 @@
 }
 
 /* Safe area padding helpers */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
 .pb-safe {
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Leaflet map dark purple theme styling */
+.leaflet-container {
+  font-family: inherit;
+  background: #1B1740;
+}
+
+:root:not(.dark) .leaflet-container {
+  background: #ECE9FC;
+}
+
+.dark .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(195deg) brightness(92%) contrast(92%) saturate(75%);
+}
+
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgba(27, 23, 64, 0.72) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-control-attribution a {
+  color: #C4B5FD !important;
+}
+
+:root:not(.dark) .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #334155 !important;
+}
+
+:root:not(.dark) .leaflet-control-attribution a {
+  color: #5B3FE0 !important;
 }
 
 /* Data saver & reduced motion enforcement */

@@ -63,6 +63,206 @@
         "attendeesCount": { "type": "number" }
       },
       "required": ["id", "title", "dateLabel", "place", "city", "stateCode", "stateName", "attendeesCount"]
+    },
+    "BloodBank": {
+      "title": "BloodBank",
+      "description": "Verified or demo blood bank entry queried by stateCode",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_-]+$" },
+        "name": { "type": "string", "maxLength": 140 },
+        "stateCode": { "type": "string", "maxLength": 10, "pattern": "^[A-Z]{2,4}$" },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 80 },
+        "district": { "type": "string", "maxLength": 80 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "type": { "type": "string", "enum": ["government", "private"] },
+        "open24x7": { "type": "boolean" },
+        "phone": { "type": "string", "maxLength": 24 },
+        "stock": { "type": "object" },
+        "ownerUid": { "type": "string", "maxLength": 128 },
+        "verified": { "type": "boolean" },
+        "licenseNumber": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["id", "name", "stateCode", "stateName", "city", "district", "lat", "lng", "type", "open24x7", "phone", "stock", "updatedAt", "isDemo"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile without raw email/phone PII",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 80 },
+        "role": { "type": "string", "enum": ["donor", "recipient", "bank"] },
+        "bloodGroup": { "type": "string", "enum": ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"] },
+        "bloodGroupStatus": { "type": "string", "enum": ["self-reported", "lab-confirmed"] },
+        "stateCode": { "type": "string", "maxLength": 10 },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 80 },
+        "sex": { "type": "string", "enum": ["male", "female", "other"] },
+        "canDonateNow": { "type": "boolean" },
+        "lastSelfReportedDonation": { "type": "string", "maxLength": 32 },
+        "lastConfirmedDonation": { "type": "string", "maxLength": 32 },
+        "donationsCount": { "type": "number" },
+        "timeline": { "type": "array" },
+        "age18PlusConfirmed": { "type": "boolean" },
+        "consentTimestamp": { "type": "string", "format": "date-time" },
+        "isDemo": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "bloodGroup", "bloodGroupStatus", "stateCode", "age18PlusConfirmed"]
+    },
+    "PrivateContact": {
+      "title": "PrivateContact",
+      "description": "Isolated PII contact subdocument readable/writable strictly by owner",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 140 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "dobYear": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "phone", "dobYear", "updatedAt"]
+    },
+    "ConsentRecord": {
+      "title": "ConsentRecord",
+      "description": "DPDP Act 2023 explicit purpose and age 18+ consent log",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "purpose": { "type": "string", "maxLength": 300 },
+        "acceptedPrivacy": { "type": "boolean" },
+        "acceptedAge18Plus": { "type": "boolean" },
+        "acceptedEmergencyAlerts": { "type": "boolean" },
+        "withdrawn": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "purpose", "acceptedPrivacy", "acceptedAge18Plus", "acceptedEmergencyAlerts", "withdrawn", "createdAt", "updatedAt"]
+    },
+    "EligibilityConfig": {
+      "title": "EligibilityConfig",
+      "description": "Configurable blood donation eligibility thresholds",
+      "type": "object",
+      "properties": {
+        "minAge": { "type": "number" },
+        "maxAge": { "type": "number" },
+        "minWeightKg": { "type": "number" },
+        "minHaemoglobinGdL": { "type": "number" },
+        "maleGapDays": { "type": "number" },
+        "femaleGapDays": { "type": "number" },
+        "guidelineNotice": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["minAge", "maxAge", "minWeightKg", "minHaemoglobinGdL"]
+    },
+    "SosRequest": {
+      "title": "SosRequest",
+      "description": "Emergency blood SOS request with client-side radius escalation and ABO/Rh compatibility",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_-]+$" },
+        "requesterUid": { "type": "string", "maxLength": 128 },
+        "requesterName": { "type": "string", "maxLength": 80 },
+        "bloodGroup": { "type": "string", "enum": ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"] },
+        "compatibleDonorGroups": { "type": "array" },
+        "component": { "type": "string", "enum": ["Whole Blood", "PRBC", "Platelets", "Plasma"] },
+        "unitsNeeded": { "type": "number" },
+        "urgency": { "type": "string", "enum": ["critical", "urgent", "scheduled"] },
+        "hospitalName": { "type": "string", "maxLength": 120 },
+        "stateCode": { "type": "string", "maxLength": 10 },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 80 },
+        "coarseLat": { "type": "number" },
+        "coarseLng": { "type": "number" },
+        "radiusKm": { "type": "number" },
+        "escalationStage": { "type": "number" },
+        "status": { "type": "string", "enum": ["open", "matched", "fulfilled", "cancelled"] },
+        "acceptedByUid": { "type": "string", "maxLength": 128 },
+        "acceptedByName": { "type": "string", "maxLength": 80 },
+        "matchedCount": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 240 },
+        "isDemo": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "requesterUid", "requesterName", "bloodGroup", "compatibleDonorGroups", "component", "unitsNeeded", "urgency", "hospitalName", "stateCode", "city", "radiusKm", "escalationStage", "status", "createdAt", "updatedAt"]
+    },
+    "SosPrivateContact": {
+      "title": "SosPrivateContact",
+      "description": "Requester phone accessible only to requester and matched donor",
+      "type": "object",
+      "properties": {
+        "requesterUid": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["requesterUid", "phone", "updatedAt"]
+    },
+    "SosResponse": {
+      "title": "SosResponse",
+      "description": "Donor pledge and ETA tracking for an SOS blood request",
+      "type": "object",
+      "properties": {
+        "donorUid": { "type": "string", "maxLength": 128 },
+        "donorName": { "type": "string", "maxLength": 80 },
+        "bloodGroup": { "type": "string", "enum": ["O+", "A+", "B+", "AB+", "O-", "A-", "B-", "AB-"] },
+        "city": { "type": "string", "maxLength": 80 },
+        "etaMinutes": { "type": "number" },
+        "status": { "type": "string", "enum": ["pledged", "en_route", "arrived", "withdrawn"] },
+        "donorPhone": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["donorUid", "donorName", "bloodGroup", "etaMinutes", "status", "createdAt", "updatedAt"]
+    },
+    "BankApplication": {
+      "title": "BankApplication",
+      "description": "Blood Bank license onboarding application verified by Platform Admin",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "facilityName": { "type": "string", "maxLength": 140 },
+        "licenseNumber": { "type": "string", "maxLength": 64 },
+        "eraktkoshId": { "type": "string", "maxLength": 64 },
+        "type": { "type": "string", "enum": ["government", "private"] },
+        "stateCode": { "type": "string", "maxLength": 10 },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 80 },
+        "district": { "type": "string", "maxLength": 80 },
+        "phone": { "type": "string", "maxLength": 24 },
+        "open24x7": { "type": "boolean" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "assignedBankId": { "type": "string", "maxLength": 64 },
+        "reviewNotes": { "type": "string", "maxLength": 240 },
+        "reviewedBy": { "type": "string", "maxLength": 128 },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "facilityName", "licenseNumber", "type", "stateCode", "stateName", "city", "district", "phone", "open24x7", "status", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable append-only audit trail for stock updates and admin verifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "actorUid": { "type": "string", "maxLength": 128 },
+        "actorRole": { "type": "string", "enum": ["bank", "admin"] },
+        "action": { "type": "string", "maxLength": 64 },
+        "targetPath": { "type": "string", "maxLength": 160 },
+        "summary": { "type": "string", "maxLength": 240 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorUid", "actorRole", "action", "targetPath", "summary", "createdAt"]
     }
   },
   "firestore": {
@@ -81,6 +281,46 @@
     "/drives/{driveId}": {
       "schema": { "$ref": "#/entities/DonationDrive" },
       "description": "Public upcoming blood donation drives"
+    },
+    "/banks/{bankId}": {
+      "schema": { "$ref": "#/entities/BloodBank" },
+      "description": "Blood banks indexed by stateCode for state-scoped paginated reads"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile without email/phone PII"
+    },
+    "/users/{userId}/private/contact": {
+      "schema": { "$ref": "#/entities/PrivateContact" },
+      "description": "Isolated private email, phone, and birth year readable/writable only by owner"
+    },
+    "/consents/{userId}": {
+      "schema": { "$ref": "#/entities/ConsentRecord" },
+      "description": "DPDP Act 2023 consent record per user"
+    },
+    "/config/{configId}": {
+      "schema": { "$ref": "#/entities/EligibilityConfig" },
+      "description": "Configurable clinical eligibility thresholds managed by Admin"
+    },
+    "/requests/{requestId}": {
+      "schema": { "$ref": "#/entities/SosRequest" },
+      "description": "Emergency SOS blood requests scoped by stateCode and status"
+    },
+    "/requests/{requestId}/private/contact": {
+      "schema": { "$ref": "#/entities/SosPrivateContact" },
+      "description": "Private requester phone revealed only after donor acceptance"
+    },
+    "/requests/{requestId}/responses/{donorUid}": {
+      "schema": { "$ref": "#/entities/SosResponse" },
+      "description": "Donor acceptance & ETA responses for an SOS request"
+    },
+    "/bankApplications/{applicantUid}": {
+      "schema": { "$ref": "#/entities/BankApplication" },
+      "description": "Blood bank license onboarding applications reviewed by Admin"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable append-only audit trail for blood bank stock & admin approvals"
     }
   }
 }

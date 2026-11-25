@@ -1,0 +1,176 @@
+{
+  "version": "1.0.0",
+  "entries": [
+    {
+      "id": "elig-age-weight",
+      "category": "eligibility",
+      "keywords": [
+        "age", "old", "18", "65", "weight", "kg", "45", "50", "eligible", "eligibility", "who can donate",
+        "उम्र", "आयु", "वजन", "पात्र", "रक्तदान कौन", "umr", "vajan",
+        "ವಯಸ್ಸು", "ತೂಕ", "ಅರ್ಹತೆ", "ರಕ್ತದಾನ"
+      ],
+      "title": {
+        "en": "Basic Donor Eligibility (Age, Weight & Haemoglobin)",
+        "hi": "रक्तदाता पात्रता (आयु, वजन और हीमोग्लोबिन)",
+        "kn": "ರಕ್ತದಾನಿ ಅರ್ಹತೆ (ವಯಸ್ಸು, ತೂಕ ಮತ್ತು ಹಿಮೋಗ್ಲೋಬಿನ್)"
+      },
+      "answer": {
+        "en": "To donate whole blood in India, you generally need to be 18–65 years old, weigh at least 45 kg, have haemoglobin >= 12.5 g/dL, and feel healthy on donation day. The blood bank medical officer confirms final fitness on-site.",
+        "hi": "भारत में संपूर्ण रक्त दान करने के लिए आपकी आयु 18–65 वर्ष, वजन कम से कम 45 किग्रा, हीमोग्लोबिन >= 12.5 g/dL होना चाहिए और रक्तदान के दिन स्वस्थ महसूस करना आवश्यक है। अंतिम जांच ब्लड बैंक के डॉक्टर द्वारा की जाती है।",
+        "kn": "ಭಾರತದಲ್ಲಿ ರಕ್ತದಾನ ಮಾಡಲು ಸಾಮಾನ್ಯವಾಗಿ 18–65 ವರ್ಷ ವಯಸ್ಸು, ಕನಿಷ್ಠ 45 ಕೆಜಿ ತೂಕ, ಹಿಮೋಗ್ಲೋಬಿನ್ >= 12.5 g/dL ಇರಬೇಕು ಮತ್ತು ದಾನದ ದಿನ ಆರೋಗ್ಯವಾಗಿರಬೇಕು. ರಕ್ತನಿಧಿ ವೈದ್ಯರು ಅಂತಿಮ ಪರೀಕ್ಷೆ ನಡೆಸುತ್ತಾರೆ."
+      }
+    },
+    {
+      "id": "elig-gap",
+      "category": "eligibility",
+      "keywords": [
+        "gap", "interval", "often", "days", "months", "90", "120", "next donation", "again", "frequency",
+        "अंतर", "महीने", "दोबारा", "कितने दिन", "dubara",
+        "ಅಂತರ", "ತಿಂಗಳು", "ಮತ್ತೆ ದಾನ", "ಎಷ್ಟು ದಿನ"
+      ],
+      "title": {
+        "en": "How Often Can You Donate?",
+        "hi": "आप कितनी बार रक्तदान कर सकते हैं?",
+        "kn": "ಎಷ್ಟು ದಿನಗಳಿಗೊಮ್ಮೆ ರಕ್ತದಾನ ಮಾಡಬಹುದು?"
+      },
+      "answer": {
+        "en": "Whole-blood donation requires a minimum gap of 3 months (90 days) for men and 4 months (120 days) for women. Single-donor apheresis platelets can sometimes be donated more frequently as advised by the blood bank.",
+        "hi": "संपूर्ण रक्तदान के बीच पुरुषों के लिए कम से कम 3 महीने (90 दिन) और महिलाओं के लिए 4 महीने (120 दिन) का अंतर आवश्यक है। प्लेटलेट्स दान के बारे में ब्लड बैंक डॉक्टर सलाह देते हैं।",
+        "kn": "ಸಂಪೂರ್ಣ ರಕ್ತದಾನದ ನಡುವೆ ಪುರುಷರಿಗೆ ಕನಿಷ್ಠ 3 ತಿಂಗಳು (90 ದಿನ) ಮತ್ತು ಮಹಿಳೆಯರಿಗೆ 4 ತಿಂಗಳು (120 ದಿನ) ಅಂತರ ಅಗತ್ಯವಿದೆ."
+      }
+    },
+    {
+      "id": "defer-tattoo-surgery",
+      "category": "deferral",
+      "keywords": [
+        "tattoo", "piercing", "acupuncture", "surgery", "operation", "transfusion", "deferral",
+        "टैटू", "सर्जरी", "ऑपरेशन", "गोदना",
+        "ಟ್ಯಾಟೂ", "ಹಚ್ಚೆ", "ಶಸ್ತ್ರಚಿಕಿತ್ಸೆ"
+      ],
+      "title": {
+        "en": "Tattoos, Piercings & Surgery Deferral",
+        "hi": "टैटू, पियर्सिंग और सर्जरी के बाद प्रतीक्षा अवधि",
+        "kn": "ಟ್ಯಾಟೂ, ಚುಚ್ಚುವಿಕೆ ಮತ್ತು ಶಸ್ತ್ರಚಿಕಿತ್ಸೆ ವಿರಾಮ"
+      },
+      "answer": {
+        "en": "Wait at least 6 months after getting a tattoo, body piercing, or acupuncture. Wait 6–12 months after major surgery or receiving a blood transfusion, subject to clearance by the blood bank physician.",
+        "hi": "टैटू, पियर्सिंग या एक्यूपंक्चर के बाद कम से कम 6 महीने प्रतीक्षा करें। बड़ी सर्जरी या रक्त चढ़ाने के बाद 6–12 महीने रुकें और ब्लड बैंक डॉक्टर से जांच कराएं।",
+        "kn": "ಟ್ಯಾಟೂ ಅಥವಾ ಕಿವಿ/ದೇಹ ಚುಚ್ಚುವಿಕೆಯ ನಂತರ ಕನಿಷ್ಠ 6 ತಿಂಗಳು ಕಾಯಿರಿ. ದೊಡ್ಡ ಶಸ್ತ್ರಚಿಕಿತ್ಸೆಯ ನಂತರ 6–12 ತಿಂಗಳು ವೈದ್ಯರ ಸಲಹೆಯಂತೆ ಕಾಯಿರಿ."
+      }
+    },
+    {
+      "id": "defer-fever-meds-alcohol",
+      "category": "deferral",
+      "keywords": [
+        "fever", "cold", "cough", "antibiotic", "medicine", "alcohol", "drink", "vaccine", "vaccination", "pregnant", "pregnancy", "breastfeeding", "period",
+        "बुखार", "जुकाम", "दवा", "एंटीबायोटिक", "शराब", "टीका", "वैक्सीन", "गर्भवती", "bukhar", "sharab",
+        "ಜ್ವರ", "ಶೀತ", "ಔಷಧಿ", "ಮದ್ಯ", "ಲಸಿಕೆ", "ಗರ್ಭಿಣಿ"
+      ],
+      "title": {
+        "en": "Illness, Medications, Vaccines, Pregnancy & Alcohol",
+        "hi": "बीमारी, दवाइयाँ, टीकाकरण, गर्भावस्था और शराब",
+        "kn": "ಜ್ವರ, ಔಷಧಿ, ಲಸಿಕೆ, ಗರ್ಭಾವಸ್ಥೆ ಮತ್ತು ಮದ್ಯಪಾನ"
+      },
+      "answer": {
+        "en": "Defer temporarily if you have fever/infection, are pregnant or breastfeeding, took alcohol within 24 hours, or had a recent vaccine (typically 14–28 days depending on vaccine). Tell the blood bank doctor about all antibiotics, blood thinners, or chronic medicines.",
+        "hi": "बुखार या संक्रमण होने पर, गर्भावस्था/स्तनपान के दौरान, पिछले 24 घंटों में शराब लेने पर, या हालिया टीकाकरण (आमतौर पर 14–28 दिन) के बाद अस्थायी रूप से रुकें। किसी भी एंटीबायोटिक या नियमित दवा की जानकारी डॉक्टर को अवश्य दें।",
+        "kn": "ಜ್ವರ/ಸೋಂಕು ಇದ್ದರೆ, ಗರ್ಭಿಣಿಯಾಗಿದ್ದರೆ ಅಥವಾ ಹಾಲುಣಿಸುತ್ತಿದ್ದರೆ, ಕಳೆದ 24 ಗಂಟೆಯಲ್ಲಿ ಮದ್ಯ ಸೇವಿಸಿದ್ದರೆ ಅಥವಾ ಇತ್ತೀಚಿನ ಲಸಿಕೆಯ ನಂತರ (14–28 ದಿನ) ತಾತ್ಕಾಲಿಕವಾಗಿ ಕಾಯಿರಿ. ಎಲ್ಲಾ ಔಷಧಿಗಳ ಬಗ್ಗೆ ವೈದ್ಯರಿಗೆ ತಿಳಿಸಿ."
+      }
+    },
+    {
+      "id": "components-guide",
+      "category": "clinical",
+      "keywords": [
+        "component", "prbc", "platelets", "plasma", "ffp", "rdp", "sdp", "whole blood", "dengue", "difference",
+        "प्लेटलेट्स", "प्लाज्मा", "डेंगू", "अवयव",
+        "ಪ್ಲೇಟ್ಲೆಟ್", "ಪ್ಲಾಸ್ಮಾ", "ಡೆಂಗ್ಯೂ"
+      ],
+      "title": {
+        "en": "Whole Blood vs PRBC vs Platelets vs Plasma",
+        "hi": "संपूर्ण रक्त, PRBC, प्लेटलेट्स और प्लाज्मा में अंतर",
+        "kn": "ಸಂಪೂರ್ಣ ರಕ್ತ, PRBC, ಪ್ಲೇಟ್‌ಲೆಟ್ ಮತ್ತು ಪ್ಲಾಸ್ಮಾ"
+      },
+      "answer": {
+        "en": "One whole-blood donation can be separated into PRBC (packed red cells for anaemia/trauma), Platelets/RDP/SDP (for dengue or low platelet counts), and Plasma/FFP (clotting factors/burns). Note that Plasma compatibility reverses ABO rules: AB is universal plasma donor!",
+        "hi": "एक बार किए गए संपूर्ण रक्तदान से PRBC (एनीमिया/चोट), प्लेटलेट्स (डेंगू/कम प्लेटलेट), और प्लाज्मा/FFP तैयार किए जा सकते हैं। ध्यान दें कि प्लाज्मा के लिए AB यूनिवर्सल डोनर होता है।",
+        "kn": "ಒಂದು ಬಾರಿ ರಕ್ತದಾನ ಮಾಡಿದರೆ ಅದರಿಂದ PRBC (ರಕ್ತಹೀನತೆ), ಪ್ಲೇಟ್‌ಲೆಟ್‌ಗಳು (ಡೆಂಗ್ಯೂ), ಮತ್ತು ಪ್ಲಾಸ್ಮಾ/FFP ಪಡೆಯಬಹುದು. ಪ್ಲಾಸ್ಮಾಕ್ಕೆ AB ಸಾರ್ವತ್ರಿಕ ದಾನಿಯಾಗಿರುತ್ತದೆ."
+      }
+    },
+    {
+      "id": "before-after-care",
+      "category": "care",
+      "keywords": [
+        "before", "after", "eat", "food", "water", "hydrate", "dizzy", "faint", "care", "tips", "prepare", "empty stomach",
+        "खाना", "पानी", "चक्कर", "सावधानी", "पहले", "बाद",
+        "ಆಹಾರ", "ನೀರು", "ತಲೆತಿರುಗುವಿಕೆ", "ಸಲಹೆ"
+      ],
+      "title": {
+        "en": "Before & After Donation Care",
+        "hi": "रक्तदान से पहले और बाद की देखभाल",
+        "kn": "ರಕ್ತದಾನದ ಮೊದಲು ಮತ್ತು ನಂತರದ ಆರೈಕೆ"
+      },
+      "answer": {
+        "en": "Never donate on an empty stomach — eat a light balanced meal 2–3 hours prior and drink 500 ml of water. Afterward, rest 10–15 minutes, drink extra fluids for 24 hours, avoid heavy lifting/gym for the day, and keep the bandage dry for 4–6 hours.",
+        "hi": "खाली पेट रक्तदान न करें — 2–3 घंटे पहले हल्का भोजन लें और खूब पानी पिएं। दान के बाद 10–15 मिनट आराम करें, 24 घंटे तरल पदार्थ लेते रहें, भारी काम न करें और 4–6 घंटे पट्टी सूखी रखें।",
+        "kn": "ಖಾಲಿ ಹೊಟ್ಟೆಯಲ್ಲಿ ರಕ್ತದಾನ ಮಾಡಬೇಡಿ — 2–3 ಗಂಟೆ ಮೊದಲು ಆಹಾರ ಸೇವಿಸಿ ನೀರು ಕುಡಿಯಿರಿ. ದಾನದ ನಂತರ 10–15 ನಿಮಿಷ ವಿಶ್ರಾಂತಿ ಪಡೆಯಿರಿ, ಹೆಚ್ಚು ನೀರು ಕುಡಿಯಿರಿ ಮತ್ತು ಭಾರ ಎತ್ತಬೇಡಿ."
+      }
+    },
+    {
+      "id": "helpline-eraktkosh",
+      "category": "helpline",
+      "keywords": [
+        "104", "108", "112", "eraktkosh", "nbtc", "helpline", "number", "emergency", "ambulance", "free", "cost",
+        "हेल्पलाइन", "नंबर", "एम्बुलेंस", "निशुल्क",
+        "ಸಹಾಯವಾಣಿ", "ಆಂಬ್ಯುಲೆನ್ಸ್", "ಉಚಿತ"
+      ],
+      "title": {
+        "en": "India Emergency & Blood Helplines (108 / 112 / 104)",
+        "hi": "भारत आपातकालीन और रक्त हेल्पलाइन (108 / 112 / 104)",
+        "kn": "ಭಾರತದ ತುರ್ತು ಮತ್ತು ರಕ್ತ ಸಹಾಯವಾಣಿ (108 / 112 / 104)"
+      },
+      "answer": {
+        "en": "Call 108 for medical ambulance, 112 for unified national emergency, and 104 for state health & blood helpline guidance. LifeDrop is 100% free and voluntary — selling or demanding money for blood is illegal in India.",
+        "hi": "चिकित्सा एम्बुलेंस के लिए 108, राष्ट्रीय आपातकाल के लिए 112, और स्वास्थ्य/रक्त सहायता के लिए 104 पर कॉल करें। LifeDrop पूरी तरह निःशुल्क है; भारत में रक्त बेचना गैर-कानूनी है।",
+        "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್‌ಗಾಗಿ 108, ರಾಷ್ಟ್ರೀಯ ತುರ್ತು ಸಹಾಯಕ್ಕಾಗಿ 112, ಮತ್ತು ರಕ್ತ/ಆರೋಗ್ಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ 104 ಗೆ ಕರೆ ಮಾಡಿ. ಭಾರತದಲ್ಲಿ ರಕ್ತ ಮಾರಾಟ ಕಾನೂನುಬಾಹಿರವಾಗಿದೆ."
+      }
+    },
+    {
+      "id": "rare-blood-oh",
+      "category": "clinical",
+      "keywords": [
+        "rare", "o-", "ab-", "bombay", "oh", "hh", "negative", "rh null",
+        "दुर्लभ", "बॉम्बे", "नेगेटिव",
+        "ಅಪರೂಪ", "ಬಾಂಬೆ", "ನೆಗೆಟಿವ್"
+      ],
+      "title": {
+        "en": "Rare Blood Groups (O-, AB- & Bombay Blood Group)",
+        "hi": "दुर्लभ रक्त समूह (O-, AB- और बॉम्बे ब्लड ग्रुप)",
+        "kn": "ಅಪರೂಪದ ರಕ್ತದ ಗುಂಪುಗಳು (O-, AB- ಮತ್ತು ಬಾಂಬೆ ಗುಂಪು)"
+      },
+      "answer": {
+        "en": "Negative groups like O- (~2%) and AB- (<1%) are frequently critical in stock. Very rare phenotypes like Bombay (Oh) lack the H antigen and can only receive blood from another Bombay-group donor — contact 104 and major state medical college blood centres immediately.",
+        "hi": "O- और AB- जैसे नेगेटिव समूह अक्सर दुर्लभ होते हैं। बॉम्बे (Oh) अत्यंत दुर्लभ समूह है जिसे केवल बॉम्बे समूह से ही रक्त मिल सकता है — इसके लिए तुरंत 104 और बड़े मेडिकल कॉलेज ब्लड बैंक से संपर्क करें।",
+        "kn": "O- ಮತ್ತು AB- ರಕ್ತದ ಗುಂಪುಗಳು ಅಪರೂಪವಾಗಿವೆ. ಬಾಂಬೆ (Oh) ಗುಂಪಿನವರಿಗೆ ಬಾಂಬೆ ಗುಂಪಿನ ರಕ್ತವೇ ಬೇಕಾಗುತ್ತದೆ — ತಕ್ಷಣ 104 ಅಥವಾ ಪ್ರಮುಖ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ರಕ್ತನಿಧಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ."
+      }
+    },
+    {
+      "id": "privacy-dpdp",
+      "category": "privacy",
+      "keywords": [
+        "privacy", "phone", "data", "delete", "dpdp", "safe", "consent", "location", "share",
+        "गोपनीयता", "डेटा", "फोन नंबर", "हटाएं",
+        "ಗೌಪ್ಯತೆ", "ಡೇಟಾ", "ಫೋನ್", "ಅಳಿಸಿ"
+      ],
+      "title": {
+        "en": "Privacy, Phone Protection & DPDP Act 2023",
+        "hi": "गोपनीयता, फोन सुरक्षा और डेटा नियंत्रण",
+        "kn": "ಗೌಪ್ಯತೆ, ಫೋನ್ ಸುರಕ್ಷತೆ ಮತ್ತು DPDP ಹಕ್ಕುಗಳು"
+      },
+      "answer": {
+        "en": "Your phone and email live in a private vault and are NEVER shown publicly. In an SOS match, contact is revealed only after a donor accepts. You can export your JSON data, withdraw consent, or delete your account anytime from Profile.",
+        "hi": "आपका फोन नंबर और ईमेल निजी रहते हैं और सार्वजनिक रूप से नहीं दिखते। SOS में संपर्क केवल डोनर द्वारा स्वीकार करने के बाद ही साझा होता है। आप Profile से कभी भी अपना डेटा डाउनलोड या खाता हटा सकते हैं।",
+        "kn": "ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು ಇಮೇಲ್ ಖಾಸಗಿಯಾಗಿರುತ್ತವೆ ಮತ್ತು ಸಾರ್ವಜನಿಕವಾಗಿ ಕಾಣಿಸುವುದಿಲ್ಲ. SOS ವಿನಂತಿಯನ್ನು ಸ್ವೀಕರಿಸಿದ ನಂತರ ಮಾತ್ರ ಸಂಪರ್ಕ ಸಂಖ್ಯೆ ಹಂಚಲಾಗುತ್ತದೆ. Profile ನಿಂದ ಡೇಟಾ ಅಳಿಸಬಹುದು."
+      }
+    }
+  ]
+}

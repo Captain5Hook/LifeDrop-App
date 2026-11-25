@@ -31,6 +31,27 @@ try {
 export const db = firestoreInstance;
 export const auth = getAuth(app);
 
+// Optional Firebase App Check (activated only when VITE_FIREBASE_APP_CHECK_SITE_KEY or recaptchaSiteKey is set)
+const appCheckSiteKey = (
+  (import.meta as { env?: Record<string, string | undefined> }).env
+    ?.VITE_FIREBASE_APP_CHECK_SITE_KEY ||
+  firebaseConfig.recaptchaSiteKey ||
+  ''
+).trim();
+
+if (typeof window !== 'undefined' && appCheckSiteKey.length > 0) {
+  void import('firebase/app-check')
+    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(appCheckSiteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    })
+    .catch((err) => {
+      console.warn('LifeDrop App Check initialization skipped:', err);
+    });
+}
+
 let connectionTested = false;
 
 export async function testConnection(): Promise<boolean> {

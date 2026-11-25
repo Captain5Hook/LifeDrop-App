@@ -1,0 +1,11 @@
+name = "lifedrop-chat-worker"
+main = "index.ts"
+compatibility_date = "2026-01-15"
+
+# Set your secret via Wrangler CLI (never commit API keys):
+#   wrangler secret put GEMINI_API_KEY
+# Deploy on Cloudflare Workers Free tier (100,000 requests/day free):
+#   wrangler deploy
+
+[vars]
+ALLOWED_ORIGIN = "*"
