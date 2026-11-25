@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1 / Global Safety Net: Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Pillar 3: Primitives
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'punithreddy9010@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Connection validation document
+    match /test/connection {
+      allow get: if true;
+      allow write: if false;
+    }
+
+    // Admin registry (read own doc only)
+    match /admins/{uid} {
+      allow get: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Aggregated public statistics (no PII; read by exact document ID only)
+    match /stats/{statId} {
+      allow get: if isValidId(statId);
+      allow list: if false;
+      allow create, update: if isAdmin() && isValidId(statId) && incoming().keys().size() <= 15;
+      allow delete: if isAdmin() && isValidId(statId);
+    }
+
+    // Public mission goals
+    match /goals/{goalId} {
+      allow get: if isValidId(goalId);
+      allow list: if resource.data.title is string && resource.data.target is number;
+      allow create, update: if isAdmin()
+        && isValidId(goalId)
+        && incoming().keys().hasAll(['title', 'current', 'target'])
+        && incoming().keys().hasOnly(['id', 'title', 'current', 'target', 'unit', 'deadline'])
+        && incoming().title is string && incoming().title.size() <= 140
+        && incoming().current is number && incoming().current >= 0
+        && incoming().target is number && incoming().target > 0;
+      allow delete: if isAdmin() && isValidId(goalId);
+    }
+
+    // Public blood donation drives
+    match /drives/{driveId} {
+      allow get: if isValidId(driveId);
+      allow list: if resource.data.stateCode is string && resource.data.title is string;
+      allow create, update: if isAdmin()
+        && isValidId(driveId)
+        && incoming().keys().hasAll(['title', 'dateLabel', 'place', 'city', 'stateCode', 'stateName', 'attendeesCount'])
+        && incoming().keys().hasOnly(['id', 'title', 'dateLabel', 'place', 'city', 'stateCode', 'stateName', 'attendeesCount'])
+        && incoming().title is string && incoming().title.size() <= 140
+        && incoming().stateCode is string && incoming().stateCode.size() <= 10;
+      allow delete: if isAdmin() && isValidId(driveId);
+    }
+  }
+}

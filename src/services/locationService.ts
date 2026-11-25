@@ -1,0 +1,219 @@
+import { ALL_INDIA_CODE, STATE_MAP } from '../data/indiaLocations';
+import { resolveIndiaLocationOffline } from '../data/indiaStatesGeo';
+import type {
+  BrowserPermissionState,
+  GeolocationAttemptResult,
+  LocationService,
+  SavedLocation,
+} from './interfaces';
+
+const STORAGE_KEY = 'lifedrop_location_v1';
+
+class LocalIndiaLocationService implements LocationService {
+  getSavedLocation(): SavedLocation | null {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as SavedLocation;
+      if (!parsed || typeof parsed.stateCode !== 'string') return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private save(loc: SavedLocation): SavedLocation {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(loc));
+    } catch {
+      // Ignore storage quota errors in private mode
+    }
+    return loc;
+  }
+
+  watchBrowserPermission(cb: (state: BrowserPermissionState) => void): () => void {
+    if (typeof navigator === 'undefined' || !('permissions' in navigator)) {
+      cb('unsupported');
+      return () => {};
+    }
+
+    let permStatus: PermissionStatus | null = null;
+    let active = true;
+
+    const handleChange = () => {
+      if (!active || !permStatus) return;
+      if (
+        permStatus.state === 'granted' ||
+        permStatus.state === 'denied' ||
+        permStatus.state === 'prompt'
+      ) {
+        cb(permStatus.state);
+      }
+    };
+
+    navigator.permissions
+      .query({ name: 'geolocation' as PermissionName })
+      .then((status) => {
+        if (!active) return;
+        permStatus = status;
+        handleChange();
+        status.addEventListener('change', handleChange);
+      })
+      .catch(() => {
+        if (active) cb('unsupported');
+      });
+
+    return () => {
+      active = false;
+      if (permStatus) {
+        permStatus.removeEventListener('change', handleChange);
+      }
+    };
+  }
+
+  async requestCurrentLocation(timeoutMs = 10000): Promise<GeolocationAttemptResult> {
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      return {
+        status: 'unavailable',
+        location: null,
+        message: 'Location hardware is unavailable on this browser or device. Choose your state and city manually.',
+      };
+    }
+
+    return new Promise<GeolocationAttemptResult>((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const resolved = resolveIndiaLocationOffline(latitude, longitude);
+
+          if (!resolved.inIndia || !resolved.state || !resolved.city) {
+            resolve({
+              status: 'outside-india',
+              location: null,
+              message: 'LifeDrop currently serves India only. Please select an Indian state and city below.',
+            });
+            return;
+          }
+
+          const saved = this.save({
+            stateCode: resolved.state.code,
+            stateName: resolved.state.name,
+            city: resolved.city,
+            coarseLat: resolved.coarseLat,
+            coarseLng: resolved.coarseLng,
+            source: 'gps',
+            sharingEnabled: true,
+            updatedAt: new Date().toISOString(),
+          });
+
+          resolve({
+            status: 'granted',
+            location: saved,
+            message: `Located near ${resolved.city}, ${resolved.state.name}.`,
+          });
+        },
+        async (error) => {
+          if (error.code === error.TIMEOUT) {
+            resolve({
+              status: 'timeout',
+              location: null,
+              message: 'Location lookup timed out. Check GPS signal, try again, or choose your city manually.',
+            });
+            return;
+          }
+
+          if (error.code === error.POSITION_UNAVAILABLE) {
+            resolve({
+              status: 'unavailable',
+              location: null,
+              message: 'Unable to determine your position right now. Choose your state and city manually.',
+            });
+            return;
+          }
+
+          // error.code === error.PERMISSION_DENIED: distinguish permanent denial vs dismissed prompt
+          let permState: PermissionState | 'unsupported' = 'unsupported';
+          try {
+            if ('permissions' in navigator) {
+              const p = await navigator.permissions.query({
+                name: 'geolocation' as PermissionName,
+              });
+              permState = p.state;
+            }
+          } catch {
+            permState = 'unsupported';
+          }
+
+          if (permState === 'prompt') {
+            resolve({
+              status: 'dismissed',
+              location: null,
+              message: 'Location prompt was dismissed before permission was granted. You can try again or pick manually.',
+            });
+            return;
+          }
+
+          resolve({
+            status: 'denied',
+            location: null,
+            message: 'Location access is blocked in your browser. Follow the guide below to enable it, or pick manually.',
+          });
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: timeoutMs,
+          maximumAge: 300000,
+        },
+      );
+    });
+  }
+
+  setManualLocation(stateCode: string, city: string): SavedLocation {
+    if (stateCode === ALL_INDIA_CODE) {
+      return this.save({
+        stateCode: ALL_INDIA_CODE,
+        stateName: 'All India',
+        city: 'All Cities',
+        source: 'manual',
+        sharingEnabled: false,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    const state = STATE_MAP.get(stateCode);
+    const stateName = state?.name ?? 'Karnataka';
+    const resolvedCity = city || state?.cities[0]?.name || 'Bengaluru';
+
+    return this.save({
+      stateCode,
+      stateName,
+      city: resolvedCity,
+      source: 'manual',
+      sharingEnabled: true,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  turnOffSharing(): SavedLocation | null {
+    const current = this.getSavedLocation();
+    if (!current) return null;
+    return this.save({
+      stateCode: current.stateCode,
+      stateName: current.stateName,
+      city: current.city,
+      source: 'manual',
+      sharingEnabled: false,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  deleteLocationData(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+  }
+}
+
+export const locationService: LocationService = new LocalIndiaLocationService();

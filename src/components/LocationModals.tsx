@@ -1,0 +1,379 @@
+import React, { useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Compass,
+  Globe,
+  HelpCircle,
+  Loader2,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Smartphone,
+  X,
+} from 'lucide-react';
+import {
+  ALL_INDIA_CODE,
+  INDIA_STATES_AND_UTS,
+  type IndiaState,
+} from '../data/indiaLocations';
+import type { LocationFlowStep } from '../hooks/useLocationFlow';
+import type {
+  BrowserPermissionState,
+  LocationOutcomeStatus,
+  SavedLocation,
+} from '../services/interfaces';
+
+interface LocationModalsProps {
+  flowStep: LocationFlowStep;
+  browserPermission: BrowserPermissionState;
+  savedLocation: SavedLocation | null;
+  isLocating: boolean;
+  outcome: { status: LocationOutcomeStatus; message: string } | null;
+  onAllowLocation: () => void;
+  onOpenManual: () => void;
+  onOpenExplainer: () => void;
+  onSelectManual: (stateCode: string, city: string) => void;
+  onClose: () => void;
+}
+
+export const LocationModals: React.FC<LocationModalsProps> = ({
+  flowStep,
+  browserPermission,
+  savedLocation,
+  isLocating,
+  outcome,
+  onAllowLocation,
+  onOpenManual,
+  onOpenExplainer,
+  onSelectManual,
+  onClose,
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedState, setSelectedState] = useState<IndiaState | null>(null);
+  const [showHelpCard, setShowHelpCard] = useState(false);
+
+  const filteredStates = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return INDIA_STATES_AND_UTS;
+    return INDIA_STATES_AND_UTS.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.code.toLowerCase().includes(q) ||
+        s.cities.some((c) => c.name.toLowerCase().includes(q)),
+    );
+  }, [searchQuery]);
+
+  const filteredCities = useMemo(() => {
+    if (!selectedState) return [];
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return selectedState.cities;
+    return selectedState.cities.filter((c) => c.name.toLowerCase().includes(q));
+  }, [selectedState, searchQuery]);
+
+  if (flowStep === 'closed') return null;
+
+  const canDismiss = Boolean(savedLocation);
+
+  const renderOutcomeBanner = () => {
+    if (!outcome) return null;
+
+    const isTimeout = outcome.status === 'timeout';
+    const isDenied = outcome.status === 'denied';
+    const isOutside = outcome.status === 'outside-india';
+
+    return (
+      <div
+        role="alert"
+        className={`mt-4 rounded-2xl border p-3.5 text-[13px] ${
+          isOutside || isDenied
+            ? 'border-[#F43F5E]/40 bg-[#F43F5E]/15 text-slate-900 dark:text-white'
+            : 'border-[#FBBF24]/40 bg-[#FBBF24]/15 text-slate-900 dark:text-white'
+        }`}
+      >
+        <div className="flex items-start gap-2.5">
+          {isTimeout ? (
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FBBF24]" aria-hidden="true" />
+          ) : (
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#F43F5E]" aria-hidden="true" />
+          )}
+          <div className="space-y-1">
+            <p className="font-medium leading-snug">{outcome.message}</p>
+            {(isDenied || outcome.status === 'dismissed') && (
+              <button
+                type="button"
+                onClick={() => setShowHelpCard((v) => !v)}
+                className="inline-flex min-h-[36px] items-center gap-1 font-medium text-[#5B3FE0] underline dark:text-[#C4B5FD]"
+              >
+                <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                {showHelpCard ? 'Hide browser help' : 'How to enable location on Android & iPhone'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderHelpCard = () => {
+    if (!showHelpCard && outcome?.status !== 'denied' && browserPermission !== 'denied') {
+      return null;
+    }
+
+    return (
+      <div className="mt-3 rounded-2xl border border-black/10 bg-white/65 p-3.5 text-[13px] text-slate-800 dark:border-white/15 dark:bg-white/[0.08] dark:text-white/90">
+        <div className="flex items-center gap-2 font-semibold">
+          <Smartphone className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
+          <span>How to enable location</span>
+        </div>
+        <div className="mt-2 space-y-2 text-[12px] leading-relaxed text-slate-700 dark:text-white/80">
+          <div>
+            <p className="font-semibold text-slate-900 dark:text-white">Android Chrome:</p>
+            <p>
+              Tap the lock or tune icon in the address bar → Permissions → Location → Allow, then tap &ldquo;Allow location&rdquo; again.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900 dark:text-white">iPhone Safari:</p>
+            <p>
+              Open iPhone Settings → Privacy &amp; Security → Location Services → Safari Websites → While Using the App (or tap &ldquo;aA&rdquo; in Safari → Website Settings → Location → Allow).
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="location-modal-title"
+    >
+      <div className="ld-glass-sheet relative flex max-h-[90dvh] w-full max-w-[440px] flex-col overflow-hidden rounded-t-[32px] border border-white/20 p-5 text-slate-900 shadow-2xl sm:rounded-[32px] dark:text-white">
+        {/* Top handle & close */}
+        <div className="mb-2 flex items-center justify-between">
+          {flowStep === 'manual' && selectedState ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedState(null);
+                setSearchQuery('');
+              }}
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-full px-2 text-[14px] font-medium text-slate-700 hover:bg-black/5 dark:text-white/85 dark:hover:bg-white/10"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              All States &amp; UTs
+            </button>
+          ) : flowStep === 'manual' ? (
+            <button
+              type="button"
+              onClick={onOpenExplainer}
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-full px-2 text-[14px] font-medium text-slate-700 hover:bg-black/5 dark:text-white/85 dark:hover:bg-white/10"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Use GPS instead
+            </button>
+          ) : (
+            <span className="text-[12px] font-medium text-slate-600 dark:text-white/70">
+              Location Setup · India
+            </span>
+          )}
+
+          {canDismiss && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close location modal"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-slate-700 hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        {flowStep === 'explainer' ? (
+          <div className="overflow-y-auto pb-2">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5B3FE0]/20 text-[#5B3FE0] dark:bg-[#5B3FE0]/40 dark:text-white">
+              <Compass className="h-7 w-7" aria-hidden="true" />
+            </div>
+
+            <h2
+              id="location-modal-title"
+              className="text-center text-[24px] font-light leading-tight tracking-tight text-slate-900 dark:text-white"
+            >
+              Allow LifeDrop to find blood banks near you
+            </h2>
+
+            <ul className="mt-5 space-y-3 rounded-[24px] border border-black/10 bg-white/60 p-4 text-[14px] dark:border-white/15 dark:bg-white/[0.08]">
+              <li className="flex items-start gap-3">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#34D399]" aria-hidden="true" />
+                <span>Find the nearest verified blood banks sorted by approximate distance</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FBBF24]" aria-hidden="true" />
+                <span>Faster emergency SOS matching when every minute counts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#A78BFA]" aria-hidden="true" />
+                <span>
+                  Only approximate location (~1–2 km) and state/city are stored — resolved offline on your phone
+                </span>
+              </li>
+            </ul>
+
+            {renderOutcomeBanner()}
+            {renderHelpCard()}
+
+            <div className="mt-5 flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={onAllowLocation}
+                disabled={isLocating}
+                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#5B3FE0] px-5 py-3 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(91,63,224,0.45)] transition hover:bg-[#6A4FF0] disabled:opacity-70"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    Detecting your area in India...
+                  </>
+                ) : (
+                  'Allow location'
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenManual}
+                className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/15 bg-white/70 px-5 py-3 text-[15px] font-medium text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:hover:bg-white/[0.16]"
+              >
+                Choose manually
+              </button>
+
+              {!showHelpCard && browserPermission !== 'denied' && (
+                <button
+                  type="button"
+                  onClick={() => setShowHelpCard(true)}
+                  className="mt-1 min-h-[40px] text-center text-[13px] text-slate-600 underline dark:text-white/70"
+                >
+                  Location not prompting? View Android &amp; iPhone help
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <h2
+              id="location-modal-title"
+              className="text-[22px] font-light tracking-tight text-slate-900 dark:text-white"
+            >
+              {selectedState
+                ? `Select city in ${selectedState.name}`
+                : 'Select your state or union territory'}
+            </h2>
+
+            {renderOutcomeBanner()}
+
+            {/* Search bar */}
+            <div className="relative mt-3">
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={
+                  selectedState
+                    ? `Search city in ${selectedState.name}...`
+                    : 'Search any of 28 states or 8 UTs...'
+                }
+                aria-label={
+                  selectedState
+                    ? `Search city in ${selectedState.name}`
+                    : 'Search Indian state or union territory'
+                }
+                className="min-h-[44px] w-full rounded-full border border-black/15 bg-white/75 py-2.5 pr-4 pl-10 text-[14px] text-slate-900 placeholder:text-slate-500 focus:border-[#5B3FE0] focus:outline-none dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:placeholder:text-white/55"
+              />
+            </div>
+
+            {!selectedState && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  onSelectManual(ALL_INDIA_CODE, 'All Cities');
+                }}
+                className="mt-3 flex min-h-[48px] w-full items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2.5 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
+                  All India (National Overview)
+                </span>
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+
+            <div className="mt-3 min-h-[220px] flex-1 space-y-1.5 overflow-y-auto pr-1 pb-2">
+              {selectedState ? (
+                filteredCities.length > 0 ? (
+                  filteredCities.map((city) => (
+                    <button
+                      key={city.name}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedState(null);
+                        onSelectManual(selectedState.code, city.name);
+                      }}
+                      className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/60 px-4 py-2.5 text-left text-[14px] hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.15]"
+                    >
+                      <span className="font-medium">{city.name}</span>
+                      <span className="text-[12px] text-slate-600 dark:text-white/65">
+                        {selectedState.code}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="py-6 text-center text-[13px] text-slate-600 dark:text-white/70">
+                    No matching cities found in {selectedState.name}.
+                  </p>
+                )
+              ) : filteredStates.length > 0 ? (
+                filteredStates.map((st) => (
+                  <button
+                    key={st.code}
+                    type="button"
+                    onClick={() => {
+                      setSelectedState(st);
+                      setSearchQuery('');
+                    }}
+                    className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/60 px-4 py-2.5 text-left text-[14px] hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.15]"
+                  >
+                    <div>
+                      <span className="font-medium">{st.name}</span>
+                      <span className="ml-2 text-[12px] text-slate-600 dark:text-white/60">
+                        · {st.type === 'ut' ? 'Union Territory' : 'State'}
+                      </span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-500 dark:text-white/60" aria-hidden="true" />
+                  </button>
+                ))
+              ) : (
+                <p className="py-6 text-center text-[13px] text-slate-600 dark:text-white/70">
+                  No matching Indian state or union territory found.
+                </p>
+              )}
+            </div>
+
+            {renderHelpCard()}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

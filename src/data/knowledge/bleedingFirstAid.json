@@ -1,0 +1,238 @@
+{
+  "version": "1.0.0",
+  "reviewNotice": {
+    "en": "Content follows standard first-aid and blood bank guidelines and is reviewed by [reviewer name, credential]. Replace this line after review.",
+    "hi": "सामग्री मानक प्राथमिक चिकित्सा और ब्लड बैंक दिशानिर्देशों का पालन करती है और [समीक्षक का नाम, योग्यता] द्वारा समीक्षित है। समीक्षा के बाद इस पंक्ति को बदलें।",
+    "kn": "ವಿಷಯವು ಪ್ರಮಾಣಿತ ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮತ್ತು ರಕ್ತನಿಧಿ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಅನುಸರಿಸುತ್ತದೆ ಮತ್ತು [ವಿಮರ್ಶಕರ ಹೆಸರು, ಅರ್ಹತೆ] ಅವರಿಂದ ಪರಿಶೀಲಿಸಲ್ಪಟ್ಟಿದೆ. ಪರಿಶೀಲನೆಯ ನಂತರ ಈ ಸಾಲನ್ನು ಬದಲಿಸಿ."
+  },
+  "medicalDisclaimer": {
+    "en": "This is first-aid guidance, not a substitute for a doctor.",
+    "hi": "यह प्राथमिक चिकित्सा मार्गदर्शन है, डॉक्टर का विकल्प नहीं है।",
+    "kn": "ಇದು ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮಾರ್ಗದರ್ಶನವಾಗಿದೆ, ವೈದ್ಯರಿಗೆ ಪರ್ಯಾಯವಲ್ಲ."
+  },
+  "emergencyNumbers": [
+    {
+      "number": "108",
+      "label": {
+        "en": "Ambulance",
+        "hi": "एम्बुलेंस",
+        "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್"
+      }
+    },
+    {
+      "number": "112",
+      "label": {
+        "en": "Emergency",
+        "hi": "आपातकालीन",
+        "kn": "ತುರ್ತು ಸಹಾಯ"
+      }
+    },
+    {
+      "number": "104",
+      "label": {
+        "en": "Blood Helpline",
+        "hi": "रक्त हेल्पलाइन",
+        "kn": "ರಕ್ತ ಸಹಾಯವಾಣಿ"
+      }
+    }
+  ],
+  "openingLine": {
+    "en": "Call 108 or 112 now if the bleeding is heavy, spurting, or won't stop.",
+    "hi": "यदि रक्तस्राव तेज है, फव्वारे की तरह बह रहा है, या रुक नहीं रहा है, तो अभी 108 या 112 पर कॉल करें।",
+    "kn": "ರಕ್ತಸ್ರಾವವು ತೀವ್ರವಾಗಿದ್ದರೆ, ಚಿಮ್ಮುತ್ತಿದ್ದರೆ ಅಥವಾ ನಿಲ್ಲದಿದ್ದರೆ ತಕ್ಷಣ 108 ಅಥವಾ 112 ಗೆ ಕರೆ ಮಾಡಿ."
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "icon": "shield",
+      "title": {
+        "en": "Stay safe first",
+        "hi": "पहले अपनी सुरक्षा करें",
+        "kn": "ಮೊದಲು ಸುರಕ್ಷಿತವಾಗಿರಿ"
+      },
+      "body": {
+        "en": "If possible, put on gloves or cover your hands with a clean plastic bag. Avoid touching blood with bare hands.",
+        "hi": "यदि संभव हो, तो दस्ताने पहनें या अपने हाथों को साफ प्लास्टिक बैग से ढक लें। नंगे हाथों से खून छूने से बचें।",
+        "kn": "ಸಾಧ್ಯವಾದರೆ ಕೈಗವಸು ಧರಿಸಿ ಅಥವಾ ಸ್ವಚ್ಛವಾದ ಪ್ಲಾಸ್ಟಿಕ್ ಚೀಲದಿಂದ ಕೈಗಳನ್ನು ಮುಚ್ಚಿ. ಬರಿಗೈಯಿಂದ ರಕ್ತವನ್ನು ಮುಟ್ಟಬೇಡಿ."
+      }
+    },
+    {
+      "id": "step-2",
+      "icon": "hand",
+      "title": {
+        "en": "Press firmly on the wound",
+        "hi": "घाव पर मजबूती से दबाएं",
+        "kn": "ಗಾಯದ ಮೇಲೆ ಗಟ್ಟಿಯಾಗಿ ಒತ್ತಿ"
+      },
+      "body": {
+        "en": "Press directly and firmly on the wound with a clean cloth, gauze, or the cleanest material available. Keep pressing without lifting to look.",
+        "hi": "साफ कपड़े, पट्टी या उपलब्ध सबसे साफ सामग्री से घाव पर सीधा और मजबूत दबाव डालें। देखने के लिए बार-बार कपड़ा न उठाएं।",
+        "kn": "ಸ್ವಚ್ಛವಾದ ಬಟ್ಟೆ ಅಥವಾ ಗಾಜ್‌ನಿಂದ ಗಾಯದ ಮೇಲೆ ನೇರವಾಗಿ ಮತ್ತು ಗಟ್ಟಿಯಾಗಿ ಒತ್ತಿ ಹಿಡಿಯಿರಿ. ನೋಡಲು ಬಟ್ಟೆಯನ್ನು ಎತ್ತದೆ ಒತ್ತುವುದನ್ನು ಮುಂದುವರಿಸಿ."
+      }
+    },
+    {
+      "id": "step-3",
+      "icon": "layers",
+      "title": {
+        "en": "Add cloth — never remove",
+        "hi": "ऊपर और कपड़ा रखें — हटाएं नहीं",
+        "kn": "ಹೆಚ್ಚಿನ ಬಟ್ಟೆ ಸೇರಿಸಿ — ತೆಗೆಯಬೇಡಿ"
+      },
+      "body": {
+        "en": "If blood soaks through, do NOT remove the first cloth. Add more clean cloth on top and keep pressing firmly.",
+        "hi": "यदि खून कपड़े के आर-पार आ जाए, तो पहले कपड़े को न हटाएं। उसके ऊपर और साफ कपड़ा रखें और दबाते रहें।",
+        "kn": "ಬಟ್ಟೆಯ ಮೂಲಕ ರಕ್ತ ಒದ್ದೆಯಾದರೆ ಮೊದಲ ಬಟ್ಟೆಯನ್ನು ತೆಗೆಯಬೇಡಿ. ಅದರ ಮೇಲೆ ಇನ್ನಷ್ಟು ಸ್ವಚ್ಛವಾದ ಬಟ್ಟೆಯನ್ನು ಸೇರಿಸಿ ಒತ್ತಿ ಹಿಡಿಯಿರಿ."
+      }
+    },
+    {
+      "id": "step-4",
+      "icon": "user",
+      "title": {
+        "en": "Lay down & keep warm",
+        "hi": "लिटाएं और गर्म रखें",
+        "kn": "ಮಲಗಿಸಿ ಮತ್ತು ಬೆಚ್ಚಗಿಡಿ"
+      },
+      "body": {
+        "en": "Lay the person down. If there is no suspected head, neck, spine, or leg injury, raise their legs about 30 cm. Keep them warm with a blanket or coat.",
+        "hi": "व्यक्ति को लिटा दें। यदि सिर, गर्दन, रीढ़ या पैर में चोट का संदेह न हो, तो उनके पैर लगभग 30 सेमी ऊपर उठाएं। कंबल या कोट से उन्हें गर्म रखें।",
+        "kn": "ವ್ಯಕ್ತಿಯನ್ನು ಮಲಗಿಸಿ. ತಲೆ, ಕುತ್ತಿಗೆ, ಬೆನ್ನುಮೂಳೆ ಅಥವಾ ಕಾಲಿನ ಗಾಯದ ಶಂಕೆ ಇಲ್ಲದಿದ್ದರೆ ಕಾಲುಗಳನ್ನು ಸುಮಾರು 30 ಸೆಂ.ಮೀ ಎತ್ತಿ. ಕಂಬಳಿಯಿಂದ ಬೆಚ್ಚಗಿಡಿ."
+      }
+    },
+    {
+      "id": "step-5",
+      "icon": "alert",
+      "title": {
+        "en": "Leave stuck objects inside",
+        "hi": "फंसी हुई वस्तु को न निकालें",
+        "kn": "ಸಿಲುಕಿದ ವಸ್ತುವನ್ನು ಹೊರತೆಗೆಯಬೇಡಿ"
+      },
+      "body": {
+        "en": "If something is stuck in the wound, do NOT pull it out. Pad gently around it and press around the object to control bleeding.",
+        "hi": "यदि घाव में कोई वस्तु फंसी हो, तो उसे बाहर न खींचें। उसके चारों ओर गद्दी रखें और वस्तु के आसपास दबाव डालें।",
+        "kn": "ಗಾಯದಲ್ಲಿ ಏನಾದರೂ ಸಿಲುಕಿದ್ದರೆ ಅದನ್ನು ಹೊರಗೆ ಎಳೆಯಬೇಡಿ. ಅದರ ಸುತ್ತಲೂ ಬಟ್ಟೆ ಇಟ್ಟು ವಸ್ತುವಿನ ಸುತ್ತಲಿನ ಭಾಗವನ್ನು ಒತ್ತಿ."
+      }
+    },
+    {
+      "id": "step-6",
+      "icon": "band",
+      "title": {
+        "en": "Tourniquet for severe limb bleed",
+        "hi": "हाथ/पैर से भारी रक्तस्राव पर टूर्निकेट",
+        "kn": "ಕೈ/ಕಾಲಿನ ತೀವ್ರ ರಕ್ತಸ್ರಾವಕ್ಕೆ ಟೂರ್ನಿಕೆಟ್"
+      },
+      "body": {
+        "en": "For life-threatening limb bleeding that will not stop with firm pressure: tie a wide strong cloth 5–7 cm above the wound (never over a joint) and tighten with a stick until bleeding stops. Write down the time and do not loosen it.",
+        "hi": "यदि हाथ या पैर का जानलेवा रक्तस्राव दबाव से न रुके: घाव से 5–7 सेमी ऊपर (जोड़ पर कभी नहीं) चौड़ा मजबूत कपड़ा बांधें और लकड़ी से घुमाकर कसें जब तक खून न रुके। समय लिख लें और इसे ढीला न करें।",
+        "kn": "ಒತ್ತಡದಿಂದಲೂ ನಿಲ್ಲದ ಕೈ ಅಥವಾ ಕಾಲಿನ ಪ್ರಾಣಾಪಾಯಕಾರಿ ರಕ್ತಸ್ರಾವಕ್ಕೆ: ಗಾಯದಿಂದ 5–7 ಸೆಂ.ಮೀ ಮೇಲೆ (ಕೀಲಿನ ಮೇಲೆ ಬೇಡ) ಅಗಲವಾದ ಬಟ್ಟೆಯನ್ನು ಕಟ್ಟಿ ಕೋಲಿನಿಂದ ಬಿಗಿಗೊಳಿಸಿ. ಸಮಯವನ್ನು ಬರೆದಿಡಿ, ಸಡಿಲಗೊಳಿಸಬೇಡಿ."
+      }
+    },
+    {
+      "id": "step-7",
+      "icon": "heart",
+      "title": {
+        "en": "No food/drink & watch for shock",
+        "hi": "खाना-पानी न दें, शॉक पर नज़र रखें",
+        "kn": "ಆಹಾರ/ನೀರು ನೀಡಬೇಡಿ, ಶಾಕ್ ಗಮನಿಸಿ"
+      },
+      "body": {
+        "en": "Do not give food or drink to a seriously injured person. Keep them calm. Watch for pale, cold, sweaty skin, fast weak pulse, or confusion. If unresponsive and not breathing normally, follow the 108/112 operator's CPR instructions.",
+        "hi": "गंभीर रूप से घायल व्यक्ति को कुछ खाने या पीने को न दें। उन्हें शांत रखें। पीली, ठंडी, पसीने वाली त्वचा या तेज कमजोर नब्ज़ देखें। यदि वे बेहोश हों और सामान्य सांस न लें, तो 108/112 ऑपरेटर के सीपीआर निर्देशों का पालन करें।",
+        "kn": "ಗಂಭೀರ ಗಾಯಗೊಂಡವರಿಗೆ ಆಹಾರ ಅಥವಾ ನೀರು ಕೊಡಬೇಡಿ. ಶಾಂತವಾಗಿರಿಸಿ. ಬಿಳಿಚಿಕೊಂಡ, ತಣ್ಣನೆಯ ಬೆವರು ಚರ್ಮ ಅಥವಾ ಗೊಂದಲವನ್ನು ಗಮನಿಸಿ. ಪ್ರತಿಕ್ರಿಯಿಸದಿದ್ದರೆ 108/112 ಆಪರೇಟರ್ ಸಿಪಿಆರ್ ಸೂಚನೆ ಅನುಸರಿಸಿ."
+      }
+    },
+    {
+      "id": "step-8",
+      "icon": "ban",
+      "title": {
+        "en": "No home powders or remedies",
+        "hi": "घाव पर हल्दी, राख या तेल न लगाएं",
+        "kn": "ಗಾಯಕ್ಕೆ ಅರಿಶಿನ, ಬೂದಿ ಅಥವಾ ಎಣ್ಣೆ ಹಚ್ಚಬೇಡಿ"
+      },
+      "body": {
+        "en": "Do NOT apply powders, turmeric, ash, oil, coffee, or other home remedies on a bleeding wound — they cause infection and delay care.",
+        "hi": "बहते हुए घाव पर पाउडर, हल्दी, राख, तेल या कोई घरेलू नुस्खा न लगाएं — इससे संक्रमण होता है।",
+        "kn": "ರಕ್ತಸ್ರಾವವಾಗುವ ಗಾಯದ ಮೇಲೆ ಪುಡಿ, ಅರಿಶಿನ, ಬೂದಿ, ಎಣ್ಣೆ ಅಥವಾ ಇತರ ಮನೆಮದ್ದುಗಳನ್ನು ಹಚ್ಚಬೇಡಿ — ಇದು ಸೋಂಕಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ."
+      }
+    }
+  ],
+  "specialCases": [
+    {
+      "id": "nosebleed",
+      "title": {
+        "en": "Nosebleed",
+        "hi": "नाक से खून बहना",
+        "kn": "ಮೂಗಿನಿಂದ ರಕ್ತಸ್ರಾವ"
+      },
+      "body": {
+        "en": "Sit up and lean forward slightly. Pinch the soft part of the nose continuously for 10–15 minutes. Do NOT tilt the head back.",
+        "hi": "सीधे बैठें और हल्का आगे झुकें। नाक के नरम हिस्से को 10–15 मिनट तक लगातार दबाकर रखें। सिर पीछे न झुकाएं।",
+        "kn": "ನೇರವಾಗಿ ಕುಳಿತು ಸ್ವಲ್ಪ ಮುಂದಕ್ಕೆ ಬಾಗಿ. ಮೂಗಿನ ಮೃದುವಾದ ಭಾಗವನ್ನು 10–15 ನಿಮಿಷಗಳ ಕಾಲ ನಿರಂತರವಾಗಿ ಒತ್ತಿ ಹಿಡಿಯಿರಿ. ತಲೆಯನ್ನು ಹಿಂದಕ್ಕೆ ವಾಲಿಸಬೇಡಿ."
+      }
+    },
+    {
+      "id": "small-cut",
+      "title": {
+        "en": "Cut finger or small wound",
+        "hi": "उंगली कटना या छोटा घाव",
+        "kn": "ಬೆರಳು ಕತ್ತರಿಸುವುದು ಅಥವಾ ಸಣ್ಣ ಗಾಯ"
+      },
+      "body": {
+        "en": "Rinse gently with clean running water, press with a clean cloth until bleeding stops, and cover with a clean bandage.",
+        "hi": "साफ बहते पानी से धोएं, खून रुकने तक साफ कपड़े से दबाएं, और साफ पट्टी से ढकें।",
+        "kn": "ಶುದ್ಧವಾದ ನೀರಿನಿಂದ ತೊಳೆಯಿರಿ, ರಕ್ತ ನಿಲ್ಲುವವರೆಗೆ ಸ್ವಚ್ಛ ಬಟ್ಟೆಯಿಂದ ಒತ್ತಿ ಹಿಡಿದು ಸ್ವಚ್ಛ ಬ್ಯಾಂಡೇಜ್ ಹಾಕಿ."
+      }
+    },
+    {
+      "id": "amputated-part",
+      "title": {
+        "en": "Amputated body part",
+        "hi": "कटा हुआ अंग",
+        "kn": "ಕತ್ತರಿಸಿದ ದೇಹದ ಭಾಗ"
+      },
+      "body": {
+        "en": "Wrap the part in a clean damp cloth, place it inside a sealed plastic bag, and keep that bag on ice (never touching ice directly). Send it to the hospital with the patient.",
+        "hi": "कटे हिस्से को साफ गीले कपड़े में लपेटें, सीलबंद प्लास्टिक बैग में रखें, और उस बैग को बर्फ पर रखें (सीधे बर्फ से न छुए)। इसे मरीज के साथ अस्पताल भेजें।",
+        "kn": "ಕತ್ತರಿಸಿದ ಭಾಗವನ್ನು ಸ್ವಚ್ಛ ಒದ್ದೆ ಬಟ್ಟೆಯಲ್ಲಿ ಸುತ್ತಿ, ಮುಚ್ಚಿದ ಪ್ಲಾಸ್ಟಿಕ್ ಚೀಲದಲ್ಲಿ ಇಟ್ಟು, ಆ ಚೀಲವನ್ನು ಮಂಜುಗಡ್ಡೆಯ ಮೇಲೆ ಇಡಿ (ನೇರವಾಗಿ ಮಂಜುಗಡ್ಡೆ ತಾಗದಂತೆ). ರೋಗಿಯೊಂದಿಗೆ ಆಸ್ಪತ್ರೆಗೆ ಕಳುಹಿಸಿ."
+      }
+    },
+    {
+      "id": "head-spine",
+      "title": {
+        "en": "Head or spine injury",
+        "hi": "सिर या रीढ़ की चोट",
+        "kn": "ತಲೆ ಅಥವಾ ಬೆನ್ನುಮೂಳೆಯ ಗಾಯ"
+      },
+      "body": {
+        "en": "Do NOT move the person unless they are in immediate danger (like fire or traffic). Keep the head and neck still while waiting for 108/112.",
+        "hi": "व्यक्ति को तब तक न हिलाएं जब तक वे किसी तत्काल खतरे में न हों। 108/112 की प्रतीक्षा करते समय सिर और गर्दन को स्थिर रखें।",
+        "kn": "ತಕ್ಷಣದ ಅಪಾಯವಿಲ್ಲದಿದ್ದರೆ ವ್ಯಕ್ತಿಯನ್ನು ಅಲುಗಾಡಿಸಬೇಡಿ. 108/112 ಬರುವವರೆಗೆ ತಲೆ ಮತ್ತು ಕುತ್ತಿಗೆಯನ್ನು ಸ್ಥಿರವಾಗಿಡಿ."
+      }
+    },
+    {
+      "id": "chest-abdomen",
+      "title": {
+        "en": "Chest or abdominal wound",
+        "hi": "छाती या पेट का घाव",
+        "kn": "ಎದೆ ಅಥವಾ ಹೊಟ್ಟೆಯ ಗಾಯ"
+      },
+      "body": {
+        "en": "Do NOT push exposed organs back in. Cover loosely with a clean damp cloth and press gently around the edges, never directly on organs.",
+        "hi": "बाहर आए अंगों को अंदर न धकेलें। साफ गीले कपड़े से हल्के से ढकें और किनारों के चारों ओर दबाएं, अंगों पर सीधे नहीं।",
+        "kn": "ಹೊರಬಂದ ಅಂಗಗಳನ್ನು ಒಳಗೆ ತಳ್ಳಬೇಡಿ. ಸ್ವಚ್ಛ ಒದ್ದೆ ಬಟ್ಟೆಯಿಂದ ಸಡಿಲವಾಗಿ ಮುಚ್ಚಿ ಮತ್ತು ಅಂಚುಗಳ ಸುತ್ತಲೂ ನಿಧಾನವಾಗಿ ಒತ್ತಿ."
+      }
+    },
+    {
+      "id": "pregnancy-bleeding",
+      "title": {
+        "en": "Heavy bleeding in pregnancy or after delivery",
+        "hi": "गर्भावस्था या प्रसव के बाद भारी रक्तस्राव",
+        "kn": "ಗರ್ಭಾವಸ್ಥೆ ಅಥವಾ ಹೆರಿಗೆಯ ನಂತರ ತೀವ್ರ ರಕ್ತಸ್ರಾವ"
+      },
+      "body": {
+        "en": "Call 108 immediately. Help the woman lie down on her left side and keep her warm until emergency medical help arrives.",
+        "hi": "तुरंत 108 पर कॉल करें। महिला को बाईं करवट लिटाने में मदद करें और आपातकालीन मदद आने तक गर्म रखें।",
+        "kn": "ತಕ್ಷಣ 108 ಗೆ ಕರೆ ಮಾಡಿ. ಮಹಿಳೆಯನ್ನು ಎಡಭಾಗಕ್ಕೆ ಮಲಗಿಸಿ ಮತ್ತು ವೈದ್ಯಕೀಯ ನೆರವು ಬರುವವರೆಗೆ ಬೆಚ್ಚಗಿಡಿ."
+      }
+    }
+  ]
+}

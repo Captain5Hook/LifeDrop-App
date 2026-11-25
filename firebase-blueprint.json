@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "StatsGlobal": {
+      "title": "StatsGlobal",
+      "description": "Aggregated global metrics for LifeDrop across India",
+      "type": "object",
+      "properties": {
+        "totalUsers": { "type": "number" },
+        "joinedToday": { "type": "number" },
+        "activeDonorsMonth": { "type": "number" },
+        "requestsFulfilled": { "type": "number" },
+        "banksOnboarded": { "type": "number" },
+        "statesCovered": { "type": "number" },
+        "isDemo": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["totalUsers", "joinedToday", "activeDonorsMonth", "requestsFulfilled", "banksOnboarded", "statesCovered", "isDemo", "updatedAt"]
+    },
+    "StatsState": {
+      "title": "StatsState",
+      "description": "Aggregated per-state and union territory blood group and bank summary",
+      "type": "object",
+      "properties": {
+        "stateCode": { "type": "string", "maxLength": 10, "pattern": "^[A-Z0-9_]+$" },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "totalUsers": { "type": "number" },
+        "joinedToday": { "type": "number" },
+        "banksCount": { "type": "number" },
+        "criticalGroups": { "type": "array" },
+        "stableGroups": { "type": "array" },
+        "bloodGroups": { "type": "object" },
+        "isDemo": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["stateCode", "stateName", "totalUsers", "joinedToday", "banksCount", "criticalGroups", "stableGroups", "bloodGroups", "isDemo", "updatedAt"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "LifeDrop national mission goal and progress",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_-]+$" },
+        "title": { "type": "string", "maxLength": 140 },
+        "current": { "type": "number" },
+        "target": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 32 },
+        "deadline": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["id", "title", "current", "target"]
+    },
+    "DonationDrive": {
+      "title": "DonationDrive",
+      "description": "Upcoming blood donation camp or drive",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_-]+$" },
+        "title": { "type": "string", "maxLength": 140 },
+        "dateLabel": { "type": "string", "maxLength": 60 },
+        "place": { "type": "string", "maxLength": 140 },
+        "city": { "type": "string", "maxLength": 80 },
+        "stateCode": { "type": "string", "maxLength": 10 },
+        "stateName": { "type": "string", "maxLength": 80 },
+        "attendeesCount": { "type": "number" }
+      },
+      "required": ["id", "title", "dateLabel", "place", "city", "stateCode", "stateName", "attendeesCount"]
+    }
+  },
+  "firestore": {
+    "/stats/global": {
+      "schema": { "$ref": "#/entities/StatsGlobal" },
+      "description": "Global aggregated user, donor, request, and bank counters"
+    },
+    "/stats/{stateDocId}": {
+      "schema": { "$ref": "#/entities/StatsState" },
+      "description": "Per-state aggregated stats document (e.g., state_KA, state_MH)"
+    },
+    "/goals/{goalId}": {
+      "schema": { "$ref": "#/entities/Goal" },
+      "description": "Public mission progress goals"
+    },
+    "/drives/{driveId}": {
+      "schema": { "$ref": "#/entities/DonationDrive" },
+      "description": "Public upcoming blood donation drives"
+    }
+  }
+}
