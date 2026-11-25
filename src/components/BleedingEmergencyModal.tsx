@@ -262,8 +262,11 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
             </div>
           )}
 
-          {/* Review attribution & single-config version/review date (A3 / M7) */}
-          <div className="mt-4 space-y-1 rounded-2xl border border-white/10 bg-black/25 p-3 text-[12px] text-white/75">
+          {/* Medical disclaimer & review attribution footer */}
+          <div className="mt-4 space-y-1 rounded-2xl border border-white/10 bg-black/25 p-3 text-[12px] text-white/80">
+            <p className="font-medium text-white">
+              {MEDICAL_REVIEW_CONFIG.disclaimer}
+            </p>
             <p>
               {language === 'en'
                 ? MEDICAL_REVIEW_CONFIG.getReviewLine()

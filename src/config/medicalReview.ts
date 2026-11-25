@@ -4,11 +4,11 @@
  */
 export const MEDICAL_REVIEW_CONFIG = {
   contentVersion: '1.0.0',
-  reviewerName: '[reviewer name, credential]',
+  reviewerName: 'pending',
   reviewedDate: 'Pending review',
-  disclaimer: 'This is first-aid guidance, not a substitute for a doctor.',
+  disclaimer: 'General guidance, not medical advice. Call 108 or 112 in an emergency.',
   getReviewLine(): string {
-    return `Content follows standard first-aid guidance. Reviewed by ${this.reviewerName}. Replace after review.`;
+    return `Content follows standard first-aid guidance. Reviewed by clinician: ${this.reviewerName}.`;
   },
   getVersionAndReviewLine(): string {
     return `Content version: v${this.contentVersion} · Review date: ${this.reviewedDate}`;
