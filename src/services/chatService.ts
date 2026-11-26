@@ -81,6 +81,27 @@ const UNSAFE_DIAGNOSIS_TRIGGERS = [
   'ಪ್ರಜ್ಞೆ ತಪ್ಪಿದೆ',
 ];
 
+const PROMPT_INJECTION_TRIGGERS = [
+  'ignore previous instructions',
+  'ignore all instructions',
+  'ignore the rules',
+  'forget your instructions',
+  'override your rules',
+  'bypass safety',
+  'system prompt',
+  'developer prompt',
+  'reveal your prompt',
+  'print your prompt',
+  'print api key',
+  'gemini_api_key',
+  'jailbreak',
+  'dan mode',
+  'act as admin',
+  'निर्देश भूल',
+  'सिस्टम प्रॉम्प्ट',
+  'ಸೂಚನೆಗಳನ್ನು ನಿರ್ಲಕ್ಷಿಸಿ',
+];
+
 const BLOOD_GROUP_REGEX = /\b(AB|A|B|O)\s*(?:([+-])|(pos(?:itive)?|neg(?:ative)?)\b)/i;
 
 export function detectBleedingEmergency(query: string): boolean {
@@ -91,6 +112,11 @@ export function detectBleedingEmergency(query: string): boolean {
 export function detectUnsafeMedicalQuery(query: string): boolean {
   const lower = query.toLowerCase();
   return UNSAFE_DIAGNOSIS_TRIGGERS.some((kw) => lower.includes(kw));
+}
+
+export function detectPromptInjection(query: string): boolean {
+  const lower = query.toLowerCase();
+  return PROMPT_INJECTION_TRIGGERS.some((kw) => lower.includes(kw));
 }
 
 export function detectCompatibilityIntent(query: string): {
@@ -199,6 +225,16 @@ function buildGuardrailResponse(lang: AppLanguage): string {
   return 'I cannot diagnose medical conditions, prescribe medicines, or handle acute medical emergencies beyond general blood-donation information. If someone has chest pain, trouble breathing, unconsciousness, or severe symptoms, please call 108 or 112 immediately or visit the nearest hospital emergency department.';
 }
 
+function buildPromptInjectionResponse(lang: AppLanguage): string {
+  if (lang === 'hi') {
+    return 'सुरक्षा सूचना: मैं सिस्टम निर्देश बदलने, छिपी सेटिंग या API कुंजी दिखाने के अनुरोध पूरे नहीं कर सकता। मैं केवल रक्तदान पात्रता, ABO/Rh मिलान, रक्तस्राव प्राथमिक चिकित्सा और गोपनीयता में मदद कर सकता हूँ।';
+  }
+  if (lang === 'kn') {
+    return 'ಸುರಕ್ಷತಾ ಸೂಚನೆ: ಸಿಸ್ಟಮ್ ನಿಯಮಗಳನ್ನು ಬದಲಾಯಿಸುವ ಅಥವಾ API ಕೀ ತೋರಿಸುವ ವಿನಂತಿಗಳನ್ನು ನಾನು ಪಾಲಿಸುವುದಿಲ್ಲ. ರಕ್ತದಾನ ಅರ್ಹತೆ, ABO/Rh ಹೊಂದಾಣಿಕೆ ಮತ್ತು ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಬಗ್ಗೆ ಮಾತ್ರ ಕೇಳಿ.';
+  }
+  return 'Safety refusal: I cannot ignore safety rules, reveal internal prompts, or expose configuration/keys. I can only help with blood donation eligibility, ABO/Rh compatibility, bleeding first aid, and DPDP privacy.';
+}
+
 class HybridChatService {
   private workerUrl = (
     (import.meta as { env?: Record<string, string | undefined> }).env
@@ -217,6 +253,20 @@ class HybridChatService {
     const query = rawQuery.trim();
     const lang = detectLanguageFromText(query, preferredLang);
     const id = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    // 0. Prompt-injection & jailbreak refusal (runs offline & online before any routing)
+    if (detectPromptInjection(query)) {
+      return {
+        id,
+        text: buildPromptInjectionResponse(lang),
+        source: 'guardrail',
+        language: lang,
+        bleedingEmergency: false,
+        medicalGuardrailTriggered: true,
+        matchedTopicTitle: 'Security Guardrail',
+        disclaimer: DISCLAIMERS[lang],
+      };
+    }
 
     // 1. Highest priority: Bleeding / trauma triage (always offline & instant)
     if (detectBleedingEmergency(query)) {
