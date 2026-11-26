@@ -200,7 +200,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
               </div>
 
               {/* Progress dots */}
-              <div className="flex items-center justify-center gap-1.5" aria-label="Step progress">
+              <div className="flex items-center justify-center gap-1.5" role="group" aria-label="Step progress">
                 {steps.map((s, idx) => (
                   <button
                     key={s.id}

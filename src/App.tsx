@@ -160,18 +160,18 @@ function LifeDropApp() {
                   <button
                     type="button"
                     onClick={() => void pwa.installApp()}
-                    className="inline-flex min-h-[32px] items-center gap-1 rounded-full bg-[#34D399] px-3 font-semibold text-[#09291E]"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#34D399] px-3.5 font-semibold text-[#09291E]"
                   >
-                    <Download className="h-3 w-3" aria-hidden="true" />
+                    <Download className="h-3.5 w-3.5" aria-hidden="true" />
                     Install
                   </button>
                   <button
                     type="button"
                     onClick={pwa.dismissInstallBanner}
                     aria-label="Dismiss install prompt"
-                    className="flex min-h-[32px] min-w-[32px] items-center justify-center rounded-full hover:bg-white/15"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full hover:bg-white/15"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               </div>

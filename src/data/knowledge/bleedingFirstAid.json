@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
   "reviewNotice": {
-    "en": "Content follows standard first-aid and blood bank guidelines and is reviewed by [reviewer name, credential]. Replace this line after review.",
-    "hi": "सामग्री मानक प्राथमिक चिकित्सा और ब्लड बैंक दिशानिर्देशों का पालन करती है और [समीक्षक का नाम, योग्यता] द्वारा समीक्षित है। समीक्षा के बाद इस पंक्ति को बदलें।",
-    "kn": "ವಿಷಯವು ಪ್ರಮಾಣಿತ ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮತ್ತು ರಕ್ತನಿಧಿ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಅನುಸರಿಸುತ್ತದೆ ಮತ್ತು [ವಿಮರ್ಶಕರ ಹೆಸರು, ಅರ್ಹತೆ] ಅವರಿಂದ ಪರಿಶೀಲಿಸಲ್ಪಟ್ಟಿದೆ. ಪರಿಶೀಲನೆಯ ನಂತರ ಈ ಸಾಲನ್ನು ಬದಲಿಸಿ."
+    "en": "Content follows standard Red Cross and WHO first-aid guidelines. Clinical review pending formal hospital sign-off.",
+    "hi": "सामग्री मानक रेड क्रॉस और डब्ल्यूएचओ प्राथमिक चिकित्सा दिशानिर्देशों का पालन करती है। औपचारिक अस्पताल सत्यापन लंबित है।",
+    "kn": "ವಿಷಯವು ಪ್ರಮಾಣಿತ ರೆಡ್ ಕ್ರಾಸ್ ಮತ್ತು ಡಬ್ಲ್ಯುಎಚ್ಒ ಪ್ರಥಮ ಚಿಕಿತ್ಸಾ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಅನುಸರಿಸುತ್ತದೆ. ಆಸ್ಪತ್ರೆಯ ಅಧಿಕೃತ ಅನುಮೋದನೆ ಬಾಕಿಯಿದೆ."
   },
   "medicalDisclaimer": {
     "en": "This is first-aid guidance, not a substitute for a doctor.",

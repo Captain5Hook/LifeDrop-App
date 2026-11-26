@@ -149,8 +149,8 @@ export function resolveIndiaLocationOffline(lat: number, lng: number): OfflineGe
     }
   }
 
-  // If point is far outside India (e.g., > 450 km from any Indian city inside bounding box, like Tibet/Pakistan/Ocean)
-  if (matchingCodes.length === 0 && minDistance > 420) {
+  // If not inside any state polygon and not within coastal/border margin (< 45 km from an Indian city)
+  if (matchingCodes.length === 0 && minDistance > 45) {
     return {
       inIndia: false,
       state: null,
