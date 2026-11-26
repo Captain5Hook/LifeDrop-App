@@ -188,6 +188,11 @@ bun run build
 
 # Preview production build locally
 bun run preview
+
+# Run typecheck, assistant evaluation, and Firestore rules checks
+bun run lint
+bun run eval:assistant
+bun run test:rules
 ```
 
 ---
