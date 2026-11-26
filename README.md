@@ -1,241 +1,293 @@
-# LifeDrop — Blood Bank Management System
+# LifeDrop
 
-**Zero-cost Indian blood bank locator, 3-tap donor SOS network, and offline trauma first-aid PWA built to save critical minutes.**
+LifeDrop: free, offline-ready blood bank finder and first-aid app for India.
 
-[![CI](https://github.com/OWNER/lifedrop/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/lifedrop/actions/workflows/ci.yml)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x%20Strict-3178C6?logo=typescript&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-Spark%20Free-FFCA28?logo=firebase&logoColor=black)
-![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-5B3FE0)
-![License](https://img.shields.io/badge/License-MIT-34D399)
+`[React 19]` `[TypeScript 7]` `[Firebase Spark]` `[PWA]` `[License: MIT]`
 
-> **Demo data:** user counts and blood bank stock are seeded for demonstration. They are not real.
-
-**Live demo:** https://YOUR-PROJECT.web.app <!-- TODO: Replace YOUR-PROJECT with your deployed Firebase Hosting project ID -->
-
-## Quick Navigation
-[Why LifeDrop](#why-lifedrop) · [Screenshots](#screenshots) · [Features (M1–M7)](#features-checklist-m1--m7) · [GUI Design System](#gui-design-system) · [Run Locally](#run-locally) · [Environment Variables](#environment-variables) · [Performance](#performance--measured-lighthouse) · [Architecture](#architecture) · [Privacy, Safety & DPDP](#privacy--safety) · [Assistant Eval](#assistant-evaluation) · [Known Limitations](#known-limitations) · [Pilot Plan](#pilot-plan) · [Deploy](#deploy-firebase-hosting--rules)
+> **Disclaimer:** Demo project. Not medical advice. First-aid content is pending professional review. Seeded numbers are demo data. In an emergency call 108 or 112.
 
 ---
 
-## Why LifeDrop
+## 1. Project Progress
 
-During trauma or obstetric emergencies in India, patient attendants often lose critical minutes calling outdated blood bank numbers or searching unverified social posts—frequently on slow mobile connections or inside hospital basements with zero signal. LifeDrop unifies an **offline-capable bleeding emergency guide** (`108` / `112` / `104` quick dials and Web Speech Read Aloud), an **All-India 36 State & UT OpenStreetMap blood bank directory**, a **standalone offline ABO/Rh Compatibility Checker**, and a **privacy-safe 3-tap SOS workflow**. Everything runs at zero infrastructure cost on **Firebase Spark** and static PWA hosting so community deployments never face surprise cloud bills.
+**Overall: 68% `[##############------]`**
+
+Formula: `Overall % = sum(Milestone % x Weight)` using rounded milestone percentages across all 7 weighted milestones (`86x0.10 + 75x0.15 + 80x0.15 + 67x0.20 + 75x0.15 + 50x0.15 + 40x0.10 = 68.00%`).
+
+| Milestone | What it covers | Status | Weight | Progress % |
+| :--- | :--- | :--- | :---: | :---: |
+| **M1** | Design system, Home, location flow and Bleeding Emergency | In progress | 10% | 86% (6/7) |
+| **M2** | India map | In progress | 15% | 75% (3/4) |
+| **M3** | Auth, profile, eligibility | In progress | 15% | 80% (4/5) |
+| **M4** | SOS, compatibility, live tracking | In progress | 20% | 67% (4/6) |
+| **M5** | Chatbot and knowledge base | In progress | 15% | 75% (3/4) |
+| **M6** | Bank dashboard and Admin | In progress | 15% | 50% (2/4) |
+| **M7** | PWA, rules tests, deployment | In progress | 10% | 40% (2/5) |
+
+### Milestone Verification Checklist
+
+**M1 — Design system, Home, location flow and Bleeding Emergency (6/7 = 86%)**
+- [x] Dark indigo and light lilac glass theme system (`src/index.css`) with Data Saver reduced-motion toggle
+- [x] Responsive shell (`100dvh` mobile and `430px` desktop frame), bottom navigation, and `44px` minimum tap targets
+- [x] Home screen with global/state counter, All-India toggle, Mission Goals, and Donation Drives tabs (`src/screens/HomeScreen.tsx`)
+- [x] Eight Blood Group Pills (`O+` to `AB-`) with stock health status and map/compatibility shortcuts (`src/components/BloodGroupPills.tsx`)
+- [x] Location flow with explainer dialog, 5 GPS/permission outcome states, coarse lookup, manual 36 State/UT picker, and delete option (`src/hooks/useLocationFlow.ts`, `src/components/LocationModals.tsx`)
+- [x] Offline Bleeding Emergency modal in English, Hindi, and Kannada with `108`, `112`, and `104` call links and Web Speech Read Aloud (`src/components/BleedingEmergencyModal.tsx`)
+- [ ] Professional clinician review and sign-off of first-aid text (`src/config/medicalReview.ts` currently marked `pending`)
+
+**M2 — India map (3/4 = 75%)**
+- [x] Interactive Leaflet + OpenStreetMap India map with 36 State/UT markers (`src/screens/MapScreen.tsx`)
+- [x] State-scoped paginated `/banks` query (`20` banks per page) with local seed/cache fallback (`src/services/bankService.ts`)
+- [x] Blood group, 24x7, Govt/Private, distance radius, and stale-stock filters plus `Near me` sorting and accessible Table view
+- [ ] Live verified hospital and blood bank directory feed replacing seeded demo banks (`src/data/seedBanks.ts`)
+
+**M3 — Auth, profile, eligibility (4/5 = 80%)**
+- [x] Google Sign-In, Email/Password sign-up, and email verification checks (`src/services/authService.ts`)
+- [x] 18+ age verification (`dobYear` + `age18PlusConfirmed`) and DPDP consent tracking, JSON export, consent withdrawal, and account deletion (`src/services/profileService.ts`, `src/components/LegalPrivacyModals.tsx`)
+- [x] Donor profile with availability switch, self-donation log, eligibility ring (`90d`/`120d`), and PNG certificate generator (`src/screens/ProfileScreen.tsx`, `src/utils/certificateGenerator.ts`)
+- [x] Client-side 7-check Eligibility Checker and post-donation care guidance (`src/components/EligibilityChecker.tsx`)
+- [ ] Phone OTP SMS verification (excluded by zero-cost Spark rule; Email/Google only)
+
+**M4 — SOS, compatibility, live tracking (4/6 = 67%)**
+- [x] 3-tap SOS request creation with compatible donor-group expansion (`src/screens/SosScreen.tsx`, `src/services/sosService.ts`)
+- [x] Client-side radius escalation (`5 km -> 15 km -> 50 km -> 250 km`) while the app remains open
+- [x] Live pledge tracking (`pledged`, `en_route`, `arrived`, `withdrawn`) with matched-only requester/donor phone unlock rules
+- [x] Offline ABO/Rh compatibility lookup for Whole Blood, PRBC, Platelets, and Plasma (`src/data/knowledge/compatibility.json`, `src/components/CompatibilityCheckerModal.tsx`)
+- [ ] Background push notifications via FCM when the app is closed (deferred outside free Spark plan)
+- [ ] Server-enforced 30-day SOS auto-expiry and PII purge (`expiresAt` defaults to `+24h` without TTL cleanup yet)
+
+**M5 — Chatbot and knowledge base (3/4 = 75%)**
+- [x] Offline multilingual assistant (`en`, `hi`, `kn`) powered by bundled JSON (`src/data/knowledge/assistantKnowledge.json`, `src/services/chatService.ts`)
+- [x] Severe bleeding triage banner, inline compatibility widget, and prompt-injection / medical-advice safety refusals
+- [x] Automated 40-prompt evaluation suite passing `40/40` (`scripts/eval-assistant.ts`)
+- [ ] Live deployed Cloudflare Worker Gemini fallback (`workers/chat-worker/index.ts` exists; `VITE_CHAT_WORKER_URL` not configured)
+
+**M6 — Bank dashboard and Admin (2/4 = 50%)**
+- [x] Blood bank license application form and verified stock/hours editor (`src/components/BloodBankDashboardModal.tsx`, `src/services/bankAdminService.ts`)
+- [x] Admin verification queue (approve/reject banks), KPI summary with CSV export, and append-only `/auditLogs` (`src/components/AdminPortalModal.tsx`)
+- [ ] Blood bank license document/PDF upload (deferred; no Cloud Storage on Spark)
+- [ ] Bank-side workflow to stamp a donor's profile as `lab-confirmed` after donation
+
+**M7 — PWA, rules tests, deployment (2/5 = 40%)**
+- [x] Workbox PWA service worker, offline precache (`47` entries), `manifest.webmanifest`, and install/update UI banners (`vite.config.ts`, `src/hooks/usePWA.ts`)
+- [x] Static Firestore security rules contract suite (`scripts/firestore-rules.test.ts`, `12/12` passing) and GitHub Actions CI (`.github/workflows/ci.yml`)
+- [ ] Deployed Firebase Hosting HTTPS URL and measured Lighthouse `90+` audit
+- [ ] Active Firebase App Check reCAPTCHA v3 site key (`VITE_FIREBASE_APP_CHECK_SITE_KEY` currently empty)
+- [ ] Live Firestore Emulator allow/deny test run (`npm run test:rules:emulator`, requires JDK 17+)
+
+### Hardening Tracker
+
+| Check | Status | Notes |
+| :--- | :--- | :--- |
+| Layout fits every screen size | Partial | `100dvh` + `430px` shell built; viewport test matrix not measured yet |
+| Code splitting | Done | `React.lazy` screens/modals plus Vite `manualChunks` |
+| PWA service worker and offline first aid | Done | `vite-plugin-pwa` generates `dist/sw.js`; first-aid JSON precached |
+| Medical disclaimer | Done | Displayed in Emergency modal, Chat, SOS, Compatibility, and About |
+| Medical review | Pending | `MEDICAL_REVIEW_CONFIG.reviewerName` is `pending` |
+| Lighthouse 90+ | Not measured yet | Requires deployed HTTPS build |
+| Security rules review | Partial | Static contract audit (`12/12`) passes; live emulator suite not run here |
+| App Check | Partial | Client `initializeAppCheck` wired; site key env var empty |
+| LICENSE | Done | MIT license (2026, Punixx) in `LICENSE` |
+| README | Done | Progress-tracked documentation in `README.md` |
+
+Last updated: 2026-11-26. Update the checklist and milestone percentages after every milestone.
 
 ---
 
-## Screenshots
+## 2. Why LifeDrop
 
-*(Screenshot PNGs under `/docs/` have not been captured yet — see planned slots below.)*
-
-| Home (Dark Theme) | Home (Light Theme) | Location Explainer & Consent |
-| :---: | :---: | :---: |
-| `docs/home-dark.png` *(pending)* | `docs/home-light.png` *(pending)* | `docs/location-explainer.png` *(pending)* |
-
-| Bleeding Emergency (Offline) | India Map (36 States & UTs) |
-| :---: | :---: |
-| `docs/bleeding-emergency.png` *(pending)* | `docs/india-map.png` *(pending)* |
+Across India, patients and families needing emergency blood frequently deal with fragmented directories, out-of-date helpline numbers, and slow word-of-mouth coordination. In severe trauma or obstetric bleeding, delays inside low-connectivity wards or hospital basements make real-time web searches unreliable. LifeDrop brings an offline-ready bleeding emergency guide, a state-scoped blood bank directory, ABO/Rh compatibility lookup, and a privacy-preserving donor SOS flow into one lightweight web app. Designed strictly around zero-cost Spark infrastructure and offline caching, it aims to cut search friction without creating recurring cloud expenses.
 
 ---
 
-## Features Checklist (M1 – M7)
+## 3. What Works Today
 
-- [x] **M1 — Home & Offline First Aid:** 96px thin lifesaver counter, All-India toggle, snap glass sheet (`38%` / `76%`), multilingual bleeding guide (`EN`/`HI`/`KN` + Web Speech Read Aloud), coarse GPS (`~2 km`) + 36 State/UT manual picker, Dark/Light/Data Saver modes.
-- [x] **M2 — All-India State Map:** Interactive Leaflet + OpenStreetMap map with 36 State/UT aggregate markers, paginated blood bank cards (`20/page`), `Near me` distance sorting, filters, and accessible Table view.
-- [x] **M3 — Donor Identity & DPDP Controls:** Google & Email Auth, strict `18+` age gate, DPDP Act 2023 JSON export/consent withdrawal/account deletion, eligibility countdown ring (`90d`/`120d`), badges, and PNG donor certificate export.
-- [x] **M4 — Client-Side Eligibility Checker:** 7 clinical deferral checks, gender-based donation intervals, and post-donation care guidance.
-- [x] **M5 — 3-Tap SOS & Offline ABO/Rh Compatibility:** Radius escalation (`5 km -> 15 km -> 50 km -> State`), matched-donor phone unlock, and a standalone offline Compatibility Checker ([`compatibility.json`](./src/data/knowledge/compatibility.json), zero AI calls).
-- [x] **M6 — Blood Bank & Admin Portals:** Verified blood bank stock editor, donor unit confirmation (`lab-confirmed`), license-based bank verification queue, KPI dashboard, and append-only audit logs.
-- [x] **M7 — Multilingual Assistant & PWA Hardening:** Offline 3-language knowledge base (`40/40` evals), optional Cloudflare Worker Gemini fallback, `vite-plugin-pwa` offline precaching (`47` assets), `firestore.rules` contract suite, and App Check wiring.
-- [ ] **Future Paid-Tier Roadmap (Deferred by Design):** Background FCM push notifications, Cloud Functions rate-limiting, and document/PDF upload remain outside the current zero-cost Spark scope.
-
----
-
-## GUI Design System
-
-Verified across [`src/index.css`](./src/index.css), [`src/App.tsx`](./src/App.tsx), [`src/components/BottomNav.tsx`](./src/components/BottomNav.tsx), and [`src/components/HeroScene.tsx`](./src/components/HeroScene.tsx):
-
-| Layer | Implementation |
-| :--- | :--- |
-| **Theme Gradients** | Night-sky indigo dark gradient (`#1B1740` -> `#6B4FBB`) paired with a lilac light variant (`#ECE9FC` -> `#CFC4F8`). |
-| **Semantic Accents** | Primary violet `#5B3FE0`; clinical stock health tokens: Stable `#34D399` / `#059669`, Low `#FBBF24` / `#D97706`, Critical `#F43F5E` / `#E11D48`. |
-| **Glassmorphism** | Frosted panels (`ld-glass`, `blur(20px)`) and snap bottom sheets (`ld-glass-sheet`, `blur(22px)`) over subtle starlight radial texture (`ld-stars`). |
-| **Typography & Hero** | `Inter` font stack with viewport-scaled extra-light hero counter (`clamp(3rem, min(15vw, 10.5vh), 6rem)` up to `96px`) and tabular numerals. |
-| **Responsive Frame** | `100dvh` full-bleed edge-to-edge on phones (`<=480px`); centered `430px × min(100dvh, 932px)` phone shell (`36px` radius) on tablet/desktop. |
-| **Navigation & Accessibility** | Fixed header + single `ld-scroll-area` with `env(safe-area-inset-top/bottom)` + scalloped `72px` `BottomNav` featuring raised center `+ SOS` FAB, `44px` minimum tap targets, `useVisualViewportHeight()` soft-keyboard sizing, and `.data-saver` / `prefers-reduced-motion` animation reduction. |
+| Feature | Status | Details |
+| :--- | :--- | :--- |
+| Home screen with demo stats and goals | Done | Displays seeded or Firestore `stats/global` + `stats/state_*` counters with `Demo data` chips, Mission Goals, and Donation Drives tabs (`src/screens/HomeScreen.tsx`) |
+| Blood group pills | Done | 8 interactive `O+` to `AB-` pills showing stock status (`Stable`, `Low`, `Critical`) with map filter and compatibility shortcuts (`src/components/BloodGroupPills.tsx`) |
+| Bleeding Emergency offline first aid | Done | Step-by-step bleeding guide in English, Hindi, and Kannada with `tel:108`, `tel:112`, `tel:104` quick dials and Web Speech Read Aloud (`src/components/BleedingEmergencyModal.tsx`) |
+| Location permission flow | Done | Explainer step, 5 outcome states (`granted`, `dismissed`, `denied`, `timeout`, `unavailable` + `outside-india`), coarse `~2 km` lookup, 36 State/UT manual picker, and delete option (`src/hooks/useLocationFlow.ts`) |
+| Light and dark theme | Done | Indigo dark gradient (`#1B1740`–`#6B4FBB`) and lilac light theme toggle persisted locally (`src/hooks/useAppSettings.ts`) |
+| Data Saver mode | Done | Disables Motion animations via `MotionConfig reducedMotion="always"` and reduces visual overhead |
+| Offline Compatibility Checker | Done | Standalone offline matrix for Whole Blood, PRBC, Platelets, and Plasma (`src/components/CompatibilityCheckerModal.tsx`) |
+| India map directory | Partial | Leaflet + OpenStreetMap state/bank UI, filters, and `Near me` sort work; blood bank stock defaults to seeded demo records until verified banks onboard (`src/screens/MapScreen.tsx`) |
+| Auth, 18+ gate, profile, and eligibility | Partial | Google/Email Auth, 18+ age gate, DPDP controls, PNG certificate, and 7-check eligibility tool built; no phone OTP SMS (`src/screens/ProfileScreen.tsx`) |
+| 3-tap SOS and live tracking | Partial | Request creation, client-side radius escalation, and matched phone reveal work while open; no background push or 30-day auto-purge (`src/screens/SosScreen.tsx`) |
+| Multilingual assistant | Partial | Offline EN/HI/KN matcher and safety eval (`40/40`) work locally; optional Cloudflare Gemini worker is not deployed (`src/screens/ChatScreen.tsx`) |
+| Blood bank and Admin portals | Partial | License application, stock editor, Admin queue, and audit logs work; no PDF document upload or bank-triggered lab verification yet |
 
 ---
 
-## Run Locally
+## 4. Screenshots
 
-**Prerequisites:** `Node.js 20+` (or `Bun`) and `npm`.
+Add images to `/docs/screenshots`.
+
+| Screen | Placeholder Path | Status |
+| :--- | :--- | :--- |
+| Home | `docs/screenshots/home.png` | Pending capture |
+| Bleeding Emergency | `docs/screenshots/bleeding-emergency.png` | Pending capture |
+| Location explainer | `docs/screenshots/location-explainer.png` | Pending capture |
+| Map | `docs/screenshots/map.png` | Pending capture |
+
+---
+
+## 5. Tech Stack and Architecture
+
+- **Frontend:** React 19, TypeScript, Tailwind CSS v4, Motion, Lucide React
+- **Backend & Hosting (Firebase Spark Free Plan):** Firebase Authentication (Google + Email/Password), Cloud Firestore with `persistentLocalCache`, Firebase App Check (optional reCAPTCHA v3), Firebase Hosting
+- **Maps & Offline Routing:** Leaflet and OpenStreetMap (`MapScreen` implemented with seeded bank fallback; live verified directory planned)
+- **Optional LLM Proxy:** Cloudflare Worker (`workers/chat-worker/index.ts` source ready for Gemini fallback; live deployment planned)
+- **Zero-Cost Rule:** No Cloud Functions, no Cloud Storage, no paid SMS/OTP, and no paid geocoding or external APIs.
+
+```text
+.
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
+├── public/
+├── scripts/
+├── src/
+│   ├── components/
+│   ├── config/
+│   ├── data/
+│   │   └── knowledge/
+│   ├── hooks/
+│   ├── screens/
+│   ├── services/
+│   └── utils/
+└── workers/
+    └── chat-worker/
+```
+
+---
+
+## 6. Run Locally
+
+Prerequisites: Bun (or Node.js 20+).
 
 ```bash
-# 1. Install dependencies
-npm install
+# Install dependencies
+bun install
 
-# 2. Copy environment template (all keys optional; leave empty for Spark offline-first mode)
+# Create local environment file (optional keys default empty)
 cp .env.example .env
 
-# 3. Start local dev server (http://localhost:3000)
-npm run dev
+# Start development server on port 3000
+bun run dev
 
-# 4. Run quality, safety & rules checks
-npm run lint
-npm run eval:assistant
-npm run test:rules
+# Build production bundle
+bun run build
 
-# 5. Build and preview production bundle
-npm run build
-npm run preview
+# Preview production build locally
+bun run preview
 ```
 
-### Offline & PWA Smoke Checklist
-1. Open the app once online so `vite-plugin-pwa` caches the shell and JSON knowledge packs.
-2. Switch browser/device to **Airplane Mode / Offline** and reload (`Shift+R` / refresh).
-3. Confirm the offline banner renders, **Bleeding Emergency First Aid** (plus Read Aloud & `108`/`112`/`104` links) works, and **Blood Compatibility Checker (Offline · No AI)** computes all 4 components offline.
+---
+
+## 7. Environment Variables
+
+All `VITE_` variables in `.env.example` are optional and shipped empty. `VITE_*` variables and Firebase web metadata (`firebase-applet-config.json`) are **public browser configuration**, not secrets; protect Firebase resources with Firestore Security Rules, Google Cloud HTTP referrer restrictions, and App Check. **Never commit secrets** (such as your Google reCAPTCHA v3 **secret key**, `.env` files, or server-side `GEMINI_API_KEY`) to git or place them in client `VITE_` variables—`GEMINI_API_KEY` belongs only in Cloudflare Worker secrets (`wrangler secret put GEMINI_API_KEY`).
+
+| Name | Required or optional | What it does | Where to get it | Public or secret |
+| :--- | :--- | :--- | :--- | :--- |
+| `VITE_FIREBASE_APP_CHECK_SITE_KEY` | Optional | Enables Firebase App Check reCAPTCHA v3 verification in browser clients | Google reCAPTCHA v3 Admin Console + Firebase App Check | Public (keep reCAPTCHA secret key private) |
+| `VITE_CHAT_WORKER_URL` | Optional | HTTPS endpoint for the Cloudflare Worker used for online Gemini assistant fallback (Milestone 5) | Output URL from `npx wrangler deploy` on `workers/chat-worker/index.ts` | Public (`GEMINI_API_KEY` stays server-side in Worker secrets) |
+
+*(Note: `.env.example` also lists non-Vite `GEMINI_API_KEY` as a reminder for Cloudflare Worker secret setup and optional `APP_URL` for hosting.)*
 
 ---
 
-## Environment Variables
+## 8. Build and Performance
 
-All keys in [`.env.example`](./.env.example) are optional and shipped empty. **Firebase web config** (`firebase-applet-config.json`) is intentionally public browser metadata—it is **not a secret**, so it must be protected via **Firestore Security Rules**, **Google Cloud HTTP Referrer API key restrictions**, and **Firebase App Check (`reCAPTCHA v3`)**. The **Gemini API key must never be placed in the client bundle** (`VITE_*`); it belongs strictly server-side on the optional Cloudflare Worker (`workers/chat-worker/index.ts`).
+Measured directly from the production build (`vite build`):
 
-| Key | Description | Where to Get It | Secret? |
-| :--- | :--- | :--- | :---: |
-| `VITE_FIREBASE_APP_CHECK_SITE_KEY` | Optional public reCAPTCHA v3 site key for Firebase App Check client verification. | Google reCAPTCHA Admin + Firebase Console -> App Check | No (Public `VITE_*`) |
-| `VITE_CHAT_WORKER_URL` | Optional HTTPS URL of your Cloudflare Worker proxy for online Assistant fallback. | Output URL of `npx wrangler deploy` (`workers/chat-worker/index.ts`) | No (Public `VITE_*`) |
-| `APP_URL` | Optional deployed origin URL injected at runtime or Hosting setup. | Firebase Hosting Console | No |
-| `GEMINI_API_KEY` | Google AI Studio key used strictly server-side by the optional Cloudflare Worker. | Google AI Studio -> API Keys (store via `wrangler secret put`) | **Yes (Server Secret)** |
-
----
-
-## Performance & Measured Lighthouse
-
-- **Bundle Splitting:** [`App.tsx`](./src/App.tsx) lazy-loads screens, drawers, and modals (`BleedingEmergencyModal`, `LocationModals`, `SettingsDrawer`, `MapScreen`, `SosScreen`, `ChatScreen`, `ProfileScreen`, `CompatibilityCheckerModal`, `AdminPortalModal`, `BloodBankDashboardModal`) via `React.lazy` + `Suspense`, while [`vite.config.ts`](./vite.config.ts) splits `vendor-react`, `vendor-firebase`, `vendor-leaflet`, `vendor-icons`, and `vendor-motion`.
-- **Measured Production Sizes (`npm run build`):**
-  - Main entry (`dist/assets/index-*.js`): **`96.58 kB`** (**`26.23 kB` gzipped**) — well under the `250 kB` gzipped budget
-  - Core React vendor (`vendor-react`): **`404.71 kB`** (**`123.13 kB` gzipped**)
-  - Firebase SDK chunk (`vendor-firebase`, Auth + Firestore): **`680.21 kB`** (**`203.31 kB` gzipped**)
-  - Lazy Leaflet vendor (`vendor-leaflet`, Map tab only): **`148.60 kB`** (**`43.33 kB` gzipped**)
-  - Lazy Icons (`vendor-icons`): **`39.84 kB`** (**`14.28 kB` gzipped**) · Motion (`vendor-motion`): **`6.43 kB`** (**`2.71 kB` gzipped**)
-  - Total CSS (`index.css`): **`64.71 kB`** (**`10.73 kB` gzipped**) · PWA Precached Assets: **`47 entries` (`2082.92 KiB`)**
-- **Target:** **Lighthouse `90+`** across all categories with **first paint under 3 seconds on 4G**.
-
-### Measured Lighthouse (Fill After Deployed HTTPS Run)
-
-| Category | Target | Measured Score (Mobile 4G) | Notes |
+| Asset / Chunk | Raw Size | Gzip Size | Notes |
 | :--- | :---: | :---: | :--- |
-| Performance | `90+` | — *(pending deployed run)* | Run against Firebase Hosting URL (`https://...`) |
-| Accessibility | `90+` | — *(pending deployed run)* | Verify 44px targets, contrast & ARIA labels |
-| Best Practices | `90+` | — *(pending deployed run)* | Verify HTTPS, headers & console errors |
-| SEO | `90+` | — *(pending deployed run)* | Verify `index.html` title, meta & manifest |
+| Main JS entry (`index-*.js`) | `96.58 kB` | `26.23 kB` | Initial app shell |
+| React vendor (`vendor-react-*.js`) | `404.71 kB` | `123.13 kB` | Core React & DOM |
+| Firebase vendor (`vendor-firebase-*.js`) | `680.21 kB` | `203.31 kB` | Auth + Firestore SDK (triggers Vite >500 kB raw warning) |
+| Leaflet vendor (`vendor-leaflet-*.js`) | `148.60 kB` | `43.33 kB` | Lazy-loaded on Map tab |
+| Icons (`vendor-icons-*.js`) | `39.84 kB` | `14.28 kB` | Lucide React icons |
+| Motion (`vendor-motion-*.js`) | `6.43 kB` | `2.71 kB` | Animation library |
+| App CSS (`index-*.css`) | `64.71 kB` | `10.73 kB` | Tailwind CSS v4 styles |
+| Leaflet CSS (`vendor-leaflet-*.css`) | `15.09 kB` | `6.36 kB` | Lazy-loaded Map styles |
+| Largest lazy screen (`SosScreen-*.js`) | `41.76 kB` | `7.91 kB` | Remaining screens/modals range `0.41 kB`–`41.27 kB` raw |
+
+- **PWA Precache:** `47 entries` (`2082.92 KiB`) generated into `dist/sw.js`.
+- **Lighthouse Scores (Performance, Accessibility, Best Practices, SEO):** `Not measured yet` (target: `90+` across all four categories on a deployed HTTPS build).
+- **Layout Test Matrix:**
+
+| Viewport | Status |
+| :--- | :--- |
+| `360x640` | Not measured yet |
+| `390x844` | Not measured yet |
+| `412x915` | Not measured yet |
+| `768x1024` | Not measured yet |
+| `1440x900` | Not measured yet |
 
 ---
 
-## Architecture
+## 9. Security and Privacy
 
-- **Layered Frontend (`src/`):**
-  - `components/` — Reusable UI primitives, bottom sheet tabs, and lazy modals (`BleedingEmergencyModal`, `LocationModals`, `CompatibilityCheckerModal`, `EligibilityChecker`, etc.)
-  - `screens/` — Top-level views (`HomeScreen`, `MapScreen`, `SosScreen`, `ChatScreen`, `ProfileScreen`)
-  - `services/` — Business logic adapters (`statsService`, `locationService`, `bankService`, `sosService`, `authService`, `profileService`, `compatibilityService`, `chatService`) typed against [`src/services/interfaces.ts`](./src/services/interfaces.ts)
-  - `hooks/` — State orchestration (`useHomeStats`, `useLocationFlow`, `useAuthProfile`, `useAppSettings`, `useOnlineStatus`, `usePWA`, `useVisualViewport`)
-  - `data/` & `config/` — Offline India coordinates/polygons (`indiaLocations.ts`, `indiaStatesGeo.ts`), seeded baselines (`seedStats.ts`), multilingual knowledge JSONs (`bleedingFirstAid.json`, `assistantKnowledge.json`, `compatibility.json`), and review metadata (`medicalReview.ts`)
-- **Firestore Read Budget (Firebase Spark Free Plan — 50,000 reads/day):**
-  - Home reads **1 `stats/global`** + **1 `stats/state_{code}`** aggregate doc instead of scanning user or bank collections.
-  - India Map reads state summaries (`stats/state_*`) and paginates `/banks` per selected state (`20` per page) backed by Firestore persistent local cache.
-- **Offline Geo Resolution:** GPS coordinates resolve locally via [`resolveIndiaLocationOffline`](./src/data/indiaStatesGeo.ts) using simplified state polygons and city centroids with zero external geocoding API calls.
-
----
-
-## Privacy & Safety
-
-- **Coarse Location Only (`~2 km`):** Browser GPS coordinates are resolved offline into state/city + rounded `coarseLat`/`coarseLng` (~2 km) and **exact GPS coordinates are never stored in Firestore or `localStorage`**.
-- **Phone Number Reveal Rules ([`firestore.rules`](./firestore.rules) & [`src/services/sosService.ts`](./src/services/sosService.ts)):**
-  - **Account PII (`/users/{uid}/private/contact`):** Readable **strictly by `request.auth.uid == userId`**. Never exposed on maps, stats, or donor directories.
-  - **Donor Phone -> Requester (`/requests/{requestId}/responses/{donorUid}`):** A volunteer donor's optional `donorPhone` is revealed **only to that request's `requesterUid`** (and the donor themselves) **after the donor explicitly responds/accepts the SOS request**.
-  - **Requester Phone -> Accepted Donor (`/requests/{requestId}/private/contact`):** A requester's optional attendant phone is revealed **only to the `requesterUid` and the matched donor (`acceptedByUid`)** once matched.
-- **RBAC & Guardrails:** Users cannot self-promote `bloodGroupStatus` to `lab-confirmed`, bank owners cannot self-approve `bankApplications`, `auditLogs` are append-only, and unmatched Firestore paths default to deny (`allow read, write: if false`).
-- **No Paid Blood & 18+ Only:** Voluntary unpaid donation only; registration and donor pledges require adult age verification (18–65).
+- **Firestore Rules (`firestore.rules`):**
+  - Default catch-all denies all reads and writes (`allow read, write: if false`).
+  - Public reads cover `/config/{id}`, `/stats/{id}`, `/goals/{id}`, `/drives/{id}`, and state-scoped `/banks/{id}` queries; writes to global config/goals/drives are restricted to verified admins. Signed-in onboarding may only increment `totalUsers` and `joinedToday` by `+1` atomically on `/stats/{id}` when a user profile is created.
+  - User profiles (`/users/{userId}`) and private contact records (`/users/{userId}/private/contact` holding email, phone, and `dobYear`) are readable and writable only by that signed-in owner. Users cannot self-promote `bloodGroupStatus` to `lab-confirmed`.
+  - SOS requests (`/requests/{requestId}`) require sign-in, enforce `status == 'open'` and `radiusKm == 5` on creation, allow claims only from other signed-in users when open, reveal requester phone (`/requests/{requestId}/private/contact`) only to the requester or matched donor (`acceptedByUid`), and reveal volunteer donor responses (`/requests/{requestId}/responses/{donorUid}`) only to that donor and the requester.
+  - Bank applications (`/bankApplications/{uid}`) cannot be self-approved by applicants; verified bank owners may update only `stock`, `open24x7`, `phone`, and `updatedAt` on their own `/banks/{bankId}` doc; `/auditLogs/{logId}` records are append-only (`update` and `delete` denied).
+- **Coarse Location and Deletion:** Browser coordinates are resolved offline into state/city and coarse `~2 km` values (`coarseLat`, `coarseLng`). Raw GPS coordinates are never saved to Firestore or `localStorage`, and saved local location (`lifedrop_location_v1`) can be erased anytime under **Settings -> Delete location data**.
+- **Repository Hygiene:** No secrets exist in the repository; `.gitignore` ignores `.env*` (except `.env.example`), `node_modules/`, `dist/`, and `.firebase/`.
+- **App Check Status:** `Partial` — client initialization (`ReCaptchaV3Provider`) is wired in `src/services/firebase.ts`, awaiting a configured `VITE_FIREBASE_APP_CHECK_SITE_KEY`.
+- **18+ and DPDP Status:**
+  - `Done` (client + rules): Adult age check (`dobYear <= 2008` and `age18PlusConfirmed == true`) and DPDP Act 2023 controls (Consent record `/consents/{uid}`, Privacy/Terms/Grievance tabs in `LegalPrivacyModals`, JSON export, consent withdrawal, and account deletion).
+  - `Planned`: Active public Grievance Officer email (currently placeholder in UI) and automated 30-day SOS data purge.
 
 ---
 
-## DPDP Compliance (India DPDP Act 2023)
+## 10. Firestore Read Budget for the Free Plan
 
-- **Grievance Officer Contact:** `[grievance-officer@example.com]` *(placeholder for public deployment; in-app Grievance tab currently links maintainer contact under **Profile -> DPDP Privacy & Terms -> Grievance**)*.
-- **In-App Privacy Policy & Terms:** Available under **Profile -> DPDP Privacy & Terms** ([`LegalPrivacyModals`](./src/components/LegalPrivacyModals.tsx) tabs: *Privacy (DPDP)*, *Terms of Use*, *Grievance*) and linked during signup consent ([`AuthOnboardingModal`](./src/components/AuthOnboardingModal.tsx)).
-- **Data Export:** **Profile -> Download my data (JSON)** downloads profile, private contact, and consent record (`profileService.exportUserData`).
-- **Consent Withdrawal:** **Profile -> Withdraw consent** sets `/consents/{uid}.withdrawn = true`, disables emergency alerts, and pauses donor availability.
-- **Account & Data Erasure:** **Profile -> Delete my account** permanently deletes `/users/{uid}`, `/users/{uid}/private/contact`, `/consents/{uid}`, clears saved local storage, and removes the Firebase Auth user.
+Designed to stay well within Firebase Spark's `50,000` reads/day quota:
 
----
-
-## Assistant Evaluation
-
-Automated regression suite in [`scripts/eval-assistant.ts`](./scripts/eval-assistant.ts) run on every CI push/PR (`npm run eval:assistant`):
-
-- **Pass Thresholds:**
-  - **Safety cases (`100%` required):** Eval and CI build **fail immediately** if safety drops below **100%**.
-  - **Tool / Intent routing (`>= 90%` required):** Eval and CI build fail if routing accuracy drops below **90%**.
-- **40-Prompt Breakdown by Category & Language (`28 EN`, `6 HI`, `6 KN`):**
-
-| Category | Scope | Count | EN | HI | KN | Pass |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| `stock` | ABO/Rh & stock lookup routing | 6 | 4 | 1 | 1 | 6 / 6 (100%) |
-| `eligibility` | Age, weight, interval & deferral rules | 6 | 4 | 1 | 1 | 6 / 6 (100%) |
-| `sos` | Bleeding triage & 108/112 escalation *(Safety + Routing)* | 6 | 4 | 1 | 1 | 6 / 6 (100%) |
-| `prompt-injection` | Prompt/key extraction & jailbreak refusal *(Safety)* | 8 | 6 | 1 | 1 | 8 / 8 (100%) |
-| `medical-advice` | Diagnosis, prescription & dosage refusal *(Safety)* | 8 | 6 | 1 | 1 | 8 / 8 (100%) |
-| `out-of-scope` | Unrelated queries & DPDP privacy fallback routing | 6 | 4 | 1 | 1 | 6 / 6 (100%) |
-| **Total** | **All 40 prompts (`22` Safety, `24` Routing)** | **40** | **28** | **6** | **6** | **40 / 40 (100%)** |
+- **Aggregated Stats Documents:** Home reads single summary docs (`stats/global` and `stats/state_{code}`) instead of scanning `/users` or `/banks`.
+- **Bundled Knowledge & Geography:** First-aid steps, eligibility rules, compatibility tables, and simplified state/city boundaries ship inside the client bundle (0 Firestore reads).
+- **Persistent Local Cache:** `initializeFirestore` uses `persistentLocalCache` + `persistentMultipleTabManager` so repeat views reuse cached documents offline or on weak networks.
+- **Narrow Queries:** Lists enforce strict bounds (`goals` `limit(8)`, `drives` `limit(10)` scoped by `stateCode`, `banks` paginated `20` per page).
+- **Estimated Reads per Initial Online Home Load:** `1` connection check (`test/connection`) + `2` stats doc reads (`stats/global`, `stats/state_*`) + up to `8` `goals` reads + up to `10` state `drives` reads (max ~`21` reads on a cold cache with live docs; `0` Firestore reads when offline or using local seeds).
 
 ---
 
-## Medical Disclaimer
+## 11. Known Limitations
 
-> Eligibility and first-aid content is general guidance, not medical advice. Final screening is by the blood bank doctor. **Content reviewed by a clinician: PENDING.**
-
-Emergency screens include pinned `tel:108`, `tel:112`, and `tel:104` quick-dial controls and display `"Content version and review date"` from [`src/config/medicalReview.ts`](./src/config/medicalReview.ts).
-
----
-
-## Known Limitations
-
-- **No phone-OTP verification:** Uses Google Sign-In and Email/Password verification only to stay strictly within Firebase Spark free limits (zero SMS cost).
-- **SOS anti-abuse limits on Spark:** Server rate-limiting and duplicate suppression are limited without Cloud Functions; Firebase App Check (`reCAPTCHA v3`) is optional until `VITE_FIREBASE_APP_CHECK_SITE_KEY` is configured.
-- **License-only bank verification:** Bank onboarding reviews statutory license numbers (`licenseNumber` / optional `eraktkoshId`) manually in Admin Portal, with **no document upload yet** (no Cloud Storage on Spark).
-- **30-day SOS request expiry & automatic purge:** **Not implemented yet** (`createSosRequest` sets `expiresAt` to `+24 hours`; live queries filter `status in ['open', 'matched']` until the requester taps *Mark Fulfilled* or *Cancel*, with no scheduled server TTL purge on Spark yet).
-- **Exact location deletion:** Raw browser GPS coordinates are never stored in Firestore or `localStorage`; coordinates resolve offline to coarse ~2 km (`coarseLat`/`coarseLng`), and saved coarse location in `localStorage` (`lifedrop_location_v1`) can be deleted anytime via **Settings -> Delete location data**.
-- **Client-side escalation & no background push:** SOS radius escalation (`5 -> 15 -> 50 -> State`) runs while the app is open; background push notifications are deferred outside the free Spark scope.
-- **Simplified state polygons & demo data:** Border areas near state boundaries may prompt `"Not right? Change"` manual selection; seeded counts and sample banks show **`Demo data`** chips until verified banks onboard.
+- Simplified offline state borders can misclassify users near state boundaries (use **Choose manually** to select your exact state and city).
+- No background push notifications when the app is closed on the Firebase Spark free plan.
+- Seeded user counts and blood bank inventory are demo data (`Demo data` chips shown in UI).
+- Browser geolocation can be blocked inside sandboxed preview iframes (manual state/city selection remains available).
+- First-aid and clinical eligibility copy is pending professional medical review.
+- No phone-OTP SMS verification, no bank license document upload, and no automated 30-day SOS request purge on the free Spark tier.
 
 ---
 
-## Pilot Plan
+## 12. Roadmap
 
-1. **Phase 1 — Single City (Bengaluru):** Launch first in Bengaluru with partner college NSS/blood-donation clubs and licensed local blood banks.
-   - **Pilot Success Bar:** **20 verified blood banks** updating stock weekly, **500 active voluntary donors**, and **median time to first SOS accept under 10 minutes**.
-2. **Phase 2+ — State-by-State Expansion:** Expand across Karnataka districts (Mysuru, Mangaluru, Hubballi-Dharwad) and adjacent metros once pilot benchmarks hold consistently.
+- [ ] **M1 (86%):** Complete clinician medical sign-off on first-aid and eligibility copy (6/7 items done)
+- [ ] **M2 (75%):** Replace seeded demo banks on India Map with live verified blood bank onboarding (3/4 items done)
+- [ ] **M3 (80%):** Core auth, profile, DPDP tools, and eligibility built; phone OTP deferred to Upgrade Path (4/5 items done)
+- [ ] **M4 (67%):** SOS workflow and offline compatibility built; background alerts and 30-day TTL purge pending (4/6 items done)
+- [ ] **M5 (75%):** Offline multilingual chatbot + 40-prompt eval built; deploy Cloudflare Worker for online LLM fallback (3/4 items done)
+- [ ] **M6 (50%):** Bank stock editor and Admin portal built; add license file upload and lab-confirmed donor stamping (2/4 items done)
+- [ ] **M7 (40%):** PWA precache and static rules tests built; deploy Firebase Hosting, enable App Check, run Emulator suite, and measure Lighthouse 90+ (2/5 items done)
 
----
+### Upgrade Path (Beyond Free Spark Tier)
 
-## Deploy (Firebase Hosting + Rules)
-
-> **Note:** **HTTPS is required** in production for browser `navigator.geolocation` and PWA service worker registration. Firebase Hosting (`*.web.app`) provides HTTPS automatically.
-
-```bash
-npm run build
-npx firebase deploy --only firestore:rules,firestore:indexes,hosting
-```
-
-*(Optionally deploy `workers/chat-worker/index.ts` via `npx wrangler deploy` + `npx wrangler secret put GEMINI_API_KEY` for online LLM fallback.)*
+- **Background Push Notifications:** Firebase Cloud Functions + Firebase Cloud Messaging (FCM) to wake nearby donors when an SOS is created or escalated.
+- **Phone OTP Verification:** Firebase Phone Auth SMS verification for SOS requesters and volunteer donors.
+- **Document Storage:** Firebase Cloud Storage for uploading and archiving scanned blood bank statutory licenses.
 
 ---
 
-## Roadmap, Contributing & Governance
+## 13. Contributing and License
 
-- **Roadmap (`M1`–`M7`):** Core client/Spark architecture (`M1`–`M7`) complete; next phase covers clinician content sign-off, Bengaluru pilot onboarding, and optional Blaze Cloud Functions for background FCM push alerts and automated TTL expiry jobs.
-- **Contributing:** See [CONTRIBUTING.md](./CONTRIBUTING.md) and our [Bug Report Template](./.github/ISSUE_TEMPLATE/bug_report.md).
-- **Security Contact:** See [SECURITY.md](./SECURITY.md) (`[security-contact@example.com]`).
+- **Contributing:** See [CONTRIBUTING.md](./CONTRIBUTING.md) and open bug reports using `.github/ISSUE_TEMPLATE/bug_report.md`. Please report security or privacy bugs confidentially per [SECURITY.md](./SECURITY.md). Run `npm run lint`, `npm run eval:assistant`, `npm run test:rules`, and `bun run build` before submitting changes.
 - **License:** [MIT License](./LICENSE) (c) 2026 Punixx.
-- **Author:** **Punixx**, CSE (Data Science), New Horizon College of Engineering, Bengaluru.
+- **Developer:** Punixx, Computer Science and Engineering (Data Science), New Horizon College of Engineering, Bengaluru.
