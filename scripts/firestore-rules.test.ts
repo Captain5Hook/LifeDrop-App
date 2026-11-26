@@ -92,10 +92,18 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'Stats +1 increment guarded by atomic existsAfter(/users/{uid})',
+      name: 'Stats +1 increment guarded by atomic !exists(/users/{uid}) && existsAfter(/users/{uid})',
       fn: () => {
         assert.ok(/incoming\(\)\.totalUsers == existing\(\)\.totalUsers \+ 1/.test(rules));
+        assert.ok(rules.includes('!exists(/databases/$(database)/documents/users/$(request.auth.uid))'));
         assert.ok(rules.includes('existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))'));
+      },
+    },
+    {
+      name: 'Goals and Drives restrict all writes strictly to Admin',
+      fn: () => {
+        assert.ok(/match \/goals\/{goalId}[\s\S]*?allow create, update: if isAdmin\(\)/.test(rules));
+        assert.ok(/match \/drives\/{driveId}[\s\S]*?allow create, update: if isAdmin\(\)/.test(rules));
       },
     },
     {
@@ -257,10 +265,14 @@ async function runEmulatorSuite(): Promise<void> {
         },
       },
       {
-        name: 'Public stats/global read allowed; direct non-admin overwrite denied',
+        name: 'Public stats/global read allowed; anon & non-admin overwrite/goals/drives/isDemo writes denied',
         run: async () => {
           await assertSucceeds(getDoc(doc(anonDb, 'stats', 'global')));
+          await assertFails(setDoc(doc(anonDb, 'stats', 'global'), { totalUsers: 9999 }));
           await assertFails(setDoc(doc(donorDb, 'stats', 'global'), { totalUsers: 9999 }));
+          await assertFails(setDoc(doc(donorDb, 'goals', 'goal_fake'), { title: 'Fake', current: 1, target: 10 }));
+          await assertFails(setDoc(doc(donorDb, 'drives', 'drive_fake'), { title: 'Fake', dateLabel: 'Now', place: 'X', city: 'Y', stateCode: 'KA', stateName: 'Karnataka', attendeesCount: 1 }));
+          await assertSucceeds(setDoc(doc(adminDb, 'goals', 'goal_admin_1'), { title: 'Admin Goal', current: 10, target: 100 }));
         },
       },
       {
@@ -310,6 +322,21 @@ async function runEmulatorSuite(): Promise<void> {
             updatedAt: ts,
           });
           await assertSucceeds(batch.commit());
+          // Post-onboarding replay of stats +1 increment MUST fail
+          await assertFails(
+            updateDoc(doc(donorDb, 'stats', 'global'), {
+              totalUsers: 102,
+              joinedToday: 7,
+              updatedAt: nowIso(),
+            }),
+          );
+          // Normal user cannot mark their profile isDemo: true
+          await assertFails(
+            updateDoc(doc(donorDb, 'users', 'donor_1'), {
+              isDemo: true,
+              updatedAt: nowIso(),
+            }),
+          );
         },
       },
       {

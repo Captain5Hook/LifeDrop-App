@@ -3,9 +3,9 @@ import {
   doc,
   getDoc,
   increment,
-  runTransaction,
   setDoc,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import type { BloodGroup } from '../data/seedStats';
 import type { BiologicalSex } from './eligibilityService';
@@ -213,68 +213,70 @@ class FirestoreProfileService {
     this.setCachedProfile(profile);
 
     if (auth.currentUser && auth.currentUser.uid === params.uid) {
-      await Promise.all([
-        setDoc(doc(db, 'users', params.uid), {
-          uid: profile.uid,
-          displayName: profile.displayName,
-          role: profile.role === 'admin' ? 'donor' : profile.role,
-          bloodGroup: profile.bloodGroup,
-          bloodGroupStatus: profile.bloodGroupStatus,
-          stateCode: profile.stateCode,
-          stateName: profile.stateName,
-          city: profile.city,
-          sex: profile.sex,
-          canDonateNow: profile.canDonateNow,
-          donationsCount: profile.donationsCount,
-          timeline: profile.timeline.slice(0, 30),
-          age18PlusConfirmed: true,
-          consentTimestamp: now,
-          isDemo: false,
-          createdAt: profile.createdAt,
-          updatedAt: now,
-        }),
-        setDoc(doc(db, 'users', params.uid, 'private', 'contact'), privateContact),
-        setDoc(doc(db, 'consents', params.uid), consent),
-      ]);
+      const userRef = doc(db, 'users', params.uid);
+      const contactRef = doc(db, 'users', params.uid, 'private', 'contact');
+      const consentRef = doc(db, 'consents', params.uid);
+
+      const batch = writeBatch(db);
+
+      batch.set(userRef, {
+        uid: profile.uid,
+        displayName: profile.displayName,
+        role: profile.role === 'admin' ? 'donor' : profile.role,
+        bloodGroup: profile.bloodGroup,
+        bloodGroupStatus: profile.bloodGroupStatus,
+        stateCode: profile.stateCode,
+        stateName: profile.stateName,
+        city: profile.city,
+        sex: profile.sex,
+        canDonateNow: profile.canDonateNow,
+        donationsCount: profile.donationsCount,
+        timeline: profile.timeline.slice(0, 30),
+        age18PlusConfirmed: true,
+        consentTimestamp: now,
+        isDemo: false,
+        createdAt: profile.createdAt,
+        updatedAt: now,
+      });
+      batch.set(contactRef, privateContact);
+      batch.set(consentRef, consent);
 
       if (!profile.statsCounted) {
-        await this.incrementSignupStats(params.stateCode);
-        profile.statsCounted = true;
-        this.setCachedProfile(profile);
+        try {
+          const [existingUserSnap, gSnap, sSnap] = await Promise.all([
+            getDoc(userRef),
+            getDoc(doc(db, 'stats', 'global')),
+            params.stateCode && params.stateCode !== 'ALL'
+              ? getDoc(doc(db, 'stats', `state_${params.stateCode}`))
+              : Promise.resolve(null),
+          ]);
+          if (!existingUserSnap.exists()) {
+            if (gSnap.exists()) {
+              batch.update(gSnap.ref, {
+                totalUsers: increment(1),
+                joinedToday: increment(1),
+                updatedAt: now,
+              });
+            }
+            if (sSnap && sSnap.exists()) {
+              batch.update(sSnap.ref, {
+                totalUsers: increment(1),
+                joinedToday: increment(1),
+                updatedAt: now,
+              });
+            }
+            profile.statsCounted = true;
+          }
+        } catch {
+          // Stats docs may not be seeded yet
+        }
       }
+
+      await batch.commit();
+      this.setCachedProfile(profile);
     }
 
     return profile;
-  }
-
-  private async incrementSignupStats(stateCode: string): Promise<void> {
-    const now = new Date().toISOString();
-    try {
-      await runTransaction(db, async (tx) => {
-        const globalRef = doc(db, 'stats', 'global');
-        const gSnap = await tx.get(globalRef);
-        if (gSnap.exists()) {
-          tx.update(globalRef, {
-            totalUsers: increment(1),
-            joinedToday: increment(1),
-            updatedAt: now,
-          });
-        }
-        if (stateCode && stateCode !== 'ALL') {
-          const stRef = doc(db, 'stats', `state_${stateCode}`);
-          const sSnap = await tx.get(stRef);
-          if (sSnap.exists()) {
-            tx.update(stRef, {
-              totalUsers: increment(1),
-              joinedToday: increment(1),
-              updatedAt: now,
-            });
-          }
-        }
-      });
-    } catch {
-      // Stats documents may not be seeded yet or rules may reserve counters
-    }
   }
 
   async updateCanDonateNow(

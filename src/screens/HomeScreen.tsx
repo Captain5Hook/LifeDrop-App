@@ -240,12 +240,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                   {/* Huge thin 96px counter scaled smoothly via clamp() */}
                   <div className="mt-0.5 flex flex-col items-center">
-                    <div
-                      className="text-[clamp(3rem,min(15vw,10.5vh),6rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white"
-                      aria-label={`${displayUsers.toLocaleString('en-IN')} Lifesavers on LifeDrop`}
-                    >
+                    <p className="text-[clamp(3rem,min(15vw,10.5vh),6rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">
                       {effectiveEmpty ? '0' : displayUsers.toLocaleString('en-IN')}
-                    </div>
+                    </p>
 
                     <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-[15px] font-normal text-slate-700 dark:text-white/85">
                       <span>Lifesavers on LifeDrop</span>
@@ -379,14 +376,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     stateName={stateStats.stateName}
                   />
                 ) : (
-                  <Suspense
-                    fallback={
-                      <div className="h-32 animate-pulse rounded-2xl bg-white/10" />
-                    }
-                  >
+                  <Suspense fallback={<HomeSkeleton />}>
                     {sheetTab === 'goals' ? (
                       <div className="space-y-2">
-                        {globalStats.isDemo && (
+                        {(globalStats.isDemo || stateStats.isDemo) && (
                           <div className="flex items-center justify-between text-[12px] text-slate-600 dark:text-white/70">
                             <span>National Mission Targets</span>
                             <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[11px] dark:border-white/20 dark:bg-white/10">
@@ -398,7 +391,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {globalStats.isDemo && (
+                        {(globalStats.isDemo || stateStats.isDemo) && (
                           <div className="flex items-center justify-between text-[12px] text-slate-600 dark:text-white/70">
                             <span>Upcoming Camps</span>
                             <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[11px] dark:border-white/20 dark:bg-white/10">
@@ -419,7 +412,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
               {/* App stats strip */}
               <div className="mt-3.5 space-y-1.5">
-                {globalStats.isDemo && (
+                {(globalStats.isDemo || stateStats.isDemo) && (
                   <div className="flex items-center justify-between px-1 text-[11px] text-slate-600 dark:text-white/70">
                     <span>National Impact Summary</span>
                     <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium dark:border-white/20 dark:bg-white/10">
@@ -427,7 +420,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </span>
                   </div>
                 )}
-                <div
+                <section
                   aria-label="LifeDrop national impact summary"
                   className="grid grid-cols-4 gap-2 rounded-[24px] border border-black/10 bg-white/50 px-2 py-2.5 text-center dark:border-white/15 dark:bg-white/[0.07]"
                 >
@@ -463,7 +456,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       Banks
                     </p>
                   </div>
-                </div>
+                </section>
               </div>
             </section>
           </div>

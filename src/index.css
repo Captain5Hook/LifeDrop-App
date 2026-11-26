@@ -56,6 +56,11 @@
   background: linear-gradient(180deg, var(--ld-bg-start) 0%, var(--ld-bg-end) 100%);
 }
 
+.ld-viewport-h {
+  height: 100vh;
+  height: 100dvh;
+}
+
 .ld-glass {
   background: var(--ld-surface);
   backdrop-filter: blur(20px);

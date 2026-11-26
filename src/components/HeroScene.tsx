@@ -25,6 +25,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
 
   return (
     <div
+      role="img"
       className="relative mx-auto flex w-full max-w-[230px] flex-col items-center justify-center select-none"
       aria-label={statusText}
     >

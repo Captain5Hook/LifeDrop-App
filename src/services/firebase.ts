@@ -31,15 +31,16 @@ try {
 export const db = firestoreInstance;
 export const auth = getAuth(app);
 
-// Optional Firebase App Check (activated only when VITE_FIREBASE_APP_CHECK_SITE_KEY or recaptchaSiteKey is set)
+// Optional Firebase App Check (activated only when VITE_FIREBASE_APP_CHECK_SITE_KEY is set)
 const appCheckSiteKey = (
-  (import.meta as { env?: Record<string, string | undefined> }).env
-    ?.VITE_FIREBASE_APP_CHECK_SITE_KEY ||
-  firebaseConfig.recaptchaSiteKey ||
+  import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY ||
   ''
 ).trim();
 
 if (typeof window !== 'undefined' && appCheckSiteKey.length > 0) {
+  if (import.meta.env.DEV) {
+    (self as unknown as Record<string, unknown>).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
   void import('firebase/app-check')
     .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
       initializeAppCheck(app, {

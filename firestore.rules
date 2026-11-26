@@ -244,6 +244,7 @@ service cloud.firestore {
           && incoming().totalUsers == existing().totalUsers + 1
           && incoming().joinedToday == existing().joinedToday + 1
           && incoming().updatedAt is string && incoming().updatedAt.size() <= 64
+          && !exists(/databases/$(database)/documents/users/$(request.auth.uid))
           && existsAfter(/databases/$(database)/documents/users/$(request.auth.uid)))
       );
       allow delete: if isAdmin() && isValidId(statId);

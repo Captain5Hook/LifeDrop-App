@@ -119,8 +119,8 @@ function LifeDropApp() {
   return (
     <MotionConfig reducedMotion={dataSaver ? 'always' : 'user'}>
       {/* Outer canvas: full edge-to-edge on <=480px phones, centered phone frame on >480px */}
-      <div className="ld-bg-sky ld-stars flex h-[100dvh] w-full items-center justify-center overflow-hidden">
-        <div className="ld-bg-sky ld-stars relative flex h-[100dvh] w-full flex-col overflow-hidden min-[481px]:h-[min(100dvh,932px)] min-[481px]:max-w-[430px] min-[481px]:rounded-[36px] min-[481px]:border min-[481px]:border-white/20 min-[481px]:shadow-[0_28px_80px_rgba(10,6,34,0.65)]">
+      <div className="ld-bg-sky ld-stars ld-viewport-h flex w-full items-center justify-center overflow-hidden">
+        <div className="ld-bg-sky ld-stars ld-viewport-h relative flex w-full flex-col overflow-hidden min-[481px]:h-[min(100dvh,932px)] min-[481px]:max-w-[430px] min-[481px]:rounded-[36px] min-[481px]:border min-[481px]:border-white/20 min-[481px]:shadow-[0_28px_80px_rgba(10,6,34,0.65)]">
           {/* PWA Update Banner (A2) */}
           {pwa.needRefresh && (
             <div
@@ -298,7 +298,15 @@ function LifeDropApp() {
 
           <BottomNav activeTab={activeTab} onSelectTab={setActiveTab} />
 
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+                <div className="ld-bg-sky w-full max-w-[430px] rounded-[32px] border border-white/15">
+                  <HomeSkeleton />
+                </div>
+              </div>
+            }
+          >
             {locationFlow.flowStep !== 'closed' && (
               <LazyLocationModals
                 flowStep={locationFlow.flowStep}

@@ -48,6 +48,14 @@ export function useAppSettings() {
       root.classList.remove('dark');
     }
 
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute(
+        'content',
+        settings.theme === 'dark' ? '#1B1740' : '#ECE9FC',
+      );
+    }
+
     if (settings.dataSaver) {
       root.classList.add('data-saver');
     } else {

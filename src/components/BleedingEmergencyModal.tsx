@@ -193,9 +193,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                 </p>
 
                 <p className="mt-3 border-t border-white/10 pt-2.5 text-[12px] font-medium text-white/75">
-                  {language === 'en'
-                    ? MEDICAL_REVIEW_CONFIG.disclaimer
-                    : bleedingData.medicalDisclaimer[language]}
+                  {bleedingData.medicalDisclaimer[language]}
                 </p>
               </div>
 
@@ -253,9 +251,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                     {sc.body[language]}
                   </p>
                   <p className="mt-2 text-[12px] font-medium text-white/70">
-                    {language === 'en'
-                      ? MEDICAL_REVIEW_CONFIG.disclaimer
-                      : bleedingData.medicalDisclaimer[language]}
+                    {bleedingData.medicalDisclaimer[language]}
                   </p>
                 </div>
               ))}
@@ -285,7 +281,7 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
               <a
                 key={item.number}
                 href={`tel:${item.number}`}
-                className="flex min-h-[48px] items-center justify-center gap-1 rounded-full bg-[#F43F5E] px-2 py-2 text-[13px] font-semibold text-white shadow-sm transition active:scale-95"
+                className="flex min-h-[48px] items-center justify-center gap-1 rounded-full bg-[#F43F5E] px-1.5 py-2 text-[clamp(11px,3.2vw,13px)] font-semibold text-white shadow-sm transition active:scale-95"
               >
                 <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span className="whitespace-nowrap">Call {item.number}</span>
