@@ -92,6 +92,13 @@ Formula: `Overall % = sum(Milestone % x Weight)` using rounded milestone percent
 
 Last updated: 2026-11-26. Update the checklist and milestone percentages after every milestone.
 
+### Recent Audit Fixes (2026-11-26)
+- `vite.config.ts`: Split Firebase into `vendor-firebase-auth`, `vendor-firebase-firestore`, and `vendor-firebase-core` chunks to eliminate monolithic bundle bloat.
+- `src/data/indiaStatesGeo.ts`: Tightened the offline fallback border margin from `420 km` to `45 km` so out-of-country coordinates resolve cleanly as `inIndia: false`.
+- `src/data/knowledge/bleedingFirstAid.json`: Replaced reviewer placeholders across English, Hindi, and Kannada with Red Cross and WHO attribution pending hospital sign-off.
+- `src/App.tsx`: Raised PWA install banner Install and Dismiss button touch targets to `44px` minimum.
+- `src/components/BleedingEmergencyModal.tsx`: Added `role="group"` alongside `aria-label="Step progress"` on step indicator dots.
+
 ---
 
 ## 2. Why LifeDrop
