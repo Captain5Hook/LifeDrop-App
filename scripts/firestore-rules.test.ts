@@ -22,7 +22,7 @@ import {
 } from 'firebase/firestore';
 
 const PROJECT_ID = 'lifedrop-rules-test';
-const ADMIN_EMAIL = 'punithreddy9010@gmail.com';
+const ADMIN_TEST_EMAIL = 'admin@example.com';
 const RULES_PATH = path.resolve(process.cwd(), 'firestore.rules');
 const BLUEPRINT_PATH = path.resolve(process.cwd(), 'firebase-blueprint.json');
 const INDEXES_PATH = path.resolve(process.cwd(), 'firestore.indexes.json');
@@ -62,18 +62,34 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'No wildcard allow read/write: if true or blanket isSignedIn() list',
+      name: 'No root wildcard read/write allow and no blanket list on private collections',
       fn: () => {
-        assert.equal(/allow\s+(read|write)\s*:\s*if\s+true\s*;/.test(rules), false);
-        assert.equal(/allow\s+list\s*:\s*if\s+isSignedIn\(\)\s*;/.test(rules), false);
+        assert.equal(
+          /match \/\{document=\*\*\}\s*\{[^}]*allow\s+(read|write)\s*:\s*if\s+true/.test(rules),
+          false,
+        );
+        assert.equal(/allow\s+write\s*:\s*if\s+true\s*;/.test(rules), false);
+        assert.equal(/match \/users\/[\s\S]*?allow\s+list\s*:\s*if\s+isSignedIn\(\)\s*;/.test(rules), false);
+        assert.equal(/match \/consents\/[\s\S]*?allow\s+list\s*:\s*if\s+isSignedIn\(\)\s*;/.test(rules), false);
+        assert.equal(/match \/requests\/\{requestId\}[\s\S]*?allow\s+list\s*:\s*if\s+isSignedIn\(\)\s*;/.test(rules), false);
       },
     },
     {
-      name: 'Admin requires verified email and explicit email/admins registry',
+      name: 'Admin requires verified email and /admins/{uid} document with zero hardcoded email literals',
       fn: () => {
         assert.ok(/function isVerifiedUser\(\)/.test(rules));
         assert.ok(/request\.auth\.token\.email_verified == true/.test(rules));
-        assert.ok(rules.includes(ADMIN_EMAIL));
+        assert.ok(
+          /function isAdmin\(\)\s*\{\s*return isVerifiedUser\(\) && exists\(\/databases\/\$\(database\)\/documents\/admins\/\$\(request\.auth\.uid\)\);\s*\}/.test(
+            rules,
+          ),
+        );
+        assert.ok(/match \/admins\/\{uid\}/.test(rules));
+        assert.equal(
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(rules),
+          false,
+          'firestore.rules must not contain any hardcoded email address literal',
+        );
       },
     },
     {
@@ -93,26 +109,41 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'Stats, Goals, and Drives allow public read only with ZERO client writes',
+      name: 'Stats, Goals, and Drives allow public read only and deny create, update, and delete',
       fn: () => {
-        assert.ok(/match \/stats\/{statId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
-        assert.ok(/match \/goals\/{goalId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
-        assert.ok(/match \/drives\/{driveId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
+        for (const colPath of ['/stats/{statId}', '/goals/{goalId}', '/drives/{driveId}']) {
+          const match = rules.match(
+            new RegExp(`match ${colPath.replace(/[/{}]/g, '\\$&')}\\s*\\{([\\s\\S]*?)\\}`),
+          );
+          assert.ok(match, `Missing rule block for ${colPath}`);
+          const block = match[1];
+          assert.ok(/allow read:\s*if true;/.test(block), `${colPath} must allow public read`);
+          assert.ok(/allow write:\s*if false;/.test(block), `${colPath} must deny all client writes (create, update, delete)`);
+          assert.equal(/allow (create|update|delete):\s*if\s+true/.test(block), false);
+        }
       },
     },
     {
-      name: 'SOS private contact strictly gated to requesterUid or acceptedByUid',
+      name: 'Banks list requires sign-in and stock updates require verified ownerUid or Admin',
       fn: () => {
-        assert.ok(rules.includes('.data.requesterUid == request.auth.uid ||'));
-        assert.ok(rules.includes('.data.acceptedByUid == request.auth.uid'));
-      },
-    },
-    {
-      name: 'Banks allow stock updates ONLY by verified ownerUid or Admin',
-      fn: () => {
+        assert.ok(/match \/banks\/\{bankId\}[\s\S]*?allow get: if isSignedIn\(\) && isValidId\(bankId\);[\s\S]*?allow list: if isSignedIn\(\);/.test(rules));
         assert.ok(/existing\(\)\.verified == true/.test(rules));
         assert.ok(/existing\(\)\.ownerUid == request\.auth\.uid/.test(rules));
         assert.ok(/affectedKeys\(\)\.hasOnly\(\['stock', 'open24x7', 'phone', 'updatedAt'\]\)/.test(rules));
+      },
+    },
+    {
+      name: 'SOS list checks open/matched status, donor acceptance requires isVerifiedUser() and profile, and contact reveals post-match',
+      fn: () => {
+        assert.ok(/match \/requests\/\{requestId\}[\s\S]*?allow list: if isSignedIn\(\) && resource\.data\.status in \['open', 'matched'\];/.test(rules));
+        assert.ok(
+          /existing\(\)\.requesterUid != request\.auth\.uid[\s\S]*?existing\(\)\.status == 'open'[\s\S]*?&& isVerifiedUser\(\)[\s\S]*?&& exists\(\/databases\/\$\(database\)\/documents\/users\/\$\(request\.auth\.uid\)\)/.test(
+            rules,
+          ),
+          'SOS donor update branch must require isVerifiedUser() and existing user profile',
+        );
+        assert.ok(rules.includes('.data.requesterUid == request.auth.uid ||'));
+        assert.ok(rules.includes('.data.acceptedByUid == request.auth.uid'));
       },
     },
     {
@@ -123,16 +154,23 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'AuditLogs are strictly append-only (update/delete forbidden)',
+      name: 'AuditLogs require admin or bank-role user on create and forbid update/delete',
       fn: () => {
         assert.ok(/match \/auditLogs\/{logId}/.test(rules));
+        assert.ok(/\(isAdmin\(\) && incoming\(\)\.actorRole == 'admin'\)/.test(rules));
+        assert.ok(
+          /incoming\(\)\.actorRole == 'bank'[\s\S]*?exists\(\/databases\/\$\(database\)\/documents\/users\/\$\(request\.auth\.uid\)\)[\s\S]*?get\(\/databases\/\$\(database\)\/documents\/users\/\$\(request\.auth\.uid\)\)\.data\.role == 'bank'/.test(
+            rules,
+          ),
+        );
         assert.ok(/allow update, delete: if false;/.test(rules));
       },
     },
     {
-      name: 'All 12 Firestore blueprint collections & subcollections exist in rules',
+      name: 'All 12+ Firestore blueprint collections & subcollections exist in rules',
       fn: () => {
         const expectedMatchers = [
+          '/admins/{uid}',
           '/stats/{statId}',
           '/goals/{goalId}',
           '/drives/{driveId}',
@@ -234,6 +272,10 @@ async function runEmulatorSuite(): Promise<void> {
         updatedAt: nowIso(),
         isDemo: false,
       });
+      await setDoc(doc(db, 'admins', 'admin_1'), {
+        role: 'admin',
+        createdAt: nowIso(),
+      });
     });
 
     const anonDb = testEnv.unauthenticatedContext().firestore();
@@ -247,7 +289,7 @@ async function runEmulatorSuite(): Promise<void> {
       .authenticatedContext('bank_owner_1', { email: 'bank1@example.com', email_verified: true })
       .firestore();
     const adminDb = testEnv
-      .authenticatedContext('admin_1', { email: ADMIN_EMAIL, email_verified: true })
+      .authenticatedContext('admin_1', { email: ADMIN_TEST_EMAIL, email_verified: true })
       .firestore();
 
     const tests: Array<{ name: string; run: () => Promise<void> }> = [

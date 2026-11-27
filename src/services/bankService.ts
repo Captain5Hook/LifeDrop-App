@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -157,9 +158,16 @@ class FirestoreBankService {
       user = cred.user;
     }
 
-    if (!user?.emailVerified || user.email !== 'punithreddy9010@gmail.com') {
+    if (!user?.emailVerified) {
       throw new Error(
-        'Only verified LifeDrop Admin can write demo seed data to Firestore.',
+        'Verified email sign-in is required to write demo seed data to Firestore.',
+      );
+    }
+
+    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+    if (!adminSnap.exists()) {
+      throw new Error(
+        'Only verified LifeDrop Admins (registered in /admins) can write demo seed data to Firestore.',
       );
     }
 

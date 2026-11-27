@@ -6,6 +6,8 @@ LifeDrop: free, offline-ready blood bank finder and first-aid app for India.
 
 > **Disclaimer:** Demo project. Not medical advice. First-aid content is pending professional review. Seeded numbers are demo data. In an emergency call 108 or 112.
 
+Live demo: Not deployed yet
+
 ---
 
 ## 1. Project Progress
@@ -221,11 +223,11 @@ Measured outputs from commands run against the current repository:
 | Assistant safety & routing eval (`bun run eval:assistant`) | `40/40` passed | `22/22` safety refusals (`100%`), `24/24` routing (`100%`) |
 | Firestore rules static contract (`bun run test:rules`) | `12/12` passed | Covers default deny, owner isolation, zero client writes on `/stats`, `/goals`, `/drives`, and schema guards |
 | Live Firestore Emulator tests (`npm run test:rules:emulator`) | **Not verified** | Requires JDK 17+ locally (`java` not installed in container) |
-| Production build (`bun run build`) | Built in `1.35s`; PWA precache `52 entries` (`2065.52 KiB`) | `index-*.js`: `86.31 kB` (`22.02 kB` gzip); `vendor-react`: `404.71 kB` (`123.13 kB` gzip); `vendor-firebase-core`: `49.13 kB` (`18.40 kB` gzip); `vendor-firebase-auth`: `110.21 kB` (`33.27 kB` gzip); `vendor-firebase-firestore`: `500.55 kB` (`145.76 kB` gzip); `vendor-leaflet`: `148.60 kB` (`43.33 kB` gzip); CSS: `65.09 kB` (`10.83 kB` gzip); `manifest.json`: `0.61 kB` (`0.33 kB` gzip) |
+| Production build (`bun run build`) | Built in `1.33s`; PWA precache `52 entries` (`2065.99 KiB`) | `index-*.js`: `86.39 kB` (`22.05 kB` gzip); `vendor-react`: `404.71 kB` (`123.13 kB` gzip); `vendor-firebase-core`: `49.13 kB` (`18.40 kB` gzip); `vendor-firebase-auth`: `110.21 kB` (`33.27 kB` gzip); `vendor-firebase-firestore`: `500.55 kB` (`145.76 kB` gzip); `vendor-leaflet`: `148.60 kB` (`43.33 kB` gzip); CSS: `65.11 kB` (`10.83 kB` gzip); `manifest.json`: `0.61 kB` (`0.33 kB` gzip) |
 | Playwright layout & offline SW checks | `9/9` matrix checks passed (`0` console errors) | Tested `360x640`, `375x667`, `390x844`, `412x915`, `430x932`, `768x1024`, `1440x900`, `844x390` landscape, `130%` text size, `360x360` keyboard shrink, and Chromium offline SW reload |
 | Lighthouse mobile audit | **Not measured yet** | Run `npx lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo` locally against `npm run preview` |
 
-*(Note: `vendor-firebase-firestore` emits Vite's standard `> 500 kB` raw chunk notice at `500.55 kB` raw / `145.76 kB` gzip.)*
+vendor-firebase-firestore is 500.55 kB raw (145.76 kB gzip), slightly above Vite's 500 kB warning threshold.
 
 ---
 
@@ -233,11 +235,12 @@ Measured outputs from commands run against the current repository:
 
 - **Firestore Rules (`firestore.rules`):**
   - Default catch-all denies every operation (`allow read, write: if false`).
-  - Public read-only collections are strictly limited to `/stats/{statId}`, `/goals/{goalId}`, `/drives/{driveId}` (`allow create, update, delete: if false` — no client stat or leaderboard tampering), plus single-doc `/test/connection` `get`.
-  - `/config/{configId}` and state-scoped `/banks/{bankId}` reads require sign-in; bank updates allow only `stock`, `open24x7`, `phone`, `updatedAt` by the verified `ownerUid` or Admin.
+  - Admin access requires a verified email and a document in the `/admins` collection created manually by the project owner; no email address is hardcoded.
+  - Public read-only collections (`/stats/{statId}`, `/goals/{goalId}`, `/drives/{driveId}`) allow reads (`allow read: if true`) and deny all writes (`allow write: if false`), plus single-doc `/test/connection` `get`.
+  - `/config/{configId}` reads require sign-in; `/banks/{bankId}` allows signed-in `get` and `list`, while stock updates allow only `stock`, `open24x7`, `phone`, `updatedAt` by the verified `ownerUid` or Admin.
   - User profiles (`/users/{userId}`) and private contact records (`/users/{userId}/private/contact`) are strictly owner-only, enforce `18+` (`dobYear <= 2008`), block `bloodGroupStatus` self-promotion, and block `isDemo: true` spoofing.
-  - SOS requests (`/requests/{requestId}`) reveal `/private/contact` phone only to the requester or matched donor (`acceptedByUid`); donor responses allow only the donor and requester.
-  - Bank applications (`/bankApplications/{uid}`) cannot self-approve, and `/auditLogs/{logId}` are append-only (`update` and `delete` denied).
+  - SOS requests (`/requests/{requestId}`) scope `list` queries to `isSignedIn()` with `status in ['open', 'matched']`, require a verified signed-in user with an existing `/users/{uid}` profile to accept an open SOS, and reveal `/private/contact` phone only to the requester or matched donor (`acceptedByUid`); donor responses allow only the donor and requester.
+  - Bank applications (`/bankApplications/{uid}`) cannot self-approve, and `/auditLogs/{logId}` are append-only (`update` and `delete` denied), permitting `actorRole == 'bank'` only for signed-in users whose `/users/{uid}` profile has `role == 'bank'` and `actorRole == 'admin'` only for Admins.
 - **Coarse Location and Deletion:** Browser coordinates resolve offline against simplified state boundaries and city centroids (`src/data/indiaStatesGeo.ts`), rounding to `~2 km` (`0.02°`). Raw GPS coordinates are never stored in Firestore or `localStorage`, and `"Delete my location data"` in Settings clears `lifedrop_location_v1`.
 - **Repository Hygiene:** `.gitignore` ignores `.env*` (keeping `!.env.example`), `node_modules/`, `dist/`, and `.firebase/`. Secret scan across `src/`, `public/`, `workers/`, `scripts/`, and `.env.example` found zero secrets. (`bun audit` reports 4 transitive advisories in upstream `firebase`/`workbox-build` dependencies: `@grpc/grpc-js`, `glob`, `minimatch`.)
 - **App Check & DPDP Status:** App Check (`ReCaptchaV3Provider`) is `Partial` (wired conditionally when `VITE_FIREBASE_APP_CHECK_SITE_KEY` is provided). Client + rules 18+ and DPDP controls (`/consents/{uid}`, JSON export, consent withdrawal, deletion) are `Done`; Grievance Officer contact customization and 30-day SOS auto-purge remain `Planned`.
@@ -264,7 +267,8 @@ Designed to stay well within Firebase Spark's `50,000` reads/day quota:
 - Browser geolocation can be blocked inside sandboxed iframes (explainer falls back to manual selection).
 - First-aid instructions are pending formal medical and native Hindi/Kannada clinical sign-off.
 - No phone-OTP SMS verification, bank PDF license storage, or automated 30-day SOS auto-purge on the free Spark tier.
-- Live Firestore rules emulator verification (`npm run test:rules:emulator`) and mobile Lighthouse metrics (`90+`) are not verified yet in this environment.
+- Any verified, signed-in user with a profile can accept an open SOS request; stricter donor vetting is planned. Firestore rules are checked by static tests; the live emulator suite needs JDK 17+ and has not been run here.
+- Mobile Lighthouse metrics (`90+`) are not measured yet in this environment.
 
 ---
 

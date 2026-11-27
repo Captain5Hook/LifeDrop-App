@@ -18,6 +18,7 @@ export function useAuthProfile() {
   const [privateContact, setPrivateContact] =
     useState<PrivateContactData | null>(null);
   const [consent, setConsent] = useState<ConsentRecord | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [devRoleOverride, setDevRoleOverrideState] = useState<UserRole | null>(
     () => {
       try {
@@ -37,13 +38,17 @@ export function useAuthProfile() {
     },
   );
 
-  const loadProfileForUser = useCallback(async (uid: string) => {
+  const loadProfileForUser = useCallback(async (uid: string, emailVerified: boolean) => {
     setProfileLoading(true);
     try {
-      const res = await profileService.getUserProfile(uid);
+      const [res, adminFlag] = await Promise.all([
+        profileService.getUserProfile(uid),
+        emailVerified ? profileService.checkIsAdmin(uid) : Promise.resolve(false),
+      ]);
       setProfile(res.profile);
       setPrivateContact(res.privateContact);
       setConsent(res.consent);
+      setIsAdminUser(adminFlag);
     } finally {
       setProfileLoading(false);
     }
@@ -54,11 +59,12 @@ export function useAuthProfile() {
       setUser(nextUser);
       setAuthLoading(false);
       if (nextUser) {
-        void loadProfileForUser(nextUser.uid);
+        void loadProfileForUser(nextUser.uid, Boolean(nextUser.emailVerified));
       } else {
         setProfile(null);
         setPrivateContact(null);
         setConsent(null);
+        setIsAdminUser(false);
       }
     });
     return unsub;
@@ -71,7 +77,7 @@ export function useAuthProfile() {
     } catch {
       // Ignore reload failure when offline
     }
-    await loadProfileForUser(user.uid);
+    await loadProfileForUser(user.uid, Boolean(user.emailVerified));
   }, [user, loadProfileForUser]);
 
   const setDevRoleOverride = useCallback((role: UserRole | null) => {
@@ -131,6 +137,7 @@ export function useAuthProfile() {
     setProfile(null);
     setPrivateContact(null);
     setConsent(null);
+    setIsAdminUser(false);
   }, []);
 
   const deleteAccount = useCallback(async () => {
@@ -141,13 +148,11 @@ export function useAuthProfile() {
     setProfile(null);
     setPrivateContact(null);
     setConsent(null);
+    setIsAdminUser(false);
   }, [user]);
 
   const effectiveRole: UserRole | null =
-    devRoleOverride ??
-    (user?.email?.toLowerCase() === 'punithreddy9010@gmail.com'
-      ? 'admin'
-      : profile?.role ?? null);
+    devRoleOverride ?? (isAdminUser ? 'admin' : profile?.role ?? null);
 
   const needsOnboarding = Boolean(user && !profileLoading && !profile);
 
@@ -158,6 +163,7 @@ export function useAuthProfile() {
     profile,
     privateContact,
     consent,
+    isRealAdmin: isAdminUser,
     effectiveRole,
     devRoleOverride,
     needsOnboarding,

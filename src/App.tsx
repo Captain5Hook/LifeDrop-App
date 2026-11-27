@@ -437,10 +437,7 @@ function LifeDropApp() {
                 onClose={() => setIsAdminPortalOpen(false)}
                 userUid={authProfile.user?.uid ?? 'preview_admin_user'}
                 userEmail={authProfile.user?.email ?? null}
-                isRealAdmin={
-                  Boolean(authProfile.user?.emailVerified) &&
-                  authProfile.user?.email === 'punithreddy9010@gmail.com'
-                }
+                isRealAdmin={authProfile.isRealAdmin}
                 isOnline={isOnline}
               />
             )}

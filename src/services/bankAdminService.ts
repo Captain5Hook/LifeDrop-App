@@ -368,7 +368,16 @@ class BankAdminService {
     };
     this.appendLocalLog(logEntry);
 
-    if (auth.currentUser?.email === 'punithreddy9010@gmail.com') {
+    const adminDocExists = async (uid: string): Promise<boolean> => {
+      try {
+        const snap = await getDoc(doc(db, 'admins', uid));
+        return snap.exists();
+      } catch {
+        return false;
+      }
+    };
+
+    if (auth.currentUser?.emailVerified && (await adminDocExists(auth.currentUser.uid))) {
       const batch = writeBatch(db);
       batch.set(doc(db, 'banks', bankId), newBank);
       batch.set(doc(db, 'bankApplications', appDoc.uid), updatedApp);
@@ -409,7 +418,16 @@ class BankAdminService {
     };
     this.appendLocalLog(logEntry);
 
-    if (auth.currentUser?.email === 'punithreddy9010@gmail.com') {
+    const adminDocExists = async (uid: string): Promise<boolean> => {
+      try {
+        const snap = await getDoc(doc(db, 'admins', uid));
+        return snap.exists();
+      } catch {
+        return false;
+      }
+    };
+
+    if (auth.currentUser?.emailVerified && (await adminDocExists(auth.currentUser.uid))) {
       const batch = writeBatch(db);
       batch.set(doc(db, 'bankApplications', appDoc.uid), updatedApp);
       batch.set(doc(db, 'auditLogs', logId), logEntry);

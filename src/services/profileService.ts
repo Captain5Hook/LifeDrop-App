@@ -144,6 +144,15 @@ class FirestoreProfileService {
     return DEFAULT_ELIGIBILITY_RULES;
   }
 
+  async checkIsAdmin(uid: string): Promise<boolean> {
+    try {
+      const snap = await getDoc(doc(db, 'admins', uid));
+      return snap.exists();
+    } catch {
+      return false;
+    }
+  }
+
   async completeOnboarding(params: {
     uid: string;
     email: string;
@@ -159,9 +168,7 @@ class FirestoreProfileService {
     acceptedEmergencyAlerts: boolean;
   }): Promise<UserProfileData> {
     const now = new Date().toISOString();
-    const isAdminEmail =
-      params.email.toLowerCase() === 'punithreddy9010@gmail.com';
-    const resolvedRole: UserRole = isAdminEmail ? 'admin' : params.role;
+    const resolvedRole: UserRole = params.role;
 
     const existingCached = this.getCachedProfile(params.uid);
 

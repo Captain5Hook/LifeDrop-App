@@ -145,15 +145,12 @@ export const LegalPrivacyModals: React.FC<LegalPrivacyModalsProps> = ({
                 <p className="mt-1 text-slate-700 dark:text-white/80">
                   Designated Grievance Contact: Project Maintainer
                 </p>
-                <a
-                  href="mailto:punithreddy9010@gmail.com?subject=LifeDrop%20DPDP%20Grievance"
-                  className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white"
-                >
+                <p className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white">
                   <Mail className="h-4 w-4" aria-hidden="true" />
-                  punithreddy9010@gmail.com
-                </a>
+                  <span>[grievance-contact@example.com]</span>
+                </p>
                 <p className="mt-2 text-[12px] text-slate-600 dark:text-white/65">
-                  Acknowledgement target: within 48 hours · Resolution target: within 15 working days.
+                  Configure an active maintainer contact email before public launch. Acknowledgement target: within 48 hours · Resolution target: within 15 working days.
                 </p>
               </div>
             </>
