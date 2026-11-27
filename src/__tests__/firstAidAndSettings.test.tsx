@@ -1,6 +1,7 @@
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocationModals } from '../components/LocationModals';
+import { APP_GOVERNANCE_CONFIG } from '../config/appGovernance';
 import { MEDICAL_REVIEW_CONFIG } from '../config/medicalReview';
 import bleedingData from '../data/knowledge/bleedingFirstAid.json';
 import { useAppSettings } from '../hooks/useAppSettings';
@@ -42,12 +43,15 @@ describe('Bleeding First-Aid Content Integrity & Safety Attribution', () => {
     }
   });
 
-  it('exposes the exact pending medical review line and version from a single config', () => {
+  it('exposes the exact pending medical review line, grievance label, and version from a single config', () => {
     expect(MEDICAL_REVIEW_CONFIG.getReviewLine()).toBe(
-      'Content follows standard first-aid guidance. Reviewed by [reviewer name, credential]. Status: Pending review.',
+      'Content follows standard first-aid guidance. Reviewed by: Pending review. Status: Pending review.',
     );
     expect(MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()).toContain('v1.0.0');
     expect(MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()).toContain('Pending review');
+    expect(APP_GOVERNANCE_CONFIG.grievanceContactLabel).toBe(
+      'Grievance contact: to be published before public launch',
+    );
   });
 });
 

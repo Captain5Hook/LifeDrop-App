@@ -4,7 +4,7 @@
 
 If you discover a security, privacy (DPDP Act 2023), or Firestore security rule vulnerability in LifeDrop, please report it responsibly instead of opening a public issue:
 
-- **Security Contact**: `[security-contact@example.com]` *(replace with active maintainer security email before public launch)*
+- **Security Contact**: Private security contact to be published before public launch *(use GitHub Security Advisories or maintainer contact configured at release time)*.
 - **Response Target**: Acknowledgement within 48 hours; triage and remediation plan within 7 business days.
 
 Please include:

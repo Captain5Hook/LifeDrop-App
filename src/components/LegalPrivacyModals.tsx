@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Mail, ShieldCheck, X } from 'lucide-react';
+import { APP_GOVERNANCE_CONFIG } from '../config/appGovernance';
 import { useVisualViewportHeight } from '../hooks/useVisualViewport';
 
 export type LegalTab = 'privacy' | 'terms' | 'grievance';
@@ -145,12 +146,22 @@ export const LegalPrivacyModals: React.FC<LegalPrivacyModalsProps> = ({
                 <p className="mt-1 text-slate-700 dark:text-white/80">
                   Designated Grievance Contact: Project Maintainer
                 </p>
-                <p className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white">
-                  <Mail className="h-4 w-4" aria-hidden="true" />
-                  <span>[grievance-contact@example.com]</span>
-                </p>
+                {APP_GOVERNANCE_CONFIG.grievanceEmail ? (
+                  <a
+                    href={`mailto:${APP_GOVERNANCE_CONFIG.grievanceEmail}?subject=LifeDrop%20DPDP%20Grievance`}
+                    className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white"
+                  >
+                    <Mail className="h-4 w-4" aria-hidden="true" />
+                    <span>{APP_GOVERNANCE_CONFIG.grievanceEmail}</span>
+                  </a>
+                ) : (
+                  <p className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-2xl border border-[#5B3FE0]/30 bg-[#5B3FE0]/15 px-4 py-2 text-[13px] font-medium text-slate-900 dark:text-white">
+                    <Mail className="h-4 w-4 shrink-0 text-[#5B3FE0] dark:text-[#A78BFA]" aria-hidden="true" />
+                    <span>{APP_GOVERNANCE_CONFIG.grievanceContactLabel}</span>
+                  </p>
+                )}
                 <p className="mt-2 text-[12px] text-slate-600 dark:text-white/65">
-                  Configure an active maintainer contact email before public launch. Acknowledgement target: within 48 hours · Resolution target: within 15 working days.
+                  Acknowledgement target: within 48 hours · Resolution target: within 15 working days.
                 </p>
               </div>
             </>

@@ -23,7 +23,9 @@
     "test": "vitest run",
     "eval:assistant": "tsx scripts/eval-assistant.ts",
     "test:rules": "tsx scripts/firestore-rules.test.ts",
-    "test:rules:emulator": "firebase emulators:exec --only firestore \"npx tsx scripts/firestore-rules.test.ts\""
+    "test:rules:emulator": "firebase emulators:exec --only firestore \"npx tsx scripts/firestore-rules.test.ts\"",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

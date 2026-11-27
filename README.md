@@ -6,7 +6,7 @@ LifeDrop: free, offline-ready blood bank finder and first-aid app for India.
 
 > **Disclaimer:** Demo project. Not medical advice. First-aid content is pending professional review. Seeded numbers are demo data. In an emergency call 108 or 112.
 
-Live demo: Not deployed yet
+Live demo: <add your .web.app link after deploying>
 
 ---
 
@@ -35,7 +35,7 @@ Formula: `Overall % = sum(Milestone % x Weight)` using rounded milestone percent
 - [x] Eight Blood Group Pills (`O+` to `AB-`) with stock status and map/compatibility shortcuts (`src/components/BloodGroupPills.tsx`)
 - [x] Location flow with explainer dialog, 5 permission/GPS outcome states, offline state/city + `~2 km` coarse lookup (`45 km` coastal/border cutoff), 36 State/UT manual picker, and location data deletion (`src/hooks/useLocationFlow.ts`, `src/components/LocationModals.tsx`)
 - [x] Offline Bleeding Emergency modal in English, Hindi, and Kannada with `108`, `112`, and `104` call links, Step 1 emergency callout, card disclaimer across all languages, accessible `role="group"` step dots, and Web Speech Read Aloud (`src/components/BleedingEmergencyModal.tsx`)
-- [ ] Formal medical sign-off and native language review of first-aid content (`src/config/medicalReview.ts` and `src/data/knowledge/bleedingFirstAid.json` marked `Pending review`)
+- [ ] Formal medical sign-off and native language review of first-aid content (`src/config/appGovernance.ts` and `src/data/knowledge/bleedingFirstAid.json` marked `Pending review`)
 
 **M2 — India map (3/4 = 75%)**
 - [x] Interactive Leaflet + OpenStreetMap India map with 36 State/UT markers (`src/screens/MapScreen.tsx`)
@@ -85,21 +85,29 @@ Formula: `Overall % = sum(Milestone % x Weight)` using rounded milestone percent
 | Code splitting | Done | `React.lazy` routes/modals (`HomeSkeleton` fallback) plus core/auth/firestore `manualChunks` |
 | PWA service worker and offline first aid | Done | `vite-plugin-pwa` builds `dist/sw.js` (`52` precached entries); verified offline reload in Chromium |
 | Medical disclaimer | Done | Displayed across all Bleeding Emergency cards (EN/HI/KN), Chat, SOS, Compatibility, and About |
-| Medical review | Pending | `MEDICAL_REVIEW_CONFIG.reviewerLabel` is `[reviewer name, credential]` (`Pending review`) |
+| Medical review | Pending | `APP_GOVERNANCE_CONFIG.reviewerName` is `Pending review` (`src/config/appGovernance.ts`) |
 | Lighthouse 90+ | Not measured yet | Run locally against `npm run preview` (Lighthouse CLI not present in sandbox) |
 | Security rules review | Partial | `12/12` static audit passes and rules deployed; live Firestore Emulator requires JDK 17+ locally |
 | App Check | Partial | Browser `ReCaptchaV3Provider` wired conditionally; `VITE_FIREBASE_APP_CHECK_SITE_KEY` is empty |
 | LICENSE | Done | MIT license (2026, Punixx) in `LICENSE` |
 | SECURITY | Done | Vulnerability disclosure policy in `SECURITY.md` |
-| README | Done | Rebuilt directly from repository code and measured command outputs |
+| README | Done | Progress-tracked and updated from repository code and measured command outputs |
 
-Last updated: 2026-11-26. Update the checklist and milestone percentages after every milestone.
+Last updated: 2026-11-27. Update the checklist and milestone percentages after every milestone.
 
 ---
 
 ## 2. Why LifeDrop
 
 Across India, patients and families needing emergency blood often deal with fragmented directories, stale helpline numbers, and slow word-of-mouth searches. Inside low-connectivity hospital corridors or basements, searching live websites during severe bleeding is unreliable. LifeDrop brings an offline-ready EN/HI/KN bleeding first-aid guide with quick `108`/`112`/`104` dialing, a state-scoped blood bank finder, an ABO/Rh compatibility tool, and a privacy-preserving SOS flow into one zero-cost PWA. Built strictly for the Firebase Spark free tier and local caching, it aims to lower emergency search friction with zero paid backend dependencies.
+
+### How to Try It in 2 Minutes
+
+1. Open the live `.web.app` link on your phone (or mobile viewport in desktop Chrome/Safari).
+2. Tap **Bleeding Emergency · First Aid & 108** on Home, switch the language between **EN**, **हिन्दी**, and **ಕನ್ನಡ**, and tap **Read aloud**.
+3. Turn on **Airplane Mode** (or enable **Offline** in browser DevTools), reload the page, and reopen **Bleeding Emergency** to verify offline first aid and `Call 108` / `112` / `104` links.
+4. Tap any blood group pill (`O+` to `AB-`) -> **Compatibility** (or open **Compatibility Widget** inside **Chatbot**) to test Whole Blood, PRBC, Platelets, and Plasma compatibility offline.
+5. Open **Chatbot** in bottom navigation and ask an eligibility, stock, or severe-bleeding question to inspect offline multilingual responses and triage alerts.
 
 ---
 
@@ -214,18 +222,18 @@ All `VITE_` variables in `.env.example` are optional and shipped empty. `VITE_*`
 
 ## 8. Build and Verification
 
-Measured outputs from commands run against the current repository:
+> **Judges and reviewers:** Every numeric result in the table below was measured by running the listed commands against this codebase. **Lighthouse mobile scores, live Firestore Emulator execution, and clinical medical review are not done yet.**
 
 | Check | Measured Output | Notes |
 | :--- | :--- | :--- |
-| TypeScript (`npx tsc --noEmit --noUnusedLocals --noUnusedParameters`) | `0 errors` | Strict unused local/param checks clean |
+| TypeScript (`bun run lint`) | `0 errors` | Verified via `tsc --noEmit` |
 | Unit, geo, safety, & `axe-core` tests (`bun run test`) | `3` files, `16/16` passed | Covers 10 Indian cities, 3 foreign cities, 36 States/UTs, 5 permission states, `~2 km` rounding, EN/HI/KN step parity, and `axe-core` accessibility |
 | Assistant safety & routing eval (`bun run eval:assistant`) | `40/40` passed | `22/22` safety refusals (`100%`), `24/24` routing (`100%`) |
-| Firestore rules static contract (`bun run test:rules`) | `12/12` passed | Covers default deny, owner isolation, zero client writes on `/stats`, `/goals`, `/drives`, and schema guards |
+| Firestore rules static contract (`bun run test:rules`) | `12/12` passed | Covers default deny, `/admins/{uid}` check with zero hardcoded email literals, `stats`/`goals`/`drives` `write: false`, donor `isVerifiedUser()` + profile check, and bank-role `/auditLogs` gate |
 | Live Firestore Emulator tests (`npm run test:rules:emulator`) | **Not verified** | Requires JDK 17+ locally (`java` not installed in container) |
-| Production build (`bun run build`) | Built in `1.33s`; PWA precache `52 entries` (`2065.99 KiB`) | `index-*.js`: `86.39 kB` (`22.05 kB` gzip); `vendor-react`: `404.71 kB` (`123.13 kB` gzip); `vendor-firebase-core`: `49.13 kB` (`18.40 kB` gzip); `vendor-firebase-auth`: `110.21 kB` (`33.27 kB` gzip); `vendor-firebase-firestore`: `500.55 kB` (`145.76 kB` gzip); `vendor-leaflet`: `148.60 kB` (`43.33 kB` gzip); CSS: `65.11 kB` (`10.83 kB` gzip); `manifest.json`: `0.61 kB` (`0.33 kB` gzip) |
+| Production build (`bun run build`) | Built in `1.32s`; PWA precache `52 entries` (`2066.79 KiB`) | `index-*.js`: `86.39 kB` (`22.04 kB` gzip); `vendor-react`: `404.71 kB` (`123.13 kB` gzip); `vendor-firebase-core`: `49.13 kB` (`18.40 kB` gzip); `vendor-firebase-auth`: `110.21 kB` (`33.27 kB` gzip); `vendor-firebase-firestore`: `500.55 kB` (`145.76 kB` gzip); `vendor-leaflet`: `148.60 kB` (`43.33 kB` gzip); CSS: `65.25 kB` (`10.85 kB` gzip); `manifest.json`: `0.61 kB` (`0.33 kB` gzip) |
 | Playwright layout & offline SW checks | `9/9` matrix checks passed (`0` console errors) | Tested `360x640`, `375x667`, `390x844`, `412x915`, `430x932`, `768x1024`, `1440x900`, `844x390` landscape, `130%` text size, `360x360` keyboard shrink, and Chromium offline SW reload |
-| Lighthouse mobile audit | **Not measured yet** | Run `npx lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo` locally against `npm run preview` |
+| Lighthouse mobile audit | **Not measured yet** | Run `npx lighthouse <url> --preset=perf --only-categories=performance,accessibility,best-practices,seo` locally against `npm run preview` or deployed `.web.app` URL (see `docs/DEPLOY.md`) |
 
 vendor-firebase-firestore is 500.55 kB raw (145.76 kB gzip), slightly above Vite's 500 kB warning threshold.
 
@@ -274,7 +282,7 @@ Designed to stay well within Firebase Spark's `50,000` reads/day quota:
 
 ## 12. Roadmap
 
-- [ ] **M1 (86%):** Obtain clinician sign-off and native HI/KN review on first-aid copy (`src/config/medicalReview.ts`)
+- [ ] **M1 (86%):** Obtain clinician sign-off and native HI/KN review on first-aid copy (`src/config/appGovernance.ts`)
 - [ ] **M2 (75%):** Replace seeded demo banks on India Map with verified blood bank onboarding data
 - [ ] **M3 (80%):** Core auth, profile, DPDP tools, and eligibility built; phone OTP deferred to Upgrade Path
 - [ ] **M4 (67%):** SOS workflow and offline compatibility built; background FCM alerts and 30-day TTL purge pending

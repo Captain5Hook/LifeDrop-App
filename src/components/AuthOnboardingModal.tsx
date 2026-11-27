@@ -363,7 +363,7 @@ export const AuthOnboardingModal: React.FC<AuthOnboardingModalProps> = ({
                     <input
                       type="email"
                       required
-                      placeholder="you@example.com"
+                      placeholder="name@domain.in"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="min-h-[44px] w-full rounded-2xl border border-black/15 bg-white/75 pr-3.5 pl-10 text-[14px] text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-white"

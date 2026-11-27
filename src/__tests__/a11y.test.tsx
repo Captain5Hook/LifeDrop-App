@@ -80,7 +80,7 @@ describe('Accessibility (axe-core) on Home & Milestone 1 Modals', () => {
     ).toBeInTheDocument();
     expect(
       getByText(
-        'Content follows standard first-aid guidance. Reviewed by [reviewer name, credential]. Status: Pending review.',
+        'Content follows standard first-aid guidance. Reviewed by: Pending review. Status: Pending review.',
       ),
     ).toBeInTheDocument();
     await expectNoSeriousA11yViolations(container);
@@ -157,7 +157,7 @@ describe('Accessibility (axe-core) on Home & Milestone 1 Modals', () => {
     const aboutRender = render(<AboutModal isOpen={true} onClose={vi.fn()} />);
     expect(
       aboutRender.getByText(
-        'Content follows standard first-aid guidance. Reviewed by [reviewer name, credential]. Status: Pending review.',
+        'Content follows standard first-aid guidance. Reviewed by: Pending review. Status: Pending review.',
       ),
     ).toBeInTheDocument();
     await expectNoSeriousA11yViolations(aboutRender.container);
