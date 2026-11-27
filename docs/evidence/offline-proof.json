@@ -1,0 +1,43 @@
+{
+  "testedAt": "2026-11-27T06:25:08.480Z",
+  "serviceWorkerReady": {
+    "hasController": false,
+    "activeState": "activating",
+    "scope": "http://127.0.0.1:4185/"
+  },
+  "controlledBeforeOffline": true,
+  "offlineReloadSucceeded": true,
+  "offlineBannerVisible": true,
+  "offlineBannerText": "Offline mode · First aid & cached stats ready",
+  "emergencyLinks": {
+    "tel108": true,
+    "tel112": true,
+    "tel104": true
+  },
+  "languagesVerified": {
+    "en": {
+      "step1Title": "Stay safe first",
+      "cardDisclaimer": "This is first-aid guidance, not a substitute for a doctor."
+    },
+    "hi": {
+      "step1Title": "पहले अपनी सुरक्षा करें"
+    },
+    "kn": {
+      "step1Title": "ಮೊದಲು ಸುರಕ್ಷಿತವಾಗಿರಿ"
+    }
+  },
+  "readAloudCalls": [
+    {
+      "text": "Stay safe first. If possible, put on gloves or cover your hands with a clean plastic bag. Avoid touching blood with bare hands.",
+      "lang": "en-IN"
+    },
+    {
+      "text": "पहले अपनी सुरक्षा करें. यदि संभव हो, तो दस्ताने पहनें या अपने हाथों को साफ प्लास्टिक बैग से ढक लें। नंगे हाथों से खून छूने से बचें।",
+      "lang": "hi-IN"
+    },
+    {
+      "text": "ಮೊದಲು ಸುರಕ್ಷಿತವಾಗಿರಿ. ಸಾಧ್ಯವಾದರೆ ಕೈಗವಸು ಧರಿಸಿ ಅಥವಾ ಸ್ವಚ್ಛವಾದ ಪ್ಲಾಸ್ಟಿಕ್ ಚೀಲದಿಂದ ಕೈಗಳನ್ನು ಮುಚ್ಚಿ. ಬರಿಗೈಯಿಂದ ರಕ್ತವನ್ನು ಮುಟ್ಟಬೇಡಿ.",
+      "lang": "kn-IN"
+    }
+  ]
+}

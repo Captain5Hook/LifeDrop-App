@@ -12,6 +12,7 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'prompt',
+        manifestFilename: 'manifest.json',
         includeAssets: [
           'icon.svg',
           'apple-touch-icon.png',

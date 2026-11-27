@@ -36,14 +36,14 @@ describe('India Geography & Offline Geo Resolution', () => {
     const testCities = [
       { lat: 12.9716, lng: 77.5946, expectedCode: 'KA', expectedCity: 'Bengaluru' },
       { lat: 19.076, lng: 72.8777, expectedCode: 'MH', expectedCity: 'Mumbai' },
-      { lat: 28.6139, lng: 77.209, expectedCode: 'DL', expectedCity: 'New Delhi' },
       { lat: 13.0827, lng: 80.2707, expectedCode: 'TN', expectedCity: 'Chennai' },
-      { lat: 17.385, lng: 78.4867, expectedCode: 'TG', expectedCity: 'Hyderabad' },
       { lat: 22.5726, lng: 88.3639, expectedCode: 'WB', expectedCity: 'Kolkata' },
-      { lat: 23.0225, lng: 72.5714, expectedCode: 'GJ', expectedCity: 'Ahmedabad' },
-      { lat: 26.9124, lng: 75.7873, expectedCode: 'RJ', expectedCity: 'Jaipur' },
+      { lat: 28.6139, lng: 77.209, expectedCode: 'DL', expectedCity: 'New Delhi' },
       { lat: 26.1445, lng: 91.7362, expectedCode: 'AS', expectedCity: 'Guwahati' },
+      { lat: 34.0837, lng: 74.7973, expectedCode: 'JK', expectedCity: 'Srinagar' },
+      { lat: 17.385, lng: 78.4867, expectedCode: 'TG', expectedCity: 'Hyderabad' },
       { lat: 9.9312, lng: 76.2673, expectedCode: 'KL', expectedCity: 'Kochi' },
+      { lat: 26.9124, lng: 75.7873, expectedCode: 'RJ', expectedCity: 'Jaipur' },
     ];
 
     for (const sample of testCities) {

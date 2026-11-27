@@ -2,8 +2,6 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  increment,
-  setDoc,
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
@@ -240,37 +238,6 @@ class FirestoreProfileService {
       });
       batch.set(contactRef, privateContact);
       batch.set(consentRef, consent);
-
-      if (!profile.statsCounted) {
-        try {
-          const [existingUserSnap, gSnap, sSnap] = await Promise.all([
-            getDoc(userRef),
-            getDoc(doc(db, 'stats', 'global')),
-            params.stateCode && params.stateCode !== 'ALL'
-              ? getDoc(doc(db, 'stats', `state_${params.stateCode}`))
-              : Promise.resolve(null),
-          ]);
-          if (!existingUserSnap.exists()) {
-            if (gSnap.exists()) {
-              batch.update(gSnap.ref, {
-                totalUsers: increment(1),
-                joinedToday: increment(1),
-                updatedAt: now,
-              });
-            }
-            if (sSnap && sSnap.exists()) {
-              batch.update(sSnap.ref, {
-                totalUsers: increment(1),
-                joinedToday: increment(1),
-                updatedAt: now,
-              });
-            }
-            profile.statsCounted = true;
-          }
-        } catch {
-          // Stats docs may not be seeded yet
-        }
-      }
 
       await batch.commit();
       this.setCachedProfile(profile);

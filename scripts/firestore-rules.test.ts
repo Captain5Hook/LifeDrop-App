@@ -85,25 +85,19 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'Users cannot self-promote bloodGroupStatus to lab-confirmed',
+      name: 'Users cannot self-promote bloodGroupStatus or set isDemo flag',
       fn: () => {
         assert.ok(/incoming\(\)\.bloodGroupStatus == 'self-reported'/.test(rules));
-        assert.ok(/hasAny\(\['bloodGroupStatus', 'lastConfirmedDonation', 'isDemo'\]\) \|\| isAdmin\(\)/.test(rules));
+        assert.ok(rules.includes("!('isDemo' in data) || data.isDemo == false"));
+        assert.ok(/hasAny\(\['bloodGroupStatus', 'lastConfirmedDonation', 'isDemo'\]\)/.test(rules));
       },
     },
     {
-      name: 'Stats +1 increment guarded by atomic !exists(/users/{uid}) && existsAfter(/users/{uid})',
+      name: 'Stats, Goals, and Drives allow public read only with ZERO client writes',
       fn: () => {
-        assert.ok(/incoming\(\)\.totalUsers == existing\(\)\.totalUsers \+ 1/.test(rules));
-        assert.ok(rules.includes('!exists(/databases/$(database)/documents/users/$(request.auth.uid))'));
-        assert.ok(rules.includes('existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))'));
-      },
-    },
-    {
-      name: 'Goals and Drives restrict all writes strictly to Admin',
-      fn: () => {
-        assert.ok(/match \/goals\/{goalId}[\s\S]*?allow create, update: if isAdmin\(\)/.test(rules));
-        assert.ok(/match \/drives\/{driveId}[\s\S]*?allow create, update: if isAdmin\(\)/.test(rules));
+        assert.ok(/match \/stats\/{statId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
+        assert.ok(/match \/goals\/{goalId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
+        assert.ok(/match \/drives\/{driveId}[\s\S]*?allow create, update, delete: if false;/.test(rules));
       },
     },
     {
@@ -265,18 +259,18 @@ async function runEmulatorSuite(): Promise<void> {
         },
       },
       {
-        name: 'Public stats/global read allowed; anon & non-admin overwrite/goals/drives/isDemo writes denied',
+        name: 'Public stats/goals/drives read allowed; all client writes (anon, donor, admin) denied',
         run: async () => {
           await assertSucceeds(getDoc(doc(anonDb, 'stats', 'global')));
           await assertFails(setDoc(doc(anonDb, 'stats', 'global'), { totalUsers: 9999 }));
           await assertFails(setDoc(doc(donorDb, 'stats', 'global'), { totalUsers: 9999 }));
+          await assertFails(setDoc(doc(adminDb, 'stats', 'global'), { totalUsers: 9999 }));
           await assertFails(setDoc(doc(donorDb, 'goals', 'goal_fake'), { title: 'Fake', current: 1, target: 10 }));
           await assertFails(setDoc(doc(donorDb, 'drives', 'drive_fake'), { title: 'Fake', dateLabel: 'Now', place: 'X', city: 'Y', stateCode: 'KA', stateName: 'Karnataka', attendeesCount: 1 }));
-          await assertSucceeds(setDoc(doc(adminDb, 'goals', 'goal_admin_1'), { title: 'Admin Goal', current: 10, target: 100 }));
         },
       },
       {
-        name: 'Owner onboarding atomic batch: user + private/contact + consent + stats +1',
+        name: 'Owner onboarding batch: user + private/contact + consent (isDemo false enforced)',
         run: async () => {
           const ts = nowIso();
           const batch = writeBatch(donorDb);
@@ -316,20 +310,7 @@ async function runEmulatorSuite(): Promise<void> {
             createdAt: ts,
             updatedAt: ts,
           });
-          batch.update(doc(donorDb, 'stats', 'global'), {
-            totalUsers: 101,
-            joinedToday: 6,
-            updatedAt: ts,
-          });
           await assertSucceeds(batch.commit());
-          // Post-onboarding replay of stats +1 increment MUST fail
-          await assertFails(
-            updateDoc(doc(donorDb, 'stats', 'global'), {
-              totalUsers: 102,
-              joinedToday: 7,
-              updatedAt: nowIso(),
-            }),
-          );
           // Normal user cannot mark their profile isDemo: true
           await assertFails(
             updateDoc(doc(donorDb, 'users', 'donor_1'), {

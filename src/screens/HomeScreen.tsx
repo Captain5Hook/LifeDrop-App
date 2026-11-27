@@ -246,6 +246,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                     <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-[15px] font-normal text-slate-700 dark:text-white/85">
                       <span>Lifesavers on LifeDrop</span>
+                      {(isAllIndia ? globalStats.isDemo : stateStats.isDemo) && (
+                        <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
+                          Demo data
+                        </span>
+                      )}
                     </div>
 
                     <p className="mt-0.5 text-[12px] text-slate-600 tabular-nums dark:text-white/75">

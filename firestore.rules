@@ -1,32 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny everything
+    // Default deny everything unless explicitly permitted by a specific collection rule below.
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Primitives
+    // Helper: Validate document IDs so path segments remain safe alphanumeric identifiers.
     function isValidId(id) {
       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    // Helper: Shortcut for incoming write payload.
     function incoming() {
       return request.resource.data;
     }
 
+    // Helper: Shortcut for existing stored document payload.
     function existing() {
       return resource.data;
     }
 
+    // Helper: Require an authenticated Firebase Auth session.
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // Helper: Require both an authenticated session and verified email claim.
     function isVerifiedUser() {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
 
+    // Helper: Restrict platform-admin operations to verified admin accounts.
     function isAdmin() {
       return isVerifiedUser() && (
         request.auth.token.email == 'punithreddy9010@gmail.com' ||
@@ -34,10 +39,12 @@ service cloud.firestore {
       );
     }
 
+    // Helper: Validate supported ABO/Rh blood group literals.
     function isValidBloodGroup(bg) {
       return bg in ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
     }
 
+    // Helper: Validate blood bank document schema and India coordinate bounds.
     function isValidBank(data) {
       return data.keys().hasAll(['id', 'name', 'stateCode', 'stateName', 'city', 'district', 'lat', 'lng', 'type', 'open24x7', 'phone', 'stock', 'updatedAt', 'isDemo'])
         && data.keys().hasOnly([
@@ -64,6 +71,7 @@ service cloud.firestore {
         && data.isDemo is bool;
     }
 
+    // Helper: Validate blood bank onboarding application schema.
     function isValidBankApplication(data, applicantUid) {
       return data.keys().hasAll(['uid', 'facilityName', 'licenseNumber', 'type', 'stateCode', 'stateName', 'city', 'district', 'phone', 'open24x7', 'status', 'createdAt', 'updatedAt'])
         && data.keys().hasOnly([
@@ -92,6 +100,7 @@ service cloud.firestore {
         && data.updatedAt is string && data.updatedAt.size() <= 64;
     }
 
+    // Helper: Validate immutable audit log payload.
     function isValidAuditLog(data, logId) {
       return data.keys().hasAll(['id', 'actorUid', 'actorRole', 'action', 'targetPath', 'summary', 'createdAt'])
         && data.keys().hasOnly(['id', 'actorUid', 'actorRole', 'action', 'targetPath', 'summary', 'createdAt'])
@@ -104,6 +113,7 @@ service cloud.firestore {
         && data.createdAt is string && data.createdAt.size() <= 64;
     }
 
+    // Helper: Validate user profile document; strictly blocks client self-promotion and isDemo spoofing.
     function isValidUserProfile(data, uid) {
       return data.keys().hasAll(['uid', 'displayName', 'role', 'bloodGroup', 'bloodGroupStatus', 'stateCode', 'age18PlusConfirmed'])
         && data.keys().hasOnly([
@@ -129,11 +139,12 @@ service cloud.firestore {
         && (!('donationsCount' in data) || (data.donationsCount is number && data.donationsCount >= 0 && data.donationsCount <= 500))
         && (!('timeline' in data) || (data.timeline is list && data.timeline.size() <= 30 && (data.timeline.size() == 0 || data.timeline[0] is map)))
         && (!('consentTimestamp' in data) || (data.consentTimestamp is string && data.consentTimestamp.size() <= 64))
-        && (!('isDemo' in data) || (data.isDemo is bool && (data.isDemo == false || isAdmin())))
+        && (!('isDemo' in data) || data.isDemo == false)
         && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64))
         && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
     }
 
+    // Helper: Validate isolated private user PII contact document (18+ dobYear check).
     function isValidPrivateContact(data, uid) {
       return data.keys().hasAll(['uid', 'email', 'phone', 'dobYear', 'updatedAt'])
         && data.keys().hasOnly(['uid', 'email', 'phone', 'dobYear', 'updatedAt'])
@@ -144,6 +155,7 @@ service cloud.firestore {
         && data.updatedAt is string && data.updatedAt.size() <= 64;
     }
 
+    // Helper: Validate DPDP Act 2023 consent log document.
     function isValidConsentRecord(data, uid) {
       return data.keys().hasAll(['uid', 'purpose', 'acceptedPrivacy', 'acceptedAge18Plus', 'acceptedEmergencyAlerts', 'withdrawn', 'createdAt', 'updatedAt'])
         && data.keys().hasOnly(['uid', 'purpose', 'acceptedPrivacy', 'acceptedAge18Plus', 'acceptedEmergencyAlerts', 'withdrawn', 'createdAt', 'updatedAt'])
@@ -157,6 +169,7 @@ service cloud.firestore {
         && data.updatedAt is string && data.updatedAt.size() <= 64;
     }
 
+    // Helper: Validate SOS blood request schema; forbids client setting isDemo: true.
     function isValidSosRequest(data, requestId) {
       return data.keys().hasAll(['id', 'requesterUid', 'requesterName', 'bloodGroup', 'compatibleDonorGroups', 'component', 'unitsNeeded', 'urgency', 'hospitalName', 'stateCode', 'stateName', 'city', 'coarseLat', 'coarseLng', 'radiusKm', 'escalationStage', 'status', 'matchedCount', 'createdAt', 'updatedAt', 'expiresAt'])
         && data.keys().hasOnly([
@@ -187,12 +200,13 @@ service cloud.firestore {
         && (!('acceptedByName' in data) || data.acceptedByName == null || (data.acceptedByName is string && data.acceptedByName.size() <= 80))
         && data.matchedCount is int && data.matchedCount >= 0 && data.matchedCount <= 50
         && (!('notes' in data) || (data.notes is string && data.notes.size() <= 240))
-        && (!('isDemo' in data) || (data.isDemo is bool && (data.isDemo == false || isAdmin())))
+        && (!('isDemo' in data) || data.isDemo == false)
         && data.createdAt is string && data.createdAt.size() <= 64
         && data.updatedAt is string && data.updatedAt.size() <= 64
         && data.expiresAt is string && data.expiresAt.size() <= 64;
     }
 
+    // Helper: Validate donor pledge/ETA tracking record under an SOS request.
     function isValidSosResponse(data, donorUid) {
       return data.keys().hasAll(['donorUid', 'donorName', 'bloodGroup', 'city', 'etaMinutes', 'status', 'createdAt', 'updatedAt'])
         && data.keys().hasOnly(['donorUid', 'donorName', 'bloodGroup', 'city', 'etaMinutes', 'status', 'donorPhone', 'createdAt', 'updatedAt'])
@@ -207,80 +221,50 @@ service cloud.firestore {
         && data.updatedAt is string && data.updatedAt.size() <= 64;
     }
 
-    // Connection validation document
+    // Boot connectivity probe: read-only single check document, no client writes.
     match /test/connection {
       allow get: if true;
       allow write: if false;
     }
 
-    // Admin registry (read own doc only)
+    // Admin registry: signed-in verified admin can read own marker doc only; no client writes.
     match /admins/{uid} {
       allow get: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
       allow write: if false;
     }
 
-    // Configurable clinical & eligibility rules (public read, Admin write)
+    // Public aggregated statistics: public read-only, zero client writes (managed server-side only).
+    match /stats/{statId} {
+      allow get: if isValidId(statId);
+      allow list: if isValidId(resource.data.stateCode) && resource.data.banksCount is number;
+      allow create, update, delete: if false;
+    }
+
+    // Public mission goals: public read-only, zero client writes.
+    match /goals/{goalId} {
+      allow get: if isValidId(goalId);
+      allow list: if resource.data.title is string && resource.data.target is number;
+      allow create, update, delete: if false;
+    }
+
+    // Public blood donation drives: public read-only, zero client writes.
+    match /drives/{driveId} {
+      allow get: if isValidId(driveId);
+      allow list: if resource.data.stateCode is string && resource.data.title is string;
+      allow create, update, delete: if false;
+    }
+
+    // Eligibility configuration: signed-in read only, Admin write with field validation.
     match /config/{configId} {
-      allow get: if isValidId(configId);
+      allow get: if isSignedIn() && isValidId(configId);
       allow list: if false;
       allow create, update, delete: if isAdmin() && isValidId(configId);
     }
 
-    // Public aggregated statistics (no PII; Admin full write; signed-in onboarding +1 atomic increment)
-    match /stats/{statId} {
-      allow get: if isValidId(statId);
-      allow list: if isValidId(resource.data.stateCode) && resource.data.banksCount is number;
-      allow create: if isAdmin()
-        && isValidId(statId)
-        && incoming().keys().size() <= 15
-        && (!('isDemo' in incoming()) || incoming().isDemo is bool);
-      allow update: if isValidId(statId) && (
-        (isAdmin()
-          && incoming().keys().size() <= 15
-          && (!('isDemo' in incoming()) || incoming().isDemo is bool))
-        ||
-        (isSignedIn()
-          && incoming().diff(existing()).affectedKeys().hasOnly(['totalUsers', 'joinedToday', 'updatedAt'])
-          && incoming().totalUsers == existing().totalUsers + 1
-          && incoming().joinedToday == existing().joinedToday + 1
-          && incoming().updatedAt is string && incoming().updatedAt.size() <= 64
-          && !exists(/databases/$(database)/documents/users/$(request.auth.uid))
-          && existsAfter(/databases/$(database)/documents/users/$(request.auth.uid)))
-      );
-      allow delete: if isAdmin() && isValidId(statId);
-    }
-
-    // Public mission goals (Admin write only)
-    match /goals/{goalId} {
-      allow get: if isValidId(goalId);
-      allow list: if resource.data.title is string && resource.data.target is number;
-      allow create, update: if isAdmin()
-        && isValidId(goalId)
-        && incoming().keys().hasAll(['title', 'current', 'target'])
-        && incoming().keys().hasOnly(['id', 'title', 'current', 'target', 'unit', 'deadline'])
-        && incoming().title is string && incoming().title.size() <= 140
-        && incoming().current is number && incoming().current >= 0
-        && incoming().target is number && incoming().target > 0;
-      allow delete: if isAdmin() && isValidId(goalId);
-    }
-
-    // Public blood donation drives (Admin write only)
-    match /drives/{driveId} {
-      allow get: if isValidId(driveId);
-      allow list: if resource.data.stateCode is string && resource.data.title is string;
-      allow create, update: if isAdmin()
-        && isValidId(driveId)
-        && incoming().keys().hasAll(['title', 'dateLabel', 'place', 'city', 'stateCode', 'stateName', 'attendeesCount'])
-        && incoming().keys().hasOnly(['id', 'title', 'dateLabel', 'place', 'city', 'stateCode', 'stateName', 'attendeesCount'])
-        && incoming().title is string && incoming().title.size() <= 140
-        && incoming().stateCode is string && incoming().stateCode.size() <= 10;
-      allow delete: if isAdmin() && isValidId(driveId);
-    }
-
-    // Public blood banks (state-scoped queries allowed; Admin full write; verified bank owners update stock)
+    // Blood banks directory: signed-in state-scoped read; verified owner stock update or Admin write.
     match /banks/{bankId} {
-      allow get: if isValidId(bankId);
-      allow list: if resource.data.stateCode is string && resource.data.name is string;
+      allow get: if isSignedIn() && isValidId(bankId);
+      allow list: if isSignedIn() && resource.data.stateCode is string && resource.data.name is string;
       allow create: if isAdmin() && isValidId(bankId) && isValidBank(incoming());
       allow update: if isValidId(bankId) && isValidBank(incoming()) && (
         isAdmin()
@@ -293,7 +277,7 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(bankId);
     }
 
-    // User profiles without email/phone PII (owner read/write only; cannot self-verify lab group or admin role)
+    // User profiles: strict owner-only read/write; prevents reading other users or modifying protected flags.
     match /users/{userId} {
       allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
       allow list: if false;
@@ -307,10 +291,10 @@ service cloud.firestore {
         && request.auth.uid == userId
         && isValidUserProfile(incoming(), userId)
         && incoming().uid == existing().uid
-        && (!incoming().diff(existing()).affectedKeys().hasAny(['bloodGroupStatus', 'lastConfirmedDonation', 'isDemo']) || isAdmin());
+        && (!incoming().diff(existing()).affectedKeys().hasAny(['bloodGroupStatus', 'lastConfirmedDonation', 'isDemo']));
       allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
 
-      // Isolated PII subcollection (owner only)
+      // Isolated PII contact subcollection: strictly owner-only.
       match /private/contact {
         allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
         allow list: if false;
@@ -323,7 +307,7 @@ service cloud.firestore {
       }
     }
 
-    // DPDP Act 2023 Consent records (owner read/write only)
+    // DPDP Act 2023 consent records: strictly owner-only read/write.
     match /consents/{userId} {
       allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
       allow list: if false;
@@ -341,7 +325,7 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
     }
 
-    // Emergency SOS Requests (M4: authenticated state-scoped access + privacy handshake)
+    // Emergency SOS requests: signed-in state-scoped access with post-acceptance contact reveal.
     match /requests/{requestId} {
       allow get: if isSignedIn() && isValidId(requestId);
       allow list: if isSignedIn()
@@ -360,11 +344,9 @@ service cloud.firestore {
         && incoming().id == existing().id
         && incoming().requesterUid == existing().requesterUid
         && (
-          // Requester escalating radius or updating request status
           (existing().requesterUid == request.auth.uid
             && incoming().diff(existing()).affectedKeys().hasOnly(['escalationStage', 'radiusKm', 'status', 'acceptedByUid', 'acceptedByName', 'updatedAt']))
           ||
-          // Compatible volunteer donor claiming an open request
           (existing().requesterUid != request.auth.uid
             && existing().status == 'open'
             && incoming().status == 'matched'
@@ -376,7 +358,7 @@ service cloud.firestore {
         && isValidId(requestId)
         && (existing().requesterUid == request.auth.uid || isAdmin());
 
-      // Private requester phone revealed ONLY to requester or matched accepted donor
+      // Private requester phone: readable only by requester or matched donor.
       match /private/contact {
         allow get: if isSignedIn()
           && isValidId(requestId)
@@ -399,7 +381,7 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid;
       }
 
-      // Donor pledges & ETA tracking
+      // Donor pledges and ETA responses: readable by donor or requester, writable only by donor.
       match /responses/{donorUid} {
         allow get: if isSignedIn()
           && isValidId(requestId)
@@ -426,7 +408,7 @@ service cloud.firestore {
       }
     }
 
-    // Blood Bank onboarding applications (M6: owner submit/read; Admin verify & approve)
+    // Blood bank license applications: owner submits pending only; Admin reviews and approves.
     match /bankApplications/{applicantUid} {
       allow get: if isSignedIn()
         && isValidId(applicantUid)
@@ -451,7 +433,7 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(applicantUid);
     }
 
-    // Immutable audit trail (Admin read only; Bank/Admin create only)
+    // Immutable audit trail: Admin read only; append-only create for bank/admin; update/delete denied.
     match /auditLogs/{logId} {
       allow get, list: if isAdmin();
       allow create: if isValidId(logId)

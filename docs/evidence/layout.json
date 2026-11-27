@@ -1,0 +1,294 @@
+{
+  "layoutResults": [
+    {
+      "viewport": "360x640",
+      "home": {
+        "innerWidth": 360,
+        "innerHeight": 640,
+        "docScrollWidth": 360,
+        "docClientWidth": 360,
+        "docScrollHeight": 640,
+        "docClientHeight": 640,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 360,
+        "frameHeight": 640,
+        "isEdgeToEdge": true,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 568,
+        "sosTop": 543,
+        "sosBottom": 599,
+        "sosClipped": false,
+        "emergencyBtnBottom": 384,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 394
+      },
+      "bleedingModal": {
+        "dialogHeight": 640,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "375x667",
+      "home": {
+        "innerWidth": 375,
+        "innerHeight": 667,
+        "docScrollWidth": 375,
+        "docClientWidth": 375,
+        "docScrollHeight": 667,
+        "docClientHeight": 667,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 375,
+        "frameHeight": 667,
+        "isEdgeToEdge": true,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 595,
+        "sosTop": 570,
+        "sosBottom": 626,
+        "sosClipped": false,
+        "emergencyBtnBottom": 391,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 401
+      },
+      "bleedingModal": {
+        "dialogHeight": 667,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "390x844",
+      "home": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "docScrollWidth": 390,
+        "docClientWidth": 390,
+        "docScrollHeight": 844,
+        "docClientHeight": 844,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 390,
+        "frameHeight": 844,
+        "isEdgeToEdge": true,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 772,
+        "sosTop": 747,
+        "sosBottom": 803,
+        "sosClipped": false,
+        "emergencyBtnBottom": 421,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 431
+      },
+      "bleedingModal": {
+        "dialogHeight": 844,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "412x915",
+      "home": {
+        "innerWidth": 412,
+        "innerHeight": 915,
+        "docScrollWidth": 412,
+        "docClientWidth": 412,
+        "docScrollHeight": 915,
+        "docClientHeight": 915,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 412,
+        "frameHeight": 915,
+        "isEdgeToEdge": true,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 843,
+        "sosTop": 818,
+        "sosBottom": 874,
+        "sosClipped": false,
+        "emergencyBtnBottom": 424,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 434
+      },
+      "bleedingModal": {
+        "dialogHeight": 915,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "430x932",
+      "home": {
+        "innerWidth": 430,
+        "innerHeight": 932,
+        "docScrollWidth": 430,
+        "docClientWidth": 430,
+        "docScrollHeight": 932,
+        "docClientHeight": 932,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 430,
+        "frameHeight": 932,
+        "isEdgeToEdge": true,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 860,
+        "sosTop": 835,
+        "sosBottom": 891,
+        "sosClipped": false,
+        "emergencyBtnBottom": 427,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 437
+      },
+      "bleedingModal": {
+        "dialogHeight": 932,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "768x1024",
+      "home": {
+        "innerWidth": 768,
+        "innerHeight": 1024,
+        "docScrollWidth": 768,
+        "docClientWidth": 768,
+        "docScrollHeight": 1024,
+        "docClientHeight": 1024,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 430,
+        "frameHeight": 1024,
+        "isEdgeToEdge": false,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 951,
+        "sosTop": 926,
+        "sosBottom": 982,
+        "sosClipped": false,
+        "emergencyBtnBottom": 459,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 469
+      },
+      "bleedingModal": {
+        "dialogHeight": 874,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "1440x900",
+      "home": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "docScrollWidth": 1440,
+        "docClientWidth": 1440,
+        "docScrollHeight": 900,
+        "docClientHeight": 900,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 430,
+        "frameHeight": 900,
+        "isEdgeToEdge": false,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 827,
+        "sosTop": 802,
+        "sosBottom": 858,
+        "sosClipped": false,
+        "emergencyBtnBottom": 458,
+        "emergencyBtnVisibleAboveNav": true,
+        "sheetTop": 468
+      },
+      "bleedingModal": {
+        "dialogHeight": 874,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "844x390",
+      "home": {
+        "innerWidth": 844,
+        "innerHeight": 390,
+        "docScrollWidth": 844,
+        "docClientWidth": 844,
+        "docScrollHeight": 390,
+        "docClientHeight": 390,
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false,
+        "frameWidth": 430,
+        "frameHeight": 390,
+        "isEdgeToEdge": false,
+        "headerHeight": 56,
+        "scrollAreaPaddingBottom": 88,
+        "navHeight": 72,
+        "navTop": 317,
+        "sosTop": 292,
+        "sosBottom": 348,
+        "sosClipped": false,
+        "emergencyBtnBottom": 363,
+        "emergencyBtnVisibleAboveNav": false,
+        "sheetTop": 373
+      },
+      "bleedingModal": {
+        "dialogHeight": 390,
+        "dialogOverflowX": false,
+        "call108Visible": true,
+        "call112Visible": true,
+        "call104Visible": true
+      },
+      "pass": true
+    },
+    {
+      "viewport": "360x640-text130-and-keyboard",
+      "text130Home": {
+        "horizontalOverflow": false,
+        "verticalDocOverflow": false
+      },
+      "text130Modal": {
+        "call108Visible": true,
+        "call112Visible": true,
+        "docOverflowX": false
+      },
+      "keyboardModal": {
+        "fitsViewport": true,
+        "overflowX": false
+      },
+      "pass": true
+    }
+  ],
+  "consoleErrors": []
+}

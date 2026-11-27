@@ -188,6 +188,12 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
                   {currentStep.title[language]}
                 </h3>
 
+                {stepIndex === 0 && (
+                  <p className="mt-2.5 rounded-2xl border border-[#F43F5E]/40 bg-[#F43F5E]/15 px-3 py-2 text-[13px] font-semibold leading-snug text-[#FDA4AF]">
+                    {bleedingData.openingLine[language]}
+                  </p>
+                )}
+
                 <p className="mt-2 text-[15px] leading-relaxed text-white/90">
                   {currentStep.body[language]}
                 </p>
@@ -264,10 +270,11 @@ export const BleedingEmergencyModal: React.FC<BleedingEmergencyModalProps> = ({
               {MEDICAL_REVIEW_CONFIG.disclaimer}
             </p>
             <p>
-              {language === 'en'
-                ? MEDICAL_REVIEW_CONFIG.getReviewLine()
-                : bleedingData.reviewNotice[language]}
+              {MEDICAL_REVIEW_CONFIG.getReviewLine()}
             </p>
+            {language !== 'en' && (
+              <p className="text-white/75">{bleedingData.reviewNotice[language]}</p>
+            )}
             <p className="text-[11px] font-medium text-white/65">
               {MEDICAL_REVIEW_CONFIG.getVersionAndReviewLine()}
             </p>
