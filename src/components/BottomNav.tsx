@@ -10,7 +10,7 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) => {
   const navItemClass = (tab: NavTab) =>
-    `flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+    `pointer-events-auto flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
       activeTab === tab
         ? 'text-white'
         : 'text-white/65 hover:text-white/95'
@@ -71,7 +71,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
             onClick={() => onSelectTab('sos')}
             aria-label="Emergency SOS blood request"
             aria-current={activeTab === 'sos' ? 'page' : undefined}
-            className={`flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_24px_rgba(18,12,52,0.55)] transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+            className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_24px_rgba(18,12,52,0.55)] transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
               activeTab === 'sos'
                 ? 'bg-[#F43F5E] text-white ring-4 ring-white/30'
                 : 'bg-white text-[#34267D] hover:bg-slate-100'

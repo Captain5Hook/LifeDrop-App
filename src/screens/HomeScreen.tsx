@@ -176,7 +176,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </header>
 
       {/* ONE Scrollable Content Area with safe bottom nav clearance */}
-      <div className="ld-scroll-area flex-1 min-h-0 pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
+      <div className="ld-scroll-area flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
         {effectiveLoading ? (
           <HomeSkeleton />
         ) : effectiveError ? (
@@ -238,9 +238,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </p>
                   )}
 
-                  {/* Huge thin 96px counter scaled smoothly via clamp() */}
+                  {/* Huge thin counter scaled smoothly via clamp() for compact mobile screens */}
                   <div className="mt-0.5 flex flex-col items-center">
-                    <p className="text-[clamp(3rem,min(15vw,10.5vh),6rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">
+                    <p className="text-[clamp(2.5rem,min(13vw,8.5vh),4.75rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">
                       {effectiveEmpty ? '0' : displayUsers.toLocaleString('en-IN')}
                     </p>
 
@@ -271,7 +271,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 </section>
 
-                <div className="mt-1 px-4">
+                <div className="mt-1 max-h-[140px] overflow-hidden px-4 [@media(max-height:720px)]:max-h-[112px]">
                   <HeroScene health={heroHealth} dataSaver={dataSaver} />
                 </div>
 
@@ -292,7 +292,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <section
               aria-label="Blood groups, goals, and donation drives"
               className={`ld-glass-sheet flex flex-col rounded-t-[32px] px-4 pt-2 pb-4 transition-all duration-300 ${
-                sheetSnap === 'expanded' ? 'min-h-[76dvh] flex-1' : 'min-h-[38dvh]'
+                sheetSnap === 'expanded' ? 'min-h-[80dvh] flex-1' : 'min-h-[38dvh]'
               }`}
             >
               {/* Drag handle & Snap toggle */}

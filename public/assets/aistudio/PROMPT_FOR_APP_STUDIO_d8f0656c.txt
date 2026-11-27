@@ -1,0 +1,28 @@
+# PROMPT FOR GOOGLE APP STUDIO
+
+Reference Design Template:
+Design+Code SwiftUI Weather App (Meng To): https://www.youtube.com/watch?v=48YwaTiYau0&t=1759s
+
+Please fix the mobile phone viewport fitting and layout issues in LifeDrop-App:
+
+1. ISSUE (App Not Fitting on Mobile):
+   - On standard mobile viewports (e.g. 360x640, 375x667, 390x844), HomeScreen contents (hero counter + 3D drop + emergency button + bottom sheet cards) exceed screen height (~980px content vs 640px–667px screen).
+   - Because `overflow: hidden` is enforced on the outer container, the bottom section of the screen (the blood group pills, national impact stats, and the bottom of the sheet) gets trapped and cut off underneath the fixed BottomNav bar.
+
+2. REQUIRED FIXES:
+
+   A. In `HomeScreen.tsx`:
+   - Change the inner container to be internally scrollable with bottom navigation clearance:
+     `className="ld-scroll-area flex flex-1 flex-col overflow-y-auto overscroll-y-contain pb-[calc(88px+env(safe-area-inset-bottom,0px))]"`
+   - Add responsive scaling on short mobile viewports (< 720px height):
+     - Scale the thin counter text: `text-[clamp(2.5rem,min(13vw,8.5vh),4.75rem)]`
+     - Restrict HeroScene height: `max-h-[140px]` on compact screens so the Bleeding Emergency button and the glass sheet tabs peek cleanly above the fold on initial load.
+   - When the sheet is expanded (`sheetSnap === 'expanded'`), cover ~80% of the viewport (matching the expanded forecast sheet in the video).
+
+   B. In `BottomNav.tsx`:
+   - Keep the SVG wave cutout intact matching the DesignCode template, with `pointer-events-none` on the SVG backdrop and `pointer-events-auto` on the 5 nav buttons.
+
+   C. In `App.tsx`:
+   - Keep the mobile frame `h-full 100dvh flex flex-col overflow-hidden` and let `HomeScreen.tsx` handle its internal scrolling above the nav bar without creating double scrollbars.
+
+Ensure all TypeScript checks (`npm run lint`), `vitest run`, and `npm run build` pass cleanly.

@@ -26,7 +26,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
   return (
     <div
       role="img"
-      className="relative mx-auto flex w-full max-w-[230px] flex-col items-center justify-center select-none"
+      className="relative mx-auto flex max-h-[140px] w-full max-w-[230px] flex-col items-center justify-center select-none [@media(max-height:720px)]:max-h-[112px]"
       aria-label={statusText}
     >
       <div
@@ -40,7 +40,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
 
       <svg
         viewBox="0 0 260 154"
-        className="relative z-10 h-[clamp(86px,16vh,134px)] w-full drop-shadow-[0_14px_26px_rgba(14,10,40,0.45)]"
+        className="relative z-10 h-[clamp(76px,14vh,134px)] max-h-[140px] w-full drop-shadow-[0_14px_26px_rgba(14,10,40,0.45)] [@media(max-height:720px)]:max-h-[112px]"
         role="img"
         aria-hidden="true"
       >
