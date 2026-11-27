@@ -67,6 +67,48 @@ const INDIA_BOUNDS = L.latLngBounds(
   L.latLng(37.5, 98.0),
 );
 
+// Generous pan boundary so asymmetric bottom-sheet padding can lift southern states above the sheet
+const INDIA_MAX_PAN_BOUNDS = L.latLngBounds(
+  L.latLng(-10.0, 56.0),
+  L.latLng(44.0, 108.0),
+);
+
+function getSheetHeightPx(containerHeight: number, snap: SheetSnap): number {
+  if (snap === 'full') return Math.round(containerHeight * 0.72);
+  if (snap === 'half') return Math.round(containerHeight * 0.45);
+  return 112;
+}
+
+function centerLatLngAboveSheet(
+  map: L.Map,
+  target: L.LatLngExpression,
+  zoom: number,
+  topPad: number,
+  bottomPad: number,
+  animate: boolean,
+) {
+  const size = map.getSize();
+  if (size.y <= 0) {
+    map.setView(target, zoom, { animate });
+    return;
+  }
+  const clampedZoom = Math.max(
+    map.getMinZoom(),
+    Math.min(map.getMaxZoom(), zoom),
+  );
+  const targetPt = map.project(target, clampedZoom);
+  const yOffset = Math.max(0, (bottomPad - topPad) / 2);
+  const offsetCenter = map.unproject(
+    L.point(targetPt.x, targetPt.y + yOffset),
+    clampedZoom,
+  );
+  if (animate) {
+    map.flyTo(offsetCenter, clampedZoom, { duration: 0.4 });
+  } else {
+    map.setView(offsetCenter, clampedZoom, { animate: false });
+  }
+}
+
 function getStateHealthColor(row: StateSummaryRow): {
   health: StockHealth;
   hex: string;
@@ -103,7 +145,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [selectedStateCode, setSelectedStateCode] = useState<string>(ALL_INDIA_CODE);
-  const [sheetSnap, setSheetSnap] = useState<SheetSnap>('half');
+  const [sheetSnap, setSheetSnap] = useState<SheetSnap>('peek');
   const [stateSearchOpen, setStateSearchOpen] = useState(false);
   const [stateSearchQuery, setStateSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -143,6 +185,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
+  const nearMeFocusRef = useRef(false);
 
   const effectiveOffline = !isOnline || previewState === 'offline' || fromCache;
   const hasUserCoords =
@@ -231,6 +274,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     } else {
       setBanks([]);
       setSelectedBankId(null);
+      setSheetSnap('peek');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStateCode]);
@@ -244,17 +288,17 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     const map = L.map(mapContainerRef.current, {
       center: [22.4, 79.0],
       zoom: 4,
-      minZoom: 4,
+      minZoom: 3,
       maxZoom: 16,
-      maxBounds: INDIA_BOUNDS,
-      maxBoundsViscosity: 1.0,
+      maxBounds: INDIA_MAX_PAN_BOUNDS,
+      maxBoundsViscosity: 0.9,
       zoomControl: false,
       fadeAnimation: !dataSaver,
       zoomAnimation: !dataSaver,
       markerZoomAnimation: !dataSaver,
     });
 
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
@@ -365,21 +409,11 @@ export const MapScreen: React.FC<MapScreenProps> = ({
         const marker = L.marker([st.center.lat, st.center.lng], { icon });
         marker.on('click', () => {
           setSelectedStateCode(st.code);
-          map.setView([st.center.lat, st.center.lng], 7, {
-            animate: !dataSaver,
-          });
         });
         marker.addTo(layer);
       });
 
-      map.setView([22.4, 79.0], 4, { animate: !dataSaver });
       return;
-    }
-
-    // State view: zoom to state center & plot state's banks
-    const st = STATE_MAP.get(selectedStateCode);
-    if (st) {
-      map.setView([st.center.lat, st.center.lng], 7, { animate: !dataSaver });
     }
 
     filteredBanks.forEach(({ bank, distKm }) => {
@@ -435,6 +469,115 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     selectedBankId,
     hasUserCoords,
     savedLocation,
+  ]);
+
+  // Apply asymmetric padding / bounds so India & state markers remain visible above the sheet
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const container = mapContainerRef.current;
+    if (!map || !container || viewMode !== 'map' || srListMode) return;
+
+    const containerH = container.clientHeight || map.getSize().y;
+    if (containerH <= 0) return;
+
+    const sheetPx = getSheetHeightPx(containerH, sheetSnap);
+    const topPad = selectedStateCode === ALL_INDIA_CODE ? 48 : 20;
+    const safeBottomPad = Math.min(
+      sheetPx + 12,
+      Math.max(0, containerH - topPad - 88),
+    );
+    const animate = !dataSaver;
+
+    map.invalidateSize({ animate: false });
+
+    if (selectedStateCode === ALL_INDIA_CODE) {
+      map.fitBounds(INDIA_BOUNDS, {
+        paddingTopLeft: [14, topPad],
+        paddingBottomRight: [14, safeBottomPad],
+        maxZoom: 5,
+        animate,
+      });
+      return;
+    }
+
+    if (
+      nearMeFocusRef.current &&
+      hasUserCoords &&
+      savedLocation?.coarseLat &&
+      savedLocation?.coarseLng
+    ) {
+      nearMeFocusRef.current = false;
+      centerLatLngAboveSheet(
+        map,
+        [savedLocation.coarseLat, savedLocation.coarseLng],
+        11,
+        topPad,
+        safeBottomPad,
+        animate,
+      );
+      return;
+    }
+
+    if (selectedBankId) {
+      const match = filteredBanks.find(({ bank }) => bank.id === selectedBankId);
+      if (match) {
+        centerLatLngAboveSheet(
+          map,
+          [match.bank.lat, match.bank.lng],
+          12,
+          topPad,
+          safeBottomPad,
+          animate,
+        );
+        return;
+      }
+    }
+
+    if (filteredBanks.length >= 2) {
+      const bounds = L.latLngBounds(
+        filteredBanks.map(({ bank }) => L.latLng(bank.lat, bank.lng)),
+      );
+      map.fitBounds(bounds, {
+        paddingTopLeft: [24, topPad],
+        paddingBottomRight: [24, safeBottomPad],
+        maxZoom: 10,
+        animate,
+      });
+      return;
+    }
+
+    if (filteredBanks.length === 1) {
+      centerLatLngAboveSheet(
+        map,
+        [filteredBanks[0].bank.lat, filteredBanks[0].bank.lng],
+        9,
+        topPad,
+        safeBottomPad,
+        animate,
+      );
+      return;
+    }
+
+    const st = STATE_MAP.get(selectedStateCode);
+    if (st) {
+      centerLatLngAboveSheet(
+        map,
+        [st.center.lat, st.center.lng],
+        7,
+        topPad,
+        safeBottomPad,
+        animate,
+      );
+    }
+  }, [
+    viewMode,
+    srListMode,
+    selectedStateCode,
+    sheetSnap,
+    selectedBankId,
+    filteredBanks,
+    hasUserCoords,
+    savedLocation,
     dataSaver,
   ]);
 
@@ -453,17 +596,27 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     }
 
     if (savedLocation && savedLocation.stateCode !== ALL_INDIA_CODE) {
-      setSelectedStateCode(savedLocation.stateCode);
+      nearMeFocusRef.current = true;
       setSortByDistance(true);
-      if (
+      if (selectedStateCode !== savedLocation.stateCode) {
+        setSelectedStateCode(savedLocation.stateCode);
+      } else if (
         mapInstanceRef.current &&
+        mapContainerRef.current &&
         savedLocation.coarseLat &&
         savedLocation.coarseLng
       ) {
-        mapInstanceRef.current.setView(
+        nearMeFocusRef.current = false;
+        const containerH = mapContainerRef.current.clientHeight || 460;
+        const sheetPx = getSheetHeightPx(containerH, sheetSnap);
+        const safeBottomPad = Math.min(sheetPx + 12, Math.max(0, containerH - 108));
+        centerLatLngAboveSheet(
+          mapInstanceRef.current,
           [savedLocation.coarseLat, savedLocation.coarseLng],
           11,
-          { animate: !dataSaver },
+          20,
+          safeBottomPad,
+          !dataSaver,
         );
       }
     }
@@ -777,7 +930,13 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           {/* Leaflet Canvas OR Screen-reader Accessible List */}
           <div
             ref={mapContainerRef}
-            className={`h-full w-full ${srListMode ? 'hidden' : 'block'}`}
+            className={`isolate ld-map-canvas h-full w-full ${
+              sheetSnap === 'half'
+                ? 'ld-map-sheet-half'
+                : sheetSnap === 'full'
+                  ? 'ld-map-sheet-full'
+                  : 'ld-map-sheet-peek'
+            } ${srListMode ? 'hidden' : 'block'}`}
             aria-label="Interactive blood bank map of India"
           />
 
@@ -840,10 +999,10 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           {!srListMode && (
             <section
               aria-label="Blood bank list and filters"
-              className={`ld-glass-sheet absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[32px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
+              className={`ld-glass-sheet overscroll-contain touch-pan-y absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[32px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
             >
               {/* Snap handle */}
-              <div className="flex shrink-0 items-center justify-between gap-2 pb-1.5">
+              <div className="flex shrink-0 items-center justify-between gap-2 pb-1.5 overscroll-contain touch-pan-y">
                 <button
                   type="button"
                   onClick={() =>
@@ -852,7 +1011,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
                     )
                   }
                   aria-label={`Cycle sheet height (currently ${sheetSnap})`}
-                  className="flex min-h-[36px] flex-1 items-center justify-center gap-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                  className="flex min-h-[36px] flex-1 items-center justify-center gap-2 rounded-full overscroll-contain touch-pan-y hover:bg-black/5 dark:hover:bg-white/10"
                 >
                   <span className="h-1 w-10 rounded-full bg-black/25 dark:bg-white/35" />
                   <span className="text-[12px] font-medium text-slate-700 dark:text-white/80">

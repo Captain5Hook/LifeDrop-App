@@ -1,0 +1,186 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --ld-bg-start: #ECE9FC;
+    --ld-bg-end: #CFC4F8;
+    --ld-surface: rgba(255, 255, 255, 0.72);
+    --ld-surface-strong: rgba(255, 255, 255, 0.88);
+    --ld-surface-border: rgba(91, 63, 224, 0.16);
+    --ld-text-primary: #171338;
+    --ld-text-secondary: rgba(23, 19, 56, 0.78);
+    --ld-primary: #5B3FE0;
+    --ld-primary-glow: rgba(91, 63, 224, 0.35);
+    --ld-stable: #059669;
+    --ld-low: #D97706;
+    --ld-critical: #E11D48;
+  }
+
+  .dark {
+    --ld-bg-start: #1B1740;
+    --ld-bg-end: #6B4FBB;
+    --ld-surface: rgba(255, 255, 255, 0.10);
+    --ld-surface-strong: rgba(255, 255, 255, 0.15);
+    --ld-surface-border: rgba(255, 255, 255, 0.18);
+    --ld-text-primary: #FFFFFF;
+    --ld-text-secondary: rgba(255, 255, 255, 0.78);
+    --ld-primary: #5B3FE0;
+    --ld-primary-glow: rgba(91, 63, 224, 0.50);
+    --ld-stable: #34D399;
+    --ld-low: #FBBF24;
+    --ld-critical: #F43F5E;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overflow-x: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: linear-gradient(180deg, var(--ld-bg-start) 0%, var(--ld-bg-end) 100%);
+    color: var(--ld-text-primary);
+  }
+}
+
+.ld-bg-sky {
+  background: linear-gradient(180deg, var(--ld-bg-start) 0%, var(--ld-bg-end) 100%);
+}
+
+.ld-viewport-h {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.ld-glass {
+  background: var(--ld-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--ld-surface-border);
+}
+
+.ld-glass-sheet {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(45, 34, 102, 0.66) 100%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+:root:not(.dark) .ld-glass-sheet {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(236, 232, 254, 0.94) 100%);
+  border-top: 1px solid rgba(91, 63, 224, 0.18);
+}
+
+.ld-pill-active {
+  background: var(--ld-primary);
+  box-shadow: 0 10px 26px var(--ld-primary-glow);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.ld-stars {
+  background-image:
+    radial-gradient(1px 1px at 12% 8%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 26% 18%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 42% 6%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 12%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 78% 22%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 9%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 18% 34%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 52% 28%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 31%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 8% 22%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+}
+
+:root:not(.dark) .ld-stars {
+  background-image:
+    radial-gradient(1.5px 1.5px at 14% 10%, rgba(91, 63, 224, 0.16) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 12%, rgba(91, 63, 224, 0.14) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 9%, rgba(91, 63, 224, 0.15) 50%, transparent 100%);
+}
+
+/* Smooth touch scroll container */
+.ld-scroll-area {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars cleanly for horizontal pill scrollers while preserving scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area padding helpers */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Leaflet map dark purple theme styling */
+.leaflet-container {
+  font-family: inherit;
+  background: #1B1740;
+}
+
+:root:not(.dark) .leaflet-container {
+  background: #ECE9FC;
+}
+
+.dark .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(195deg) brightness(92%) contrast(92%) saturate(75%);
+}
+
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgba(27, 23, 64, 0.72) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-control-attribution a {
+  color: #C4B5FD !important;
+}
+
+:root:not(.dark) .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #334155 !important;
+}
+
+:root:not(.dark) .leaflet-control-attribution a {
+  color: #5B3FE0 !important;
+}
+
+/* Data saver & reduced motion enforcement */
+.data-saver *,
+.data-saver *::before,
+.data-saver *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

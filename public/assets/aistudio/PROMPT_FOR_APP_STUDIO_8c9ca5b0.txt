@@ -1,0 +1,18 @@
+# Prompt for Google App Studio
+
+Please fix the Map GUI and layout issues in LifeDrop-App using the provided files:
+
+1. Map Viewport Occlusion & Padding:
+   - When the bottom glass sheet is snapped to half (45%) or full (72%), adjust the Leaflet map bounds and center point with map.flyTo / map.panBy or by applying an asymmetric map padding (map.fitBounds(..., { paddingBottomRight: [0, sheetHeight] })) so that Indian state markers (especially southern and central states) remain fully visible in the open upper viewport instead of being hidden behind the sheet.
+
+2. Default Sheet Snap Logic:
+   - In 'All India' view (selectedStateCode === ALL_INDIA_CODE), default the sheet snap to 'peek' (112px) so users can see the entire India map without half the screen being consumed by an empty sheet. Automatically transition to 'half' only when a user selects a specific state/UT to inspect its blood banks.
+
+3. Leaflet Controls & Attribution Bar Positioning:
+   - Relocate or offset the Leaflet attribution control (.leaflet-control-attribution) so it sits above the fixed 72px bottom navigation bar (bottom: calc(72px + env(safe-area-inset-bottom))) rather than underneath it.
+   - Shift the Leaflet zoom control (.leaflet-control-zoom) slightly downward or to bottomleft (above the sheet peek zone) to avoid crowding the header state dropdown and view-mode toggles on compact screens.
+
+4. Mobile Touch & Scroll Isolation:
+   - Add touch-action: pan-y and proper overscroll-behavior: contain to the bank list container (.ld-scroll-area) and bottom sheet handle to prevent scroll-chaining and accidental page bouncing when swiping through blood bank cards.
+
+Ensure all TypeScript types and existing tests continue to pass (npm run build and npm test).
