@@ -1,0 +1,45 @@
+# NEXT PROMPT FOR GOOGLE APP STUDIO: FULL DESIGNCODE WEATHER APP GUI ALIGNMENT
+
+Reference YouTube Video: DesignCode iOS 16 Weather App (Meng To):
+https://www.youtube.com/watch?v=48YwaTiYau0&t=1759s
+
+Please upgrade the visual styling and GUI of LifeDrop to strictly match the premium frosted-glass design language shown in the DesignCode iOS 16 Weather App tutorial:
+
+---
+
+### 1. Ultra-Thin Frosted Glass Cards (`index.css`, `HomeScreen.tsx`)
+- In Meng To's template, weather cards and sheets use `.background(.ultraThinMaterial)` with a delicate 1px light border and deep ambient blur (`backdrop-filter: blur(20px)`).
+- Upgrade `.ld-glass-sheet` and `.ld-glass` in `src/index.css`:
+  - Background: `rgba(42, 33, 92, 0.65)` in dark mode and `rgba(255, 255, 255, 0.70)` in light mode.
+  - Border: `1px solid rgba(255, 255, 255, 0.20)` with an inner highlight (`box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25)`).
+  - Smooth corner radiuses: `rounded-t-[36px]` on sliding sheets and `rounded-[24px]` on nested cards.
+
+---
+
+### 2. Segmented Glass Tabs Matching Hourly/Weekly Forecast Bar (`HomeScreen.tsx`)
+- In the tutorial at 29:19 (t=1759s), the forecast card features an iOS pill-style segmented tab control ("Hourly Forecast" / "Weekly Forecast") that glides smoothly.
+- Update the sheet tabs in `HomeScreen.tsx` ("Blood Groups" / "Our Goals" / "Donation Drives"):
+  - Wrap the tabs inside a frosted pill container (`bg-black/20 p-1 rounded-full border border-white/10`).
+  - Active tab should render as an elevated frosted pill (`bg-[#5B3FE0]/90 text-white shadow-sm rounded-full py-1.5 px-4 font-semibold text-[13px]`) with smooth layout animations.
+
+---
+
+### 3. Blood Group Pills Styled as Weather Metric Cards (`BloodGroupPills.tsx`)
+- In the template, weather metric widgets (UV Index, Wind, Humidity, Air Quality) are styled as mini translucent glass tiles with top-left badges and large glowing values.
+- In `BloodGroupPills.tsx`, redesign the 8 blood group cards (O+, A+, etc.):
+  - Mini translucent cards with subtle gradient borders reflecting stock health:
+    - Stable: subtle emerald neon aura (`box-shadow: 0 4px 16px rgba(52, 211, 153, 0.2)`).
+    - Low: warm amber glow (`box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2)`).
+    - Critical: pulsing ruby glow (`box-shadow: 0 4px 16px rgba(244, 63, 94, 0.3)`).
+  - Clean typographic hierarchy: blood type at the center in bold typography, units below, and instant tap ripple effects.
+
+---
+
+### 4. Interactive Atmospheric Hero & Wave Bottom Bar (`HeroScene.tsx`, `BottomNav.tsx`)
+- Ensure the floating organic wave cutout (`BottomNav.tsx`) sits with an ultra-thin glass stroke (`stroke="rgba(255,255,255,0.25)"`) and a vibrant glowing center SOS button (`box-shadow: 0 8px 30px rgba(244, 63, 94, 0.55)`).
+- Keep `HeroScene.tsx` canvas dynamically reacting to touch while preserving the ambient particle glow.
+
+---
+
+### Verification:
+Ensure all TypeScript checks (`npm run lint`), `vitest run`, and `npm run build` pass cleanly without console warnings.

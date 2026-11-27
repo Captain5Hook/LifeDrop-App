@@ -133,7 +133,7 @@ async function runStaticContractAudit(): Promise<void> {
       },
     },
     {
-      name: 'SOS list checks open/matched status, donor acceptance requires isVerifiedUser() and profile, and contact reveals post-match',
+      name: 'SOS list checks open/matched status, donor acceptance requires isVerifiedUser() and profile, and contact reveals only while active and unpurged',
       fn: () => {
         assert.ok(/match \/requests\/\{requestId\}[\s\S]*?allow list: if isSignedIn\(\) && resource\.data\.status in \['open', 'matched'\];/.test(rules));
         assert.ok(
@@ -144,6 +144,9 @@ async function runStaticContractAudit(): Promise<void> {
         );
         assert.ok(rules.includes('.data.requesterUid == request.auth.uid ||'));
         assert.ok(rules.includes('.data.acceptedByUid == request.auth.uid'));
+        assert.ok(rules.includes('function isSosActiveAndUnpurged(reqData)'));
+        assert.ok(/status in \['open', 'matched'\] && !\('purgedAt' in reqData\)/.test(rules));
+        assert.ok(rules.includes("'expired'"));
       },
     },
     {
@@ -453,6 +456,16 @@ async function runEmulatorSuite(): Promise<void> {
           // After acceptance, donor_2 CAN read requester phone; third party bank_owner_1 CANNOT
           await assertSucceeds(getDoc(doc(donor2Db, 'requests', 'sos_test_1', 'private', 'contact')));
           await assertFails(getDoc(doc(bankOwnerDb, 'requests', 'sos_test_1', 'private', 'contact')));
+
+          // Once SOS expires, neither donor nor requester can read private contact PII
+          await assertSucceeds(
+            updateDoc(doc(donorDb, 'requests', 'sos_test_1'), {
+              status: 'expired',
+              updatedAt: nowIso(),
+            }),
+          );
+          await assertFails(getDoc(doc(donor2Db, 'requests', 'sos_test_1', 'private', 'contact')));
+          await assertFails(getDoc(doc(donorDb, 'requests', 'sos_test_1', 'private', 'contact')));
         },
       },
       {

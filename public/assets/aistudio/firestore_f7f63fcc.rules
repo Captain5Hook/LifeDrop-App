@@ -1,0 +1,448 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny everything unless explicitly permitted by a specific collection rule below.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper: Validate document IDs so path segments remain safe alphanumeric identifiers.
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper: Shortcut for incoming write payload.
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper: Shortcut for existing stored document payload.
+    function existing() {
+      return resource.data;
+    }
+
+    // Helper: Require an authenticated Firebase Auth session.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: Require both an authenticated session and verified email claim.
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Helper: Restrict platform-admin operations to verified accounts registered in /admins/{uid}.
+    function isAdmin() {
+      return isVerifiedUser() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Helper: Validate supported ABO/Rh blood group literals.
+    function isValidBloodGroup(bg) {
+      return bg in ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+    }
+
+    // Helper: Validate blood bank document schema and India coordinate bounds.
+    function isValidBank(data) {
+      return data.keys().hasAll(['id', 'name', 'stateCode', 'stateName', 'city', 'district', 'lat', 'lng', 'type', 'open24x7', 'phone', 'stock', 'updatedAt', 'isDemo'])
+        && data.keys().hasOnly([
+          'id', 'name', 'stateCode', 'stateName', 'city', 'district', 'lat', 'lng',
+          'type', 'open24x7', 'phone', 'stock', 'ownerUid', 'verified', 'licenseNumber',
+          'updatedAt', 'isDemo'
+        ])
+        && data.id is string && data.id.size() <= 64
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 140
+        && data.stateCode is string && data.stateCode.size() >= 2 && data.stateCode.size() <= 10
+        && data.stateName is string && data.stateName.size() <= 80
+        && data.city is string && data.city.size() <= 80
+        && data.district is string && data.district.size() <= 80
+        && data.lat is number && data.lat >= 6.0 && data.lat <= 38.0
+        && data.lng is number && data.lng >= 67.5 && data.lng <= 98.0
+        && data.type in ['government', 'private']
+        && data.open24x7 is bool
+        && data.phone is string && data.phone.size() <= 24
+        && data.stock is map
+        && (!('ownerUid' in data) || data.ownerUid == null || (data.ownerUid is string && data.ownerUid.size() <= 128))
+        && (!('verified' in data) || data.verified is bool)
+        && (!('licenseNumber' in data) || (data.licenseNumber is string && data.licenseNumber.size() <= 64))
+        && data.updatedAt is string && data.updatedAt.size() <= 64
+        && data.isDemo is bool;
+    }
+
+    // Helper: Validate blood bank onboarding application schema.
+    function isValidBankApplication(data, applicantUid) {
+      return data.keys().hasAll(['uid', 'facilityName', 'licenseNumber', 'type', 'stateCode', 'stateName', 'city', 'district', 'phone', 'open24x7', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid', 'facilityName', 'licenseNumber', 'eraktkoshId', 'type',
+          'stateCode', 'stateName', 'city', 'district', 'phone', 'open24x7',
+          'lat', 'lng', 'status', 'assignedBankId', 'reviewNotes',
+          'reviewedBy', 'reviewedAt', 'createdAt', 'updatedAt'
+        ])
+        && data.uid == applicantUid
+        && data.facilityName is string && data.facilityName.size() >= 2 && data.facilityName.size() <= 140
+        && data.licenseNumber is string && data.licenseNumber.size() >= 3 && data.licenseNumber.size() <= 64
+        && (!('eraktkoshId' in data) || (data.eraktkoshId is string && data.eraktkoshId.size() <= 64))
+        && data.type in ['government', 'private']
+        && data.stateCode is string && data.stateCode.size() >= 2 && data.stateCode.size() <= 10
+        && data.stateName is string && data.stateName.size() <= 80
+        && data.city is string && data.city.size() <= 80
+        && data.district is string && data.district.size() <= 80
+        && data.phone is string && data.phone.size() <= 24
+        && data.open24x7 is bool
+        && data.status in ['pending', 'approved', 'rejected']
+        && (!('assignedBankId' in data) || data.assignedBankId == null || (data.assignedBankId is string && data.assignedBankId.size() <= 64))
+        && (!('reviewNotes' in data) || (data.reviewNotes is string && data.reviewNotes.size() <= 240))
+        && (!('reviewedBy' in data) || (data.reviewedBy is string && data.reviewedBy.size() <= 128))
+        && (!('reviewedAt' in data) || (data.reviewedAt is string && data.reviewedAt.size() <= 64))
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    // Helper: Validate immutable audit log payload.
+    function isValidAuditLog(data, logId) {
+      return data.keys().hasAll(['id', 'actorUid', 'actorRole', 'action', 'targetPath', 'summary', 'createdAt'])
+        && data.keys().hasOnly(['id', 'actorUid', 'actorRole', 'action', 'targetPath', 'summary', 'createdAt'])
+        && data.id == logId
+        && data.actorUid is string && data.actorUid.size() <= 128
+        && data.actorRole in ['bank', 'admin']
+        && data.action is string && data.action.size() >= 2 && data.action.size() <= 64
+        && data.targetPath is string && data.targetPath.size() <= 160
+        && data.summary is string && data.summary.size() <= 240
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    // Helper: Validate user profile document; strictly blocks client self-promotion and isDemo spoofing.
+    function isValidUserProfile(data, uid) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'bloodGroup', 'bloodGroupStatus', 'stateCode', 'age18PlusConfirmed'])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'role', 'bloodGroup', 'bloodGroupStatus',
+          'stateCode', 'stateName', 'city', 'sex', 'canDonateNow',
+          'lastSelfReportedDonation', 'lastConfirmedDonation', 'donationsCount',
+          'timeline', 'age18PlusConfirmed', 'consentTimestamp', 'isDemo',
+          'createdAt', 'updatedAt'
+        ])
+        && data.uid == uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.role in ['donor', 'recipient', 'bank']
+        && isValidBloodGroup(data.bloodGroup)
+        && data.bloodGroupStatus in ['self-reported', 'lab-confirmed']
+        && data.stateCode is string && data.stateCode.size() >= 2 && data.stateCode.size() <= 10
+        && data.age18PlusConfirmed == true
+        && (!('stateName' in data) || (data.stateName is string && data.stateName.size() <= 80))
+        && (!('city' in data) || (data.city is string && data.city.size() <= 80))
+        && (!('sex' in data) || data.sex in ['male', 'female', 'other'])
+        && (!('canDonateNow' in data) || data.canDonateNow is bool)
+        && (!('lastSelfReportedDonation' in data) || data.lastSelfReportedDonation == null || (data.lastSelfReportedDonation is string && data.lastSelfReportedDonation.size() <= 32))
+        && (!('lastConfirmedDonation' in data) || data.lastConfirmedDonation == null || (data.lastConfirmedDonation is string && data.lastConfirmedDonation.size() <= 32))
+        && (!('donationsCount' in data) || (data.donationsCount is number && data.donationsCount >= 0 && data.donationsCount <= 500))
+        && (!('timeline' in data) || (data.timeline is list && data.timeline.size() <= 30 && (data.timeline.size() == 0 || data.timeline[0] is map)))
+        && (!('consentTimestamp' in data) || (data.consentTimestamp is string && data.consentTimestamp.size() <= 64))
+        && (!('isDemo' in data) || data.isDemo == false)
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    // Helper: Validate isolated private user PII contact document (18+ dobYear check).
+    function isValidPrivateContact(data, uid) {
+      return data.keys().hasAll(['uid', 'email', 'phone', 'dobYear', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'phone', 'dobYear', 'updatedAt'])
+        && data.uid == uid
+        && data.email is string && data.email.size() <= 140
+        && data.phone is string && data.phone.size() <= 20
+        && data.dobYear is int && data.dobYear >= 1920 && data.dobYear <= 2008
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    // Helper: Validate DPDP Act 2023 consent log document.
+    function isValidConsentRecord(data, uid) {
+      return data.keys().hasAll(['uid', 'purpose', 'acceptedPrivacy', 'acceptedAge18Plus', 'acceptedEmergencyAlerts', 'withdrawn', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'purpose', 'acceptedPrivacy', 'acceptedAge18Plus', 'acceptedEmergencyAlerts', 'withdrawn', 'createdAt', 'updatedAt'])
+        && data.uid == uid
+        && data.purpose is string && data.purpose.size() >= 10 && data.purpose.size() <= 300
+        && data.acceptedPrivacy == true
+        && data.acceptedAge18Plus == true
+        && data.acceptedEmergencyAlerts is bool
+        && data.withdrawn is bool
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    // Helper: Validate SOS blood request schema; forbids client setting isDemo: true.
+    function isValidSosRequest(data, requestId) {
+      return data.keys().hasAll(['id', 'requesterUid', 'requesterName', 'bloodGroup', 'compatibleDonorGroups', 'component', 'unitsNeeded', 'urgency', 'hospitalName', 'stateCode', 'stateName', 'city', 'coarseLat', 'coarseLng', 'radiusKm', 'escalationStage', 'status', 'matchedCount', 'createdAt', 'updatedAt', 'expiresAt'])
+        && data.keys().hasOnly([
+          'id', 'requesterUid', 'requesterName', 'bloodGroup', 'compatibleDonorGroups',
+          'component', 'unitsNeeded', 'urgency', 'hospitalName', 'stateCode', 'stateName',
+          'city', 'coarseLat', 'coarseLng', 'radiusKm', 'escalationStage', 'status',
+          'acceptedByUid', 'acceptedByName', 'matchedCount', 'notes', 'isDemo',
+          'createdAt', 'updatedAt', 'expiresAt'
+        ])
+        && data.id == requestId
+        && data.requesterUid is string && data.requesterUid.size() <= 128
+        && data.requesterName is string && data.requesterName.size() >= 1 && data.requesterName.size() <= 80
+        && isValidBloodGroup(data.bloodGroup)
+        && data.compatibleDonorGroups is list && data.compatibleDonorGroups.size() >= 1 && data.compatibleDonorGroups.size() <= 8 && data.compatibleDonorGroups[0] is string
+        && data.component in ['Whole Blood', 'PRBC', 'Platelets', 'Plasma']
+        && data.unitsNeeded is int && data.unitsNeeded >= 1 && data.unitsNeeded <= 10
+        && data.urgency in ['critical', 'urgent', 'scheduled']
+        && data.hospitalName is string && data.hospitalName.size() >= 2 && data.hospitalName.size() <= 120
+        && data.stateCode is string && data.stateCode.size() >= 2 && data.stateCode.size() <= 10
+        && data.stateName is string && data.stateName.size() <= 80
+        && data.city is string && data.city.size() <= 80
+        && data.coarseLat is number && data.coarseLat >= 6.0 && data.coarseLat <= 38.0
+        && data.coarseLng is number && data.coarseLng >= 67.5 && data.coarseLng <= 98.0
+        && data.radiusKm in [5, 15, 50, 250]
+        && data.escalationStage in [1, 2, 3, 4]
+        && data.status in ['open', 'matched', 'fulfilled', 'cancelled']
+        && (!('acceptedByUid' in data) || data.acceptedByUid == null || (data.acceptedByUid is string && data.acceptedByUid.size() <= 128))
+        && (!('acceptedByName' in data) || data.acceptedByName == null || (data.acceptedByName is string && data.acceptedByName.size() <= 80))
+        && data.matchedCount is int && data.matchedCount >= 0 && data.matchedCount <= 50
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 240))
+        && (!('isDemo' in data) || data.isDemo == false)
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64
+        && data.expiresAt is string && data.expiresAt.size() <= 64;
+    }
+
+    // Helper: Validate donor pledge/ETA tracking record under an SOS request.
+    function isValidSosResponse(data, donorUid) {
+      return data.keys().hasAll(['donorUid', 'donorName', 'bloodGroup', 'city', 'etaMinutes', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['donorUid', 'donorName', 'bloodGroup', 'city', 'etaMinutes', 'status', 'donorPhone', 'createdAt', 'updatedAt'])
+        && data.donorUid == donorUid
+        && data.donorName is string && data.donorName.size() >= 1 && data.donorName.size() <= 80
+        && isValidBloodGroup(data.bloodGroup)
+        && data.city is string && data.city.size() <= 80
+        && data.etaMinutes is int && data.etaMinutes >= 5 && data.etaMinutes <= 240
+        && data.status in ['pledged', 'en_route', 'arrived', 'withdrawn']
+        && (!('donorPhone' in data) || (data.donorPhone is string && data.donorPhone.size() <= 20))
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    // Boot connectivity probe: read-only single check document, no client writes.
+    match /test/connection {
+      allow get: if true;
+      allow write: if false;
+    }
+
+    // Admin registry: signed-in verified admin can read own marker doc only; no client writes.
+    match /admins/{uid} {
+      allow get: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Public aggregated statistics: public read-only, zero client writes.
+    match /stats/{statId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Public mission goals: public read-only, zero client writes.
+    match /goals/{goalId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Public blood donation drives: public read-only, zero client writes.
+    match /drives/{driveId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Eligibility configuration: signed-in read only, Admin write with field validation.
+    match /config/{configId} {
+      allow get: if isSignedIn() && isValidId(configId);
+      allow list: if false;
+      allow create, update, delete: if isAdmin() && isValidId(configId);
+    }
+
+    // Blood banks directory: signed-in read; verified owner stock update or Admin write.
+    match /banks/{bankId} {
+      allow get: if isSignedIn() && isValidId(bankId);
+      allow list: if isSignedIn();
+      allow create: if isAdmin() && isValidId(bankId) && isValidBank(incoming());
+      allow update: if isValidId(bankId) && isValidBank(incoming()) && (
+        isAdmin()
+        ||
+        (isSignedIn()
+          && existing().verified == true
+          && existing().ownerUid == request.auth.uid
+          && incoming().diff(existing()).affectedKeys().hasOnly(['stock', 'open24x7', 'phone', 'updatedAt']))
+      );
+      allow delete: if isAdmin() && isValidId(bankId);
+    }
+
+    // User profiles: strict owner-only read/write; prevents reading other users or modifying protected flags.
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming(), userId)
+        && incoming().bloodGroupStatus == 'self-reported';
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && (!incoming().diff(existing()).affectedKeys().hasAny(['bloodGroupStatus', 'lastConfirmedDonation', 'isDemo']));
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+      // Isolated PII contact subcollection: strictly owner-only.
+      match /private/contact {
+        allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+        allow list: if false;
+        allow create, update: if isSignedIn()
+          && isValidId(userId)
+          && request.auth.uid == userId
+          && isValidPrivateContact(incoming(), userId)
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+        allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      }
+    }
+
+    // DPDP Act 2023 consent records: strictly owner-only read/write.
+    match /consents/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidConsentRecord(incoming(), userId)
+        && incoming().withdrawn == false;
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidConsentRecord(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().diff(existing()).affectedKeys().hasOnly(['withdrawn', 'acceptedEmergencyAlerts', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+    }
+
+    // Emergency SOS requests: signed-in status-scoped access with post-acceptance contact reveal.
+    match /requests/{requestId} {
+      allow get: if isSignedIn() && isValidId(requestId);
+      allow list: if isSignedIn() && resource.data.status in ['open', 'matched'];
+      allow create: if isSignedIn()
+        && isValidId(requestId)
+        && incoming().requesterUid == request.auth.uid
+        && incoming().status == 'open'
+        && incoming().escalationStage == 1
+        && incoming().radiusKm == 5
+        && isValidSosRequest(incoming(), requestId);
+      allow update: if isSignedIn()
+        && isValidId(requestId)
+        && isValidSosRequest(incoming(), requestId)
+        && incoming().id == existing().id
+        && incoming().requesterUid == existing().requesterUid
+        && (
+          (existing().requesterUid == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['escalationStage', 'radiusKm', 'status', 'acceptedByUid', 'acceptedByName', 'updatedAt']))
+          ||
+          (existing().requesterUid != request.auth.uid
+            && existing().status == 'open'
+            && isVerifiedUser()
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && incoming().status == 'matched'
+            && incoming().acceptedByUid == request.auth.uid
+            && incoming().matchedCount == existing().matchedCount + 1
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'acceptedByUid', 'acceptedByName', 'matchedCount', 'updatedAt']))
+        );
+      allow delete: if isSignedIn()
+        && isValidId(requestId)
+        && (existing().requesterUid == request.auth.uid || isAdmin());
+
+      // Private requester phone: readable only by requester or matched donor.
+      match /private/contact {
+        allow get: if isSignedIn()
+          && isValidId(requestId)
+          && (
+            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
+            get(/databases/$(database)/documents/requests/$(requestId)).data.acceptedByUid == request.auth.uid
+          );
+        allow list: if false;
+        allow create, update: if isSignedIn()
+          && isValidId(requestId)
+          && existsAfter(/databases/$(database)/documents/requests/$(requestId))
+          && incoming().keys().hasAll(['requesterUid', 'phone', 'updatedAt'])
+          && incoming().keys().hasOnly(['requesterUid', 'phone', 'updatedAt'])
+          && incoming().requesterUid == request.auth.uid
+          && incoming().phone is string && incoming().phone.size() <= 20
+          && incoming().updatedAt is string && incoming().updatedAt.size() <= 64
+          && getAfter(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid;
+        allow delete: if isSignedIn()
+          && isValidId(requestId)
+          && get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid;
+      }
+
+      // Donor pledges and ETA responses: readable by donor or requester, writable only by donor.
+      match /responses/{donorUid} {
+        allow get: if isSignedIn()
+          && isValidId(requestId)
+          && isValidId(donorUid)
+          && (
+            request.auth.uid == donorUid ||
+            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid
+          );
+        allow list: if isSignedIn()
+          && (
+            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
+            resource.data.donorUid == request.auth.uid
+          );
+        allow create, update: if isSignedIn()
+          && isValidId(requestId)
+          && isValidId(donorUid)
+          && request.auth.uid == donorUid
+          && exists(/databases/$(database)/documents/requests/$(requestId))
+          && isValidSosResponse(incoming(), donorUid);
+        allow delete: if isSignedIn()
+          && isValidId(requestId)
+          && isValidId(donorUid)
+          && request.auth.uid == donorUid;
+      }
+    }
+
+    // Blood bank license applications: owner submits pending only; Admin reviews and approves.
+    match /bankApplications/{applicantUid} {
+      allow get: if isSignedIn()
+        && isValidId(applicantUid)
+        && (request.auth.uid == applicantUid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn()
+        && isValidId(applicantUid)
+        && request.auth.uid == applicantUid
+        && incoming().status == 'pending'
+        && isValidBankApplication(incoming(), applicantUid);
+      allow update: if isValidId(applicantUid)
+        && isValidBankApplication(incoming(), applicantUid)
+        && incoming().uid == existing().uid
+        && (
+          isAdmin()
+          ||
+          (isSignedIn()
+            && request.auth.uid == applicantUid
+            && incoming().status == 'pending'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['facilityName', 'licenseNumber', 'eraktkoshId', 'type', 'stateCode', 'stateName', 'city', 'district', 'phone', 'open24x7', 'lat', 'lng', 'status', 'updatedAt']))
+        );
+      allow delete: if isAdmin() && isValidId(applicantUid);
+    }
+
+    // Immutable audit trail: Admin read only; append-only create for verified admins or bank-role users; update/delete denied.
+    match /auditLogs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if isValidId(logId)
+        && isValidAuditLog(incoming(), logId)
+        && isSignedIn()
+        && incoming().actorUid == request.auth.uid
+        && (
+          (isAdmin() && incoming().actorRole == 'admin')
+          || (
+            incoming().actorRole == 'bank'
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'bank'
+          )
+        );
+      allow update, delete: if false;
+    }
+  }
+}

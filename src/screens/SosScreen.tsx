@@ -33,6 +33,7 @@ import {
 } from '../services/compatibilityService';
 import {
   ESCALATION_RADII,
+  isSosExpired,
   sosService,
   type MatchedBankResult,
   type SosPrivateContact,
@@ -156,6 +157,13 @@ const SosScreen: React.FC<SosScreenProps> = ({
     [requests, selectedRequestId],
   );
 
+  // Auto-expire overdue SOS requests and purge 30+ day old PII on mount
+  useEffect(() => {
+    void sosService
+      .expireOverdueRequests()
+      .then(() => sosService.purgeExpiredSosPii());
+  }, []);
+
   // Subscribe to responses & revealed contact when viewing active request
   useEffect(() => {
     if (!activeRequest || !user) {
@@ -169,12 +177,16 @@ const SosScreen: React.FC<SosScreenProps> = ({
       setResponses,
     );
 
-    if (
-      activeRequest.requesterUid === user.uid ||
-      activeRequest.acceptedByUid === user.uid
-    ) {
+    const canAccessContact =
+      (activeRequest.status === 'open' || activeRequest.status === 'matched') &&
+      !isSosExpired(activeRequest) &&
+      !activeRequest.purgedAt &&
+      (activeRequest.requesterUid === user.uid ||
+        activeRequest.acceptedByUid === user.uid);
+
+    if (canAccessContact) {
       void sosService
-        .getPrivateRequesterContact(activeRequest.id)
+        .getPrivateRequesterContact(activeRequest.id, activeRequest)
         .then(setRevealedContact);
     } else {
       setRevealedContact(null);
@@ -741,7 +753,9 @@ const SosScreen: React.FC<SosScreenProps> = ({
                               ? 'bg-[#34D399]/25 text-[#047857] dark:text-[#34D399]'
                               : activeRequest.status === 'fulfilled'
                                 ? 'bg-[#5B3FE0]/25 text-[#5B3FE0] dark:text-[#C4B5FD]'
-                                : 'bg-[#F43F5E]/25 text-[#BE123C] dark:text-[#FDA4AF]'
+                                : activeRequest.status === 'expired'
+                                  ? 'bg-slate-500/20 text-slate-700 dark:bg-white/15 dark:text-white/75'
+                                  : 'bg-[#F43F5E]/25 text-[#BE123C] dark:text-[#FDA4AF]'
                           }`}
                         >
                           {activeRequest.status}
@@ -886,14 +900,18 @@ const SosScreen: React.FC<SosScreenProps> = ({
                             {resp.city} · ETA ~{resp.etaMinutes} min · {resp.status}
                           </p>
                         </div>
-                        {resp.donorPhone && (
-                          <a
-                            href={`tel:${resp.donorPhone}`}
-                            className="inline-flex min-h-[36px] items-center gap-1 rounded-full bg-[#5B3FE0] px-3 text-[11px] font-semibold text-white"
-                          >
-                            <Phone className="h-3 w-3" /> Call
-                          </a>
-                        )}
+                        {resp.donorPhone &&
+                          (activeRequest.status === 'open' ||
+                            activeRequest.status === 'matched') &&
+                          !isSosExpired(activeRequest) &&
+                          !activeRequest.purgedAt && (
+                            <a
+                              href={`tel:${resp.donorPhone}`}
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-full bg-[#5B3FE0] px-3 text-[11px] font-semibold text-white"
+                            >
+                              <Phone className="h-3 w-3" /> Call
+                            </a>
+                          )}
                       </div>
                     ))}
                   </div>
@@ -959,42 +977,45 @@ const SosScreen: React.FC<SosScreenProps> = ({
                 {/* Requester Controls OR Donor Respond Button */}
                 {user?.uid === activeRequest.requesterUid ? (
                   <div className="flex flex-wrap gap-2 border-t border-black/10 pt-3 dark:border-white/10">
-                    {activeRequest.status !== 'fulfilled' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void sosService
-                            .updateRequestStatus(activeRequest, 'fulfilled')
-                            .then((u) =>
-                              setRequests((prev) =>
-                                prev.map((r) => (r.id === u.id ? u : r)),
-                              ),
-                            )
-                        }
-                        className="min-h-[44px] flex-1 rounded-full bg-[#34D399] px-4 text-[12px] font-semibold text-[#09291E]"
-                      >
-                        Mark Fulfilled
-                      </button>
-                    )}
-                    {activeRequest.status === 'matched' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void sosService
-                            .updateRequestStatus(activeRequest, 'open')
-                            .then((u) =>
-                              setRequests((prev) =>
-                                prev.map((r) => (r.id === u.id ? u : r)),
-                              ),
-                            )
-                        }
-                        className="min-h-[44px] flex-1 rounded-full border border-black/15 bg-white/70 px-3 text-[12px] font-medium dark:border-white/20 dark:bg-white/10"
-                      >
-                        Reopen Search
-                      </button>
-                    )}
+                    {activeRequest.status !== 'fulfilled' &&
+                      activeRequest.status !== 'expired' && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void sosService
+                              .updateRequestStatus(activeRequest, 'fulfilled')
+                              .then((u) =>
+                                setRequests((prev) =>
+                                  prev.map((r) => (r.id === u.id ? u : r)),
+                                ),
+                              )
+                          }
+                          className="min-h-[44px] flex-1 rounded-full bg-[#34D399] px-4 text-[12px] font-semibold text-[#09291E]"
+                        >
+                          Mark Fulfilled
+                        </button>
+                      )}
+                    {activeRequest.status === 'matched' &&
+                      !isSosExpired(activeRequest) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void sosService
+                              .updateRequestStatus(activeRequest, 'open')
+                              .then((u) =>
+                                setRequests((prev) =>
+                                  prev.map((r) => (r.id === u.id ? u : r)),
+                                ),
+                              )
+                          }
+                          className="min-h-[44px] flex-1 rounded-full border border-black/15 bg-white/70 px-3 text-[12px] font-medium dark:border-white/20 dark:bg-white/10"
+                        >
+                          Reopen Search
+                        </button>
+                      )}
                     {activeRequest.status !== 'cancelled' &&
-                      activeRequest.status !== 'fulfilled' && (
+                      activeRequest.status !== 'fulfilled' &&
+                      activeRequest.status !== 'expired' && (
                         <button
                           type="button"
                           onClick={() =>
@@ -1011,9 +1032,15 @@ const SosScreen: React.FC<SosScreenProps> = ({
                           <XCircle className="h-3.5 w-3.5" /> Cancel
                         </button>
                       )}
+                    {activeRequest.status === 'expired' && (
+                      <p className="w-full text-[11px] text-slate-600 dark:text-white/70">
+                        This SOS request expired after 24 hours. Private contact info is locked and all phone PII is purged after 30 days.
+                      </p>
+                    )}
                   </div>
                 ) : (
-                  activeRequest.status === 'open' && (
+                  activeRequest.status === 'open' &&
+                  !isSosExpired(activeRequest) && (
                     <div className="border-t border-black/10 pt-3 dark:border-white/10">
                       {respondingToId === activeRequest.id ? (
                         <div className="space-y-2.5">

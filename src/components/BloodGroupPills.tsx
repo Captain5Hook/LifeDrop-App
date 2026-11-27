@@ -38,9 +38,9 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
     bloodGroups.find((g) => g.group === selectedGroup) ?? bloodGroups[0];
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       <div
-        className="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto pb-1 pt-0.5"
+        className="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto px-0.5 pt-1 pb-1.5"
         role="listbox"
         aria-label={`Blood group availability in ${stateName}`}
       >
@@ -48,10 +48,17 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
           const isSelected = item.group === selectedGroup;
           const statusColor =
             item.status === 'critical'
-              ? 'text-[#FB7185] dark:text-[#F43F5E]'
+              ? 'text-[#E11D48] dark:text-[#FDA4AF]'
               : item.status === 'low'
-                ? 'text-[#D97706] dark:text-[#FBBF24]'
-                : 'text-[#059669] dark:text-[#34D399]';
+                ? 'text-[#B45309] dark:text-[#FCD34D]'
+                : 'text-[#047857] dark:text-[#6EE7B7]';
+
+          const healthCardTheme =
+            item.status === 'critical'
+              ? 'border-[#F43F5E]/45 bg-gradient-to-b from-[#F43F5E]/15 to-white/60 dark:from-[#F43F5E]/20 dark:to-[#2A215C]/65 ld-critical-glow'
+              : item.status === 'low'
+                ? 'border-[#FBBF24]/45 bg-gradient-to-b from-[#FBBF24]/15 to-white/60 dark:from-[#FBBF24]/18 dark:to-[#2A215C]/65 shadow-[0_4px_16px_rgba(251,191,36,0.2)]'
+                : 'border-[#34D399]/40 bg-gradient-to-b from-[#34D399]/14 to-white/60 dark:from-[#34D399]/16 dark:to-[#2A215C]/65 shadow-[0_4px_16px_rgba(52,211,153,0.2)]';
 
           return (
             <button
@@ -60,45 +67,51 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
               role="option"
               aria-selected={isSelected}
               onClick={() => onSelectGroup(item.group)}
-              className={`group flex min-h-[126px] w-[70px] shrink-0 flex-col items-center justify-between rounded-[999px] border px-2 py-2.5 text-center transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+              className={`group relative flex min-h-[122px] w-[80px] shrink-0 flex-col items-center justify-between overflow-hidden rounded-[24px] border px-2.5 py-2.5 text-center backdrop-blur-md transition-all duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                 isSelected
-                  ? 'ld-pill-active text-white'
-                  : 'border-black/10 bg-white/60 text-slate-900 hover:bg-white/80 dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14]'
+                  ? 'ld-pill-active text-white ring-1 ring-white/40'
+                  : `${healthCardTheme} text-slate-900 hover:brightness-105 dark:text-white`
               }`}
             >
-              <div className="flex flex-col items-center">
-                <span className="text-[15px] font-semibold tracking-tight tabular-nums">
-                  {item.group}
-                </span>
+              {/* Top-left metric badge + icon */}
+              <div className="flex w-full items-center justify-between gap-1">
                 <span
-                  className={`mt-0.5 text-[10px] leading-tight whitespace-nowrap ${
-                    isSelected
-                      ? 'text-white/85'
-                      : 'text-slate-600 dark:text-white/65'
-                  }`}
-                >
-                  {item.isMostCommon ? 'Common' : `${item.sharePercent}%`}
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center gap-0.5">
-                <Droplet
-                  className={`h-4 w-4 ${isSelected ? 'text-white' : statusColor}`}
-                  fill="currentColor"
-                  fillOpacity={0.25}
-                />
-                <span
-                  className={`text-[11px] font-medium tabular-nums ${
+                  className={`truncate text-[10px] font-semibold tracking-tight ${
                     isSelected ? 'text-white/90' : statusColor
                   }`}
                 >
-                  {item.sharePercent}%
+                  {item.isMostCommon ? 'Top' : `${item.sharePercent}%`}
+                </span>
+                <Droplet
+                  className={`h-3.5 w-3.5 shrink-0 ${
+                    isSelected ? 'text-white' : statusColor
+                  }`}
+                  fill="currentColor"
+                  fillOpacity={0.3}
+                  aria-hidden="true"
+                />
+              </div>
+
+              {/* Center bold blood group */}
+              <div className="my-0.5 flex flex-col items-center">
+                <span className="text-[20px] font-bold leading-none tracking-tight tabular-nums">
+                  {item.group}
+                </span>
+                <span
+                  className={`mt-1 text-[10px] font-medium capitalize ${
+                    isSelected
+                      ? 'text-white/85'
+                      : 'text-slate-600 dark:text-white/70'
+                  }`}
+                >
+                  {item.status}
                 </span>
               </div>
 
-              <div className="flex flex-col items-center leading-tight">
-                <span className="text-[13px] font-semibold tabular-nums">
-                  {formatCompactUsers(item.users)}
+              {/* Bottom units & compact donor count */}
+              <div className="flex w-full flex-col items-center leading-tight">
+                <span className="text-[12px] font-semibold tabular-nums">
+                  {item.unitsInStock} u
                 </span>
                 <span
                   className={`text-[10px] tabular-nums ${
@@ -107,7 +120,7 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
                       : 'text-slate-600 dark:text-white/65'
                   }`}
                 >
-                  {item.unitsInStock} u
+                  {formatCompactUsers(item.users)} donors
                 </span>
               </div>
             </button>
@@ -116,25 +129,28 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
       </div>
 
       {activeStat && (
-        <div className="flex flex-col gap-2 rounded-2xl border border-black/10 bg-white/55 px-3.5 py-2.5 text-[13px] dark:border-white/15 dark:bg-white/[0.07]">
+        <div className="ld-glass flex flex-col gap-2.5 rounded-[24px] px-4 py-3 text-[13px]">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 font-medium text-slate-900 dark:text-white">
-                <span>{activeStat.group} in {stateName}</span>
+                <span>
+                  {activeStat.group} in {stateName}
+                </span>
                 {activeStat.isMostCommon && (
                   <span className="text-[12px] font-normal text-[#5B3FE0] dark:text-[#C4B5FD]">
                     · Most common
                   </span>
                 )}
                 {isDemo && (
-                  <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
-                    Demo data
+                  <span className="text-[11px] font-normal text-slate-600 dark:text-white/70">
+                    · Demo data
                   </span>
                 )}
               </div>
               <p className="mt-0.5 text-[12px] text-slate-700 tabular-nums dark:text-white/78">
-                {activeStat.users.toLocaleString('en-IN')} registered donors ({activeStat.sharePercent}%) ·{' '}
-                {activeStat.unitsInStock} units in stock
+                {activeStat.users.toLocaleString('en-IN')} registered donors (
+                {activeStat.sharePercent}%) · {activeStat.unitsInStock} units in
+                stock
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1 font-medium">
@@ -162,7 +178,7 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
               <button
                 type="button"
                 onClick={() => onFindOnMap(activeStat.group)}
-                className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white transition hover:bg-[#6A4FF0]"
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full bg-[#5B3FE0] px-4 text-[13px] font-medium text-white transition active:scale-[0.98] hover:bg-[#6A4FF0]"
               >
                 <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>Find {activeStat.group} on Map</span>
@@ -172,7 +188,7 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenCompatibilityChecker(activeStat.group)}
-                className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-black/15 bg-white/75 px-3.5 text-[12px] font-semibold text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-black/15 bg-white/75 px-4 text-[12px] font-semibold text-slate-900 transition active:scale-[0.98] hover:bg-white dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
               >
                 <Droplets className="h-3.5 w-3.5 text-[#F43F5E]" aria-hidden="true" />
                 <span>Compatibility</span>

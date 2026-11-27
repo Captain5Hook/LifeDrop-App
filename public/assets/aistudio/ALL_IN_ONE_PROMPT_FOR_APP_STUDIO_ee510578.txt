@@ -1,0 +1,37 @@
+# ALL-IN-ONE PROMPT FOR GOOGLE APP STUDIO: LIFEDROP FULL ENHANCEMENTS
+
+Please implement the following three key feature enhancements across LifeDrop-App using the attached files:
+
+---
+
+### PART 1: Real Bank Search & Dynamic Filtering (src/services/bankService.ts, src/screens/MapScreen.tsx)
+1. In `src/services/bankService.ts`:
+   - Enhance state-scoped Firestore bank queries to support search by hospital/bank name and district query filters.
+   - Maintain local offline caching using IndexedDB/localStorage fallback when network is unavailable or Firestore is offline.
+2. In `src/screens/MapScreen.tsx`:
+   - Add a search input inside the blood bank list sheet to allow instant keyword filtering by bank name or district.
+   - Ensure the 24x7 toggle, blood group availability, and Government/Private filters update the filtered list reactively.
+
+---
+
+### PART 2: Online Gemini AI Fallback for Assistant (src/services/chatService.ts, src/screens/ChatScreen.tsx, index.ts)
+1. In `src/services/chatService.ts`:
+   - Keep the instant offline clinical triage matching (Indian Red Cross / NBTC guidelines) for standard queries.
+   - When the user is online (`navigator.onLine`) and the question cannot be answered with high confidence by local JSON knowledge, call the Cloudflare Gemini Worker (`workers/chat-worker/index.ts` via `VITE_CHAT_WORKER_URL` or standard worker POST).
+   - Ensure medical disclaimers ("Demo project. Not medical advice. In an emergency call 108 or 112.") and prompt injection guards are strictly applied to all AI responses.
+2. In `src/screens/ChatScreen.tsx`:
+   - Add a visual badge indicating when an answer is delivered via "Offline Clinical Database" vs "Live AI Assistant".
+
+---
+
+### PART 3: 30-Day Auto-Expiry & PII Purge Routine (src/services/sosService.ts, src/screens/SosScreen.tsx, firestore.rules)
+1. In `src/services/sosService.ts`:
+   - Automatically mark active SOS requests as `status: 'expired'` if `Date.now() > expiresAt` (default 24h lifespan).
+   - Add a purge function to strip sensitive requester/donor phone numbers from completed/expired requests older than 30 days to strictly adhere to DPDP data minimization rules.
+2. In `firestore.rules`:
+   - Verify rules allow matched participants to read contact info only while the SOS is active, and forbid reading contact info once expired or purged.
+
+---
+
+### Verification:
+Ensure all TypeScript types check with zero errors (`npm run lint`), all Vitest tests pass (`npm run test`), rules static audit passes (`npm run test:rules`), and the production build completes (`npm run build`).

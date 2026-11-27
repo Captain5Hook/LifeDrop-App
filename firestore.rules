@@ -173,7 +173,7 @@ service cloud.firestore {
           'id', 'requesterUid', 'requesterName', 'bloodGroup', 'compatibleDonorGroups',
           'component', 'unitsNeeded', 'urgency', 'hospitalName', 'stateCode', 'stateName',
           'city', 'coarseLat', 'coarseLng', 'radiusKm', 'escalationStage', 'status',
-          'acceptedByUid', 'acceptedByName', 'matchedCount', 'notes', 'isDemo',
+          'acceptedByUid', 'acceptedByName', 'matchedCount', 'notes', 'isDemo', 'purgedAt',
           'createdAt', 'updatedAt', 'expiresAt'
         ])
         && data.id == requestId
@@ -192,15 +192,21 @@ service cloud.firestore {
         && data.coarseLng is number && data.coarseLng >= 67.5 && data.coarseLng <= 98.0
         && data.radiusKm in [5, 15, 50, 250]
         && data.escalationStage in [1, 2, 3, 4]
-        && data.status in ['open', 'matched', 'fulfilled', 'cancelled']
+        && data.status in ['open', 'matched', 'fulfilled', 'cancelled', 'expired']
         && (!('acceptedByUid' in data) || data.acceptedByUid == null || (data.acceptedByUid is string && data.acceptedByUid.size() <= 128))
         && (!('acceptedByName' in data) || data.acceptedByName == null || (data.acceptedByName is string && data.acceptedByName.size() <= 80))
         && data.matchedCount is int && data.matchedCount >= 0 && data.matchedCount <= 50
         && (!('notes' in data) || (data.notes is string && data.notes.size() <= 240))
         && (!('isDemo' in data) || data.isDemo == false)
+        && (!('purgedAt' in data) || (data.purgedAt is string && data.purgedAt.size() <= 64))
         && data.createdAt is string && data.createdAt.size() <= 64
         && data.updatedAt is string && data.updatedAt.size() <= 64
         && data.expiresAt is string && data.expiresAt.size() <= 64;
+    }
+
+    // Helper: Ensure SOS contact info is accessible ONLY while the SOS is active and unpurged.
+    function isSosActiveAndUnpurged(reqData) {
+      return reqData.status in ['open', 'matched'] && !('purgedAt' in reqData);
     }
 
     // Helper: Validate donor pledge/ETA tracking record under an SOS request.
@@ -337,7 +343,10 @@ service cloud.firestore {
         && incoming().requesterUid == existing().requesterUid
         && (
           (existing().requesterUid == request.auth.uid
-            && incoming().diff(existing()).affectedKeys().hasOnly(['escalationStage', 'radiusKm', 'status', 'acceptedByUid', 'acceptedByName', 'updatedAt']))
+            && incoming().diff(existing()).affectedKeys().hasOnly(['escalationStage', 'radiusKm', 'status', 'acceptedByUid', 'acceptedByName', 'notes', 'purgedAt', 'updatedAt']))
+          ||
+          (isAdmin()
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'notes', 'purgedAt', 'updatedAt']))
           ||
           (existing().requesterUid != request.auth.uid
             && existing().status == 'open'
@@ -352,10 +361,11 @@ service cloud.firestore {
         && isValidId(requestId)
         && (existing().requesterUid == request.auth.uid || isAdmin());
 
-      // Private requester phone: readable only by requester or matched donor.
+      // Private requester phone: readable ONLY by requester or matched donor while SOS is active and unpurged.
       match /private/contact {
         allow get: if isSignedIn()
           && isValidId(requestId)
+          && isSosActiveAndUnpurged(get(/databases/$(database)/documents/requests/$(requestId)).data)
           && (
             get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
             get(/databases/$(database)/documents/requests/$(requestId)).data.acceptedByUid == request.auth.uid
@@ -364,6 +374,7 @@ service cloud.firestore {
         allow create, update: if isSignedIn()
           && isValidId(requestId)
           && existsAfter(/databases/$(database)/documents/requests/$(requestId))
+          && isSosActiveAndUnpurged(getAfter(/databases/$(database)/documents/requests/$(requestId)).data)
           && incoming().keys().hasAll(['requesterUid', 'phone', 'updatedAt'])
           && incoming().keys().hasOnly(['requesterUid', 'phone', 'updatedAt'])
           && incoming().requesterUid == request.auth.uid
@@ -372,33 +383,74 @@ service cloud.firestore {
           && getAfter(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid;
         allow delete: if isSignedIn()
           && isValidId(requestId)
-          && get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid;
+          && (
+            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
+            isAdmin()
+          );
       }
 
-      // Donor pledges and ETA responses: readable by donor or requester, writable only by donor.
+      // Donor pledges and ETA responses: PII phone readable only while active & unpurged; requester/admin can strip PII on purge.
       match /responses/{donorUid} {
         allow get: if isSignedIn()
           && isValidId(requestId)
           && isValidId(donorUid)
           && (
             request.auth.uid == donorUid ||
-            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid
+            isAdmin() ||
+            (
+              get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid
+              && (
+                isSosActiveAndUnpurged(get(/databases/$(database)/documents/requests/$(requestId)).data) ||
+                !('donorPhone' in resource.data) ||
+                resource.data.donorPhone == ''
+              )
+            )
           );
         allow list: if isSignedIn()
           && (
-            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
-            resource.data.donorUid == request.auth.uid
+            isAdmin() ||
+            resource.data.donorUid == request.auth.uid ||
+            (
+              get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid
+              && (
+                isSosActiveAndUnpurged(get(/databases/$(database)/documents/requests/$(requestId)).data) ||
+                !('donorPhone' in resource.data) ||
+                resource.data.donorPhone == ''
+              )
+            )
           );
-        allow create, update: if isSignedIn()
+        allow create: if isSignedIn()
           && isValidId(requestId)
           && isValidId(donorUid)
           && request.auth.uid == donorUid
           && exists(/databases/$(database)/documents/requests/$(requestId))
+          && isSosActiveAndUnpurged(get(/databases/$(database)/documents/requests/$(requestId)).data)
           && isValidSosResponse(incoming(), donorUid);
+        allow update: if isSignedIn()
+          && isValidId(requestId)
+          && isValidId(donorUid)
+          && exists(/databases/$(database)/documents/requests/$(requestId))
+          && isValidSosResponse(incoming(), donorUid)
+          && (
+            (
+              request.auth.uid == donorUid
+              && isSosActiveAndUnpurged(get(/databases/$(database)/documents/requests/$(requestId)).data)
+            )
+            ||
+            (
+              (get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid || isAdmin())
+              && incoming().diff(existing()).affectedKeys().hasOnly(['donorPhone', 'updatedAt'])
+              && incoming().donorPhone == ''
+            )
+          );
         allow delete: if isSignedIn()
           && isValidId(requestId)
           && isValidId(donorUid)
-          && request.auth.uid == donorUid;
+          && (
+            request.auth.uid == donorUid ||
+            get(/databases/$(database)/documents/requests/$(requestId)).data.requesterUid == request.auth.uid ||
+            isAdmin()
+          );
       }
     }
 

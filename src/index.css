@@ -5,9 +5,9 @@
   :root {
     --ld-bg-start: #ECE9FC;
     --ld-bg-end: #CFC4F8;
-    --ld-surface: rgba(255, 255, 255, 0.72);
+    --ld-surface: rgba(255, 255, 255, 0.70);
     --ld-surface-strong: rgba(255, 255, 255, 0.88);
-    --ld-surface-border: rgba(91, 63, 224, 0.16);
+    --ld-surface-border: rgba(91, 63, 224, 0.18);
     --ld-text-primary: #171338;
     --ld-text-secondary: rgba(23, 19, 56, 0.78);
     --ld-primary: #5B3FE0;
@@ -20,9 +20,9 @@
   .dark {
     --ld-bg-start: #1B1740;
     --ld-bg-end: #6B4FBB;
-    --ld-surface: rgba(255, 255, 255, 0.10);
-    --ld-surface-strong: rgba(255, 255, 255, 0.15);
-    --ld-surface-border: rgba(255, 255, 255, 0.18);
+    --ld-surface: rgba(42, 33, 92, 0.65);
+    --ld-surface-strong: rgba(42, 33, 92, 0.82);
+    --ld-surface-border: rgba(255, 255, 255, 0.20);
     --ld-text-primary: #FFFFFF;
     --ld-text-secondary: rgba(255, 255, 255, 0.78);
     --ld-primary: #5B3FE0;
@@ -66,24 +66,40 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--ld-surface-border);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .ld-glass-sheet {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(45, 34, 102, 0.66) 100%);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(42, 33, 92, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 :root:not(.dark) .ld-glass-sheet {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(236, 232, 254, 0.94) 100%);
-  border-top: 1px solid rgba(91, 63, 224, 0.18);
+  background: rgba(255, 255, 255, 0.70);
+  border-top: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.75), 0 -8px 28px rgba(91, 63, 224, 0.08);
 }
 
 .ld-pill-active {
-  background: var(--ld-primary);
-  box-shadow: 0 10px 26px var(--ld-primary-glow);
+  background: rgba(91, 63, 224, 0.90);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.30), 0 10px 26px var(--ld-primary-glow);
   border-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes ldRubyPulse {
+  0%, 100% {
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 4px 16px rgba(244, 63, 94, 0.30);
+  }
+  50% {
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.32), 0 4px 22px rgba(244, 63, 94, 0.48);
+  }
+}
+
+.ld-critical-glow {
+  animation: ldRubyPulse 2.4s ease-in-out infinite;
 }
 
 .ld-stars {

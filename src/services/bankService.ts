@@ -33,28 +33,109 @@ export interface StateBanksPage {
   fromOfflineCache: boolean;
 }
 
+export interface BankSearchFilters {
+  searchQuery?: string;
+  district?: string;
+  bloodGroup?: BloodGroup | 'ALL';
+  open24x7Only?: boolean;
+  bankType?: 'all' | 'government' | 'private';
+}
+
 export interface StateSummaryRow extends StateStats {}
 
 const PAGE_SIZE = 20;
+const SEARCH_FETCH_LIMIT = 60;
+const LOCAL_BANKS_CACHE_PREFIX = 'lifedrop_banks_cache_v1_';
 
 export function isBankStale(updatedAtIso: string): boolean {
   const ageMs = Date.now() - new Date(updatedAtIso).getTime();
   return ageMs > 24 * 60 * 60 * 1000;
 }
 
+export function filterBanksList(
+  banks: BloodBank[],
+  filters?: BankSearchFilters,
+): BloodBank[] {
+  if (!filters) return banks;
+  const q = filters.searchQuery?.trim().toLowerCase() ?? '';
+  const districtFilter = filters.district?.trim().toLowerCase() ?? '';
+
+  return banks.filter((bank) => {
+    if (q) {
+      const hay = `${bank.name} ${bank.district} ${bank.city}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (districtFilter && bank.district.toLowerCase() !== districtFilter) {
+      return false;
+    }
+    if (
+      filters.bloodGroup &&
+      filters.bloodGroup !== 'ALL' &&
+      (bank.stock[filters.bloodGroup] ?? 0) <= 0
+    ) {
+      return false;
+    }
+    if (filters.open24x7Only && !bank.open24x7) {
+      return false;
+    }
+    if (
+      filters.bankType &&
+      filters.bankType !== 'all' &&
+      bank.type !== filters.bankType
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 class FirestoreBankService {
+  private readCachedStateBanks(stateCode: string): BloodBank[] | null {
+    try {
+      const raw = localStorage.getItem(`${LOCAL_BANKS_CACHE_PREFIX}${stateCode}`);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { banks?: BloodBank[] };
+      return Array.isArray(parsed.banks) && parsed.banks.length > 0
+        ? parsed.banks
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeCachedStateBanks(stateCode: string, banks: BloodBank[]): void {
+    try {
+      localStorage.setItem(
+        `${LOCAL_BANKS_CACHE_PREFIX}${stateCode}`,
+        JSON.stringify({ updatedAt: new Date().toISOString(), banks }),
+      );
+    } catch {
+      // Ignore storage quota errors
+    }
+  }
+
   /**
-   * Loads ONLY the selected state's banks from Firestore, paginated (20/page).
-   * Falls back cleanly to seeded demo banks for that state when Firestore is empty or offline.
+   * Loads ONLY the selected state's banks from Firestore, paginated (20/page) or filtered
+   * by hospital/bank name, district, 24x7 status, type, and blood group.
+   * Falls back cleanly to localStorage cache (synced via IndexedDB/Firestore) or seeded demo banks.
    */
   async fetchStateBanksPage(
     stateCode: string,
     cursor: QueryDocumentSnapshot | null = null,
     isOnline = true,
+    filters?: BankSearchFilters,
   ): Promise<StateBanksPage> {
     const seedForState = SEED_BANKS.filter((b) => b.stateCode === stateCode).sort(
       (a, b) => a.name.localeCompare(b.name),
     );
+    const hasSearchFilter = Boolean(
+      filters?.searchQuery?.trim() ||
+        filters?.district?.trim() ||
+        filters?.open24x7Only ||
+        (filters?.bankType && filters.bankType !== 'all') ||
+        (filters?.bloodGroup && filters.bloodGroup !== 'ALL'),
+    );
+    const fetchLimit = hasSearchFilter ? SEARCH_FETCH_LIMIT : PAGE_SIZE;
 
     try {
       const baseCol = collection(db, 'banks');
@@ -64,24 +145,28 @@ class FirestoreBankService {
             where('stateCode', '==', stateCode),
             orderBy('name'),
             startAfter(cursor),
-            limit(PAGE_SIZE),
+            limit(fetchLimit),
           )
         : query(
             baseCol,
             where('stateCode', '==', stateCode),
             orderBy('name'),
-            limit(PAGE_SIZE),
+            limit(fetchLimit),
           );
 
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
-        const banks = snapshot.docs.map((d) => d.data() as BloodBank);
+        const rawBanks = snapshot.docs.map((d) => d.data() as BloodBank);
+        if (!cursor) {
+          this.writeCachedStateBanks(stateCode, rawBanks);
+        }
+        const banks = filterBanksList(rawBanks, filters);
         const lastDoc = snapshot.docs[snapshot.docs.length - 1] ?? null;
         return {
           banks,
-          hasMore: snapshot.docs.length === PAGE_SIZE,
+          hasMore: !hasSearchFilter && snapshot.docs.length === PAGE_SIZE,
           cursor: lastDoc,
-          fromDemoSeed: banks.some((b) => b.isDemo),
+          fromDemoSeed: rawBanks.some((b) => b.isDemo),
           fromOfflineCache: snapshot.metadata.fromCache || !isOnline,
         };
       }
@@ -89,13 +174,17 @@ class FirestoreBankService {
       console.warn('Using local/offline banks for state:', stateCode, err);
     }
 
-    // Fallback to local seeded banks for this state (paginated locally at 20/page)
+    // Fallback: prefer previously synced localStorage/IndexedDB cache before bundled demo seed
+    const cachedBanks = this.readCachedStateBanks(stateCode);
+    const sourceBanks = cachedBanks ?? seedForState;
+    const filteredSource = filterBanksList(sourceBanks, filters);
+
     return {
-      banks: cursor ? [] : seedForState.slice(0, PAGE_SIZE),
+      banks: cursor ? [] : filteredSource.slice(0, fetchLimit),
       hasMore: false,
       cursor: null,
-      fromDemoSeed: true,
-      fromOfflineCache: !isOnline,
+      fromDemoSeed: cachedBanks ? cachedBanks.some((b) => b.isDemo) : true,
+      fromOfflineCache: !isOnline || Boolean(cachedBanks),
     };
   }
 

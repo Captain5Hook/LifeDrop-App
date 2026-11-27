@@ -30,12 +30,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
         >
           <path
             d="M 0 12 L 122 12 C 148 12 158 46 200 46 C 242 46 252 12 278 12 L 400 12 L 400 74 L 0 74 Z"
-            className="fill-[#251E54]/95"
+            className="fill-[#251E54]/92"
           />
           <path
             d="M 0 12 L 122 12 C 148 12 158 46 200 46 C 242 46 252 12 278 12 L 400 12"
             fill="none"
-            stroke="rgba(255,255,255,0.22)"
+            stroke="rgba(255,255,255,0.25)"
             strokeWidth="1"
           />
         </svg>
@@ -71,10 +71,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
             onClick={() => onSelectTab('sos')}
             aria-label="Emergency SOS blood request"
             aria-current={activeTab === 'sos' ? 'page' : undefined}
-            className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_24px_rgba(18,12,52,0.55)] transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+            className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgba(244,63,94,0.55)] transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
               activeTab === 'sos'
                 ? 'bg-[#F43F5E] text-white ring-4 ring-white/30'
-                : 'bg-white text-[#34267D] hover:bg-slate-100'
+                : 'bg-gradient-to-br from-[#F43F5E] to-[#E11D48] text-white ring-2 ring-white/25 hover:brightness-110'
             }`}
           >
             <Plus className="h-7 w-7" strokeWidth={2.5} />

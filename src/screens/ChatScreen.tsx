@@ -151,15 +151,15 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
               <p className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-white/70">
                 {!isOnline ? (
                   <>
-                    <WifiOff className="h-3 w-3 text-[#FBBF24]" /> Offline KB Ready
+                    <WifiOff className="h-3 w-3 text-[#FBBF24]" /> Offline Clinical Database Ready
                   </>
                 ) : chatService.isGeminiWorkerConfigured() ? (
                   <>
-                    <Sparkles className="h-3 w-3 text-[#34D399]" /> Offline KB + Gemini Flash
+                    <Sparkles className="h-3 w-3 text-[#34D399]" /> Offline Clinical Database + Live AI Assistant
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-3 w-3 text-[#34D399]" /> Offline Multilingual KB Active
+                    <Sparkles className="h-3 w-3 text-[#34D399]" /> Offline Clinical Database Active
                   </>
                 )}
               </p>
@@ -352,15 +352,25 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
                         : 'ld-glass text-slate-900 dark:text-white'
                 }`}
               >
-                {msg.meta?.matchedTopicTitle && (
-                  <div className="mb-1 flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-wider opacity-80">
-                    <span>{msg.meta.matchedTopicTitle}</span>
-                    <span>
-                      {msg.meta.source === 'gemini-worker'
-                        ? 'Gemini'
-                        : msg.meta.source === 'triage'
-                          ? 'Life-Safety'
-                          : 'Offline KB'}
+                {msg.sender === 'assistant' && (
+                  <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-[10px] font-semibold">
+                    {msg.meta?.matchedTopicTitle ? (
+                      <span className="uppercase tracking-wider opacity-80">
+                        {msg.meta.matchedTopicTitle}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        msg.meta?.source === 'gemini-worker'
+                          ? 'bg-[#5B3FE0]/20 text-[#5B3FE0] dark:bg-[#5B3FE0]/35 dark:text-[#DDD6FE]'
+                          : 'bg-[#34D399]/20 text-[#047857] dark:bg-[#34D399]/20 dark:text-[#6EE7B7]'
+                      }`}
+                    >
+                      {msg.meta?.source === 'gemini-worker'
+                        ? 'Live AI Assistant'
+                        : 'Offline Clinical Database'}
                     </span>
                   </div>
                 )}

@@ -148,6 +148,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>('peek');
   const [stateSearchOpen, setStateSearchOpen] = useState(false);
   const [stateSearchQuery, setStateSearchQuery] = useState('');
+  const [bankSearchQuery, setBankSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Filters (B3)
@@ -268,6 +269,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
   );
 
   useEffect(() => {
+    setBankSearchQuery('');
     if (selectedStateCode !== ALL_INDIA_CODE) {
       void loadStateBanks(selectedStateCode, false);
       setSheetSnap('half');
@@ -278,6 +280,32 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStateCode]);
+
+  // Expand state-scoped bank lookup when searching a truncated (>20) Firestore state list
+  useEffect(() => {
+    const q = bankSearchQuery.trim();
+    if (selectedStateCode === ALL_INDIA_CODE || !hasMoreBanks || q.length < 2) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void bankService
+        .fetchStateBanksPage(selectedStateCode, null, isOnline, {
+          searchQuery: q,
+        })
+        .then((res) => {
+          if (res.banks.length === 0) return;
+          setBanks((prev) => {
+            const seen = new Set(prev.map((b) => b.id));
+            const additions = res.banks.filter((b) => !seen.has(b.id));
+            return additions.length > 0 ? [...prev, ...additions] : prev;
+          });
+        })
+        .catch(() => {
+          // Reactive local/cached filtering already covers loaded banks
+        });
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [selectedStateCode, hasMoreBanks, bankSearchQuery, isOnline]);
 
   // Initialize Leaflet map locked to India
   useEffect(() => {
@@ -354,7 +382,13 @@ export const MapScreen: React.FC<MapScreenProps> = ({
       return { bank, distKm, stale: isBankStale(bank.updatedAt) };
     });
 
+    const queryLower = bankSearchQuery.trim().toLowerCase();
+
     const filtered = withDist.filter(({ bank, distKm, stale }) => {
+      if (queryLower) {
+        const hay = `${bank.name} ${bank.district} ${bank.city}`.toLowerCase();
+        if (!hay.includes(queryLower)) return false;
+      }
       if (bloodGroupFilter !== 'ALL' && (bank.stock[bloodGroupFilter] ?? 0) <= 0) {
         return false;
       }
@@ -374,6 +408,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
     return filtered;
   }, [
     banks,
+    bankSearchQuery,
     bloodGroupFilter,
     open24x7Only,
     typeFilter,
@@ -999,7 +1034,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           {!srListMode && (
             <section
               aria-label="Blood bank list and filters"
-              className={`ld-glass-sheet overscroll-contain touch-pan-y absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[32px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
+              className={`ld-glass-sheet overscroll-contain touch-pan-y absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[36px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
             >
               {/* Snap handle */}
               <div className="flex shrink-0 items-center justify-between gap-2 pb-1.5 overscroll-contain touch-pan-y">
@@ -1045,6 +1080,40 @@ export const MapScreen: React.FC<MapScreenProps> = ({
                   </button>
                 )}
               </div>
+
+              {/* Search input inside the blood bank list sheet */}
+              {selectedStateCode !== ALL_INDIA_CODE && (
+                <div className="relative mb-2 shrink-0">
+                  <Search
+                    className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
+                    aria-hidden="true"
+                  />
+                  <input
+                    type="search"
+                    value={bankSearchQuery}
+                    onFocus={() => {
+                      if (sheetSnap === 'peek') setSheetSnap('half');
+                    }}
+                    onChange={(e) => {
+                      setBankSearchQuery(e.target.value);
+                      if (sheetSnap === 'peek') setSheetSnap('half');
+                    }}
+                    placeholder="Search blood bank or district..."
+                    aria-label="Search blood banks by name or district"
+                    className="min-h-[42px] w-full rounded-full border border-black/15 bg-white/80 pr-9 pl-10 text-[13px] text-slate-900 placeholder:text-slate-500 dark:border-white/20 dark:bg-white/10 dark:text-white dark:placeholder:text-white/55"
+                  />
+                  {bankSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setBankSearchQuery('')}
+                      aria-label="Clear blood bank search"
+                      className="absolute top-1/2 right-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 hover:bg-black/10 dark:text-white/70 dark:hover:bg-white/10"
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Filter Bar (when in State view & Filters open) */}
               {selectedStateCode !== ALL_INDIA_CODE && filtersOpen && (
@@ -1176,6 +1245,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        setBankSearchQuery('');
                         setBloodGroupFilter('ALL');
                         setOpen24x7Only(false);
                         setTypeFilter('all');

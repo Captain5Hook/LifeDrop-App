@@ -1,7 +1,9 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
+  getDocs,
   limit,
   onSnapshot,
   orderBy,
@@ -23,7 +25,12 @@ import { OperationType, handleFirestoreError } from './errors';
 import { auth, db } from './firebase';
 
 export type SosUrgency = 'critical' | 'urgent' | 'scheduled';
-export type SosStatus = 'open' | 'matched' | 'fulfilled' | 'cancelled';
+export type SosStatus =
+  | 'open'
+  | 'matched'
+  | 'fulfilled'
+  | 'cancelled'
+  | 'expired';
 export type EscalationStage = 1 | 2 | 3 | 4;
 
 export interface SosRequest {
@@ -49,6 +56,7 @@ export interface SosRequest {
   matchedCount: number;
   notes: string;
   isDemo?: boolean;
+  purgedAt?: string;
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
@@ -106,6 +114,18 @@ export const ESCALATION_RADII: Record<
 };
 
 const LOCAL_SOS_KEY = 'lifedrop_sos_requests_v1';
+export const SOS_PII_RETENTION_DAYS = 30;
+export const SOS_PII_RETENTION_MS = SOS_PII_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+export function isSosExpired(
+  req: Pick<SosRequest, 'status' | 'expiresAt'>,
+  nowMs = Date.now(),
+): boolean {
+  if (req.status === 'expired') return true;
+  if (req.status !== 'open' && req.status !== 'matched') return false;
+  const expiresMs = Date.parse(req.expiresAt);
+  return Number.isFinite(expiresMs) && nowMs > expiresMs;
+}
 
 class FirestoreSosService {
   private loadLocalRequests(): SosRequest[] {
@@ -132,6 +152,143 @@ class FirestoreSosService {
     const next = [req, ...existing].slice(0, 30);
     this.saveLocalRequests(next);
     return next;
+  }
+
+  private normalizeExpiredRequest(
+    req: SosRequest,
+    nowMs = Date.now(),
+  ): SosRequest {
+    if (!isSosExpired(req, nowMs) || req.status === 'expired') {
+      return req;
+    }
+    const updatedAt = new Date(nowMs).toISOString();
+    const expiredReq: SosRequest = {
+      ...req,
+      status: 'expired',
+      updatedAt,
+    };
+    this.upsertLocalRequest(expiredReq);
+
+    if (auth.currentUser && auth.currentUser.uid === req.requesterUid) {
+      void updateDoc(doc(db, 'requests', req.id), {
+        status: 'expired',
+        updatedAt,
+      }).catch(() => {
+        // Saved locally; Firestore update retried on next sync
+      });
+    }
+
+    return expiredReq;
+  }
+
+  async expireOverdueRequests(nowMs = Date.now()): Promise<SosRequest[]> {
+    const local = this.loadLocalRequests();
+    const normalized = local.map((r) => this.normalizeExpiredRequest(r, nowMs));
+    this.saveLocalRequests(normalized);
+    return normalized;
+  }
+
+  /**
+   * DPDP Act 2023 data minimization: strips sensitive requester/donor phone numbers
+   * and case notes from completed or expired SOS requests older than 30 days.
+   */
+  async purgeExpiredSosPii(nowMs = Date.now()): Promise<{
+    purgedRequestIds: string[];
+    purgedResponsesCount: number;
+  }> {
+    const nowIso = new Date(nowMs).toISOString();
+    const byId = new Map<string, SosRequest>();
+    for (const r of this.loadLocalRequests()) {
+      byId.set(r.id, this.normalizeExpiredRequest(r, nowMs));
+    }
+
+    if (auth.currentUser) {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, 'requests'),
+            where('requesterUid', '==', auth.currentUser.uid),
+            limit(30),
+          ),
+        );
+        snap.docs.forEach((d) => {
+          const data = d.data() as SosRequest;
+          byId.set(data.id, this.normalizeExpiredRequest(data, nowMs));
+        });
+      } catch {
+        // Offline or emulator fallback uses local cached requests
+      }
+    }
+
+    const purgedRequestIds: string[] = [];
+    let purgedResponsesCount = 0;
+
+    for (const req of byId.values()) {
+      if (req.purgedAt) continue;
+      const effectiveStatus: SosStatus = isSosExpired(req, nowMs)
+        ? 'expired'
+        : req.status;
+      if (
+        effectiveStatus !== 'fulfilled' &&
+        effectiveStatus !== 'cancelled' &&
+        effectiveStatus !== 'expired'
+      ) {
+        continue;
+      }
+
+      const refMs = Date.parse(req.expiresAt || req.updatedAt || req.createdAt);
+      if (!Number.isFinite(refMs) || nowMs - refMs < SOS_PII_RETENTION_MS) {
+        continue;
+      }
+
+      const cleaned: SosRequest = {
+        ...req,
+        status: effectiveStatus,
+        notes: '',
+        purgedAt: nowIso,
+        updatedAt: nowIso,
+      };
+      byId.set(req.id, cleaned);
+      purgedRequestIds.push(req.id);
+
+      if (auth.currentUser && auth.currentUser.uid === req.requesterUid) {
+        try {
+          await deleteDoc(doc(db, 'requests', req.id, 'private', 'contact')).catch(
+            () => undefined,
+          );
+          const respSnap = await getDocs(
+            collection(db, 'requests', req.id, 'responses'),
+          );
+          for (const respDoc of respSnap.docs) {
+            const respData = respDoc.data() as SosResponseItem;
+            if (respData.donorPhone) {
+              await updateDoc(respDoc.ref, {
+                donorPhone: '',
+                updatedAt: nowIso,
+              }).catch(() => undefined);
+              purgedResponsesCount += 1;
+            }
+          }
+          await updateDoc(doc(db, 'requests', req.id), {
+            status: effectiveStatus,
+            notes: '',
+            purgedAt: nowIso,
+            updatedAt: nowIso,
+          }).catch(() => undefined);
+        } catch {
+          // Local minimization persisted regardless of network state
+        }
+      }
+    }
+
+    if (purgedRequestIds.length > 0) {
+      const updatedList = Array.from(byId.values()).sort((a, b) =>
+        b.createdAt.localeCompare(a.createdAt),
+      );
+      this.saveLocalRequests(updatedList);
+    }
+
+    return { purgedRequestIds, purgedResponsesCount };
   }
 
   async createSosRequest(params: {
@@ -216,9 +373,15 @@ class FirestoreSosService {
     onData: (requests: SosRequest[], fromCache: boolean) => void,
     onError?: (err: Error) => void,
   ): () => void {
-    const localMatching = this.loadLocalRequests().filter(
-      (r) => stateCode === 'ALL' || r.stateCode === stateCode,
-    );
+    const nowMs = Date.now();
+    const localMatching = this.loadLocalRequests()
+      .map((r) => this.normalizeExpiredRequest(r, nowMs))
+      .filter(
+        (r) =>
+          r.status !== 'cancelled' &&
+          !r.purgedAt &&
+          (stateCode === 'ALL' || r.stateCode === stateCode),
+      );
     if (localMatching.length > 0) {
       onData(localMatching, true);
     }
@@ -243,16 +406,25 @@ class FirestoreSosService {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const remote = snap.docs.map((d) => d.data() as SosRequest);
+        const snapNowMs = Date.now();
+        const remote = snap.docs
+          .map((d) =>
+            this.normalizeExpiredRequest(d.data() as SosRequest, snapNowMs),
+          )
+          .filter((r) => !r.purgedAt);
         // Merge any unsynced local requests so UI stays responsive
         const remoteIds = new Set(remote.map((r) => r.id));
         const merged = [
           ...remote,
-          ...this.loadLocalRequests().filter(
-            (r) =>
-              !remoteIds.has(r.id) &&
-              (stateCode === 'ALL' || r.stateCode === stateCode),
-          ),
+          ...this.loadLocalRequests()
+            .map((r) => this.normalizeExpiredRequest(r, snapNowMs))
+            .filter(
+              (r) =>
+                !remoteIds.has(r.id) &&
+                r.status !== 'cancelled' &&
+                !r.purgedAt &&
+                (stateCode === 'ALL' || r.stateCode === stateCode),
+            ),
         ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
         onData(merged, snap.metadata.fromCache);
@@ -288,6 +460,9 @@ class FirestoreSosService {
   }
 
   async escalateRadius(req: SosRequest): Promise<SosRequest> {
+    if (isSosExpired(req)) {
+      return this.normalizeExpiredRequest(req);
+    }
     if (req.escalationStage >= 4) return req;
     const nextStage = (req.escalationStage + 1) as EscalationStage;
     const nextRadius = ESCALATION_RADII[nextStage].radiusKm;
@@ -354,6 +529,9 @@ class FirestoreSosService {
       donorPhone?: string;
     },
   ): Promise<SosRequest> {
+    if (isSosExpired(req) || req.status !== 'open') {
+      throw new Error('This SOS request has expired or is no longer open.');
+    }
     const nowIso = new Date().toISOString();
     const responseDoc: SosResponseItem = {
       donorUid: donor.uid,
@@ -408,7 +586,16 @@ class FirestoreSosService {
 
   async getPrivateRequesterContact(
     requestId: string,
+    requestMeta?: Pick<SosRequest, 'status' | 'expiresAt' | 'purgedAt'>,
   ): Promise<SosPrivateContact | null> {
+    if (
+      requestMeta &&
+      ((requestMeta.status !== 'open' && requestMeta.status !== 'matched') ||
+        isSosExpired(requestMeta) ||
+        Boolean(requestMeta.purgedAt))
+    ) {
+      return null;
+    }
     try {
       const snap = await getDoc(
         doc(db, 'requests', requestId, 'private', 'contact'),

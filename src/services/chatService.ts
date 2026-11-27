@@ -23,10 +23,10 @@ export interface AssistantReply {
   disclaimer: string;
 }
 
-const DISCLAIMERS: Record<AppLanguage, string> = {
-  en: 'Guidance only — not a substitute for a doctor or blood bank medical officer.',
-  hi: 'यह केवल सामान्य मार्गदर्शन है — डॉक्टर या ब्लड बैंक अधिकारी का विकल्प नहीं।',
-  kn: 'ಇದು ಕೇವಲ ಮಾರ್ಗದರ್ಶನ — ವೈದ್ಯರು ಅಥವಾ ರಕ್ತನಿಧಿ ಅಧಿಕಾರಿಯ ಪರ್ಯಾಯವಲ್ಲ.',
+export const DISCLAIMERS: Record<AppLanguage, string> = {
+  en: 'Demo project. Not medical advice. In an emergency call 108 or 112.',
+  hi: 'डेमो प्रोजेक्ट। यह चिकित्सीय सलाह नहीं है। आपातकाल में 108 या 112 पर कॉल करें।',
+  kn: 'ಡೆಮೋ ಯೋಜನೆ. ಇದು ವೈದ್ಯಕೀಯ ಸಲಹೆಯಲ್ಲ. ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಲ್ಲಿ 108 ಅಥವಾ 112 ಗೆ ಕರೆ ಮಾಡಿ.',
 };
 
 const BLEEDING_TRIGGERS = [
@@ -169,11 +169,27 @@ export function detectLanguageFromText(
 }
 
 const GENERIC_KEYWORDS = new Set(['days', 'months', 'often', 'again', 'age', 'number']);
+const HIGH_CONFIDENCE_KB_SCORE = 3;
+
+function detectUnsafeAiOutput(reply: string): boolean {
+  if (detectPromptInjection(reply)) return true;
+  if (/(?:AIza[0-9A-Za-z_-]{10,}|GEMINI_API_KEY|systemInstruction|developer prompt)/i.test(reply)) {
+    return true;
+  }
+  if (
+    /\b(i diagnose you|you definitely have|take \d+\s?(?:mg|ml|tablets?)|prescrib(?:e|ing) (?:you|this medicine))\b/i.test(
+      reply,
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
 
 function searchOfflineKnowledgeBase(
   query: string,
   lang: AppLanguage,
-): { title: string; answer: string } | null {
+): { title: string; answer: string; score: number } | null {
   const lower = query.toLowerCase().trim();
   let bestScore = 0;
   let bestEntry: (typeof knowledgeData.entries)[number] | null = null;
@@ -202,6 +218,7 @@ function searchOfflineKnowledgeBase(
   return {
     title: bestEntry.title[lang] ?? bestEntry.title.en,
     answer: bestEntry.answer[lang] ?? bestEntry.answer.en,
+    score: bestScore,
   };
 }
 
@@ -236,13 +253,19 @@ function buildPromptInjectionResponse(lang: AppLanguage): string {
 }
 
 class HybridChatService {
-  private workerUrl = (
-    (import.meta as { env?: Record<string, string | undefined> }).env
-      ?.VITE_CHAT_WORKER_URL
-  )?.trim();
+  private getWorkerUrl(): string | undefined {
+    const viteEnv = (import.meta as { env?: Record<string, string | undefined> }).env;
+    const url =
+      viteEnv?.VITE_CHAT_WORKER_URL?.trim() ||
+      (typeof process !== 'undefined'
+        ? process.env?.VITE_CHAT_WORKER_URL?.trim()
+        : undefined);
+    return url || undefined;
+  }
 
   isGeminiWorkerConfigured(): boolean {
-    return Boolean(this.workerUrl && this.workerUrl.startsWith('https://'));
+    const url = this.getWorkerUrl();
+    return Boolean(url && url.startsWith('https://'));
   }
 
   async ask(
@@ -319,7 +342,16 @@ class HybridChatService {
 
     // 4. Offline Multilingual Knowledge Base (zero-cost, zero-network)
     const kbMatch = searchOfflineKnowledgeBase(query, lang);
-    if (kbMatch) {
+    const browserOnline =
+      typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+    const workerUrl = this.getWorkerUrl();
+    const canCallGeminiWorker =
+      isOnline &&
+      browserOnline &&
+      Boolean(workerUrl && workerUrl.startsWith('https://'));
+
+    // When offline or when local JSON KB has high confidence (score >= 3), answer immediately offline
+    if (kbMatch && (!canCallGeminiWorker || kbMatch.score >= HIGH_CONFIDENCE_KB_SCORE)) {
       return {
         id,
         text: kbMatch.answer,
@@ -332,32 +364,64 @@ class HybridChatService {
       };
     }
 
-    // 5. Optional Cloudflare Worker Gemini Proxy (only when online & configured)
-    if (isOnline && this.isGeminiWorkerConfigured() && this.workerUrl) {
+    // 5. Online Cloudflare Gemini Worker fallback when local KB lacks high-confidence match
+    if (canCallGeminiWorker && workerUrl) {
+      const controller = new AbortController();
+      const timeoutId = globalThis.setTimeout(() => controller.abort(), 10_000);
       try {
-        const res = await fetch(this.workerUrl, {
+        const res = await fetch(workerUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query, language: lang }),
+          signal: controller.signal,
         });
         if (res.ok) {
           const data = (await res.json()) as { reply?: string };
-          if (data.reply?.trim()) {
+          const replyText = data.reply?.trim();
+          if (replyText) {
+            if (detectUnsafeAiOutput(replyText)) {
+              return {
+                id,
+                text: buildGuardrailResponse(lang),
+                source: 'guardrail',
+                language: lang,
+                bleedingEmergency: false,
+                medicalGuardrailTriggered: true,
+                matchedTopicTitle: 'Medical Safety Notice',
+                disclaimer: DISCLAIMERS[lang],
+              };
+            }
             return {
               id,
-              text: data.reply.trim(),
+              text: replyText,
               source: 'gemini-worker',
               language: lang,
               bleedingEmergency: false,
               medicalGuardrailTriggered: false,
-              matchedTopicTitle: 'LifeDrop AI Assistant (Gemini Flash)',
+              matchedTopicTitle: 'Live AI Assistant',
               disclaimer: DISCLAIMERS[lang],
             };
           }
         }
       } catch {
-        // Fallback gracefully to offline KB prompt if Worker is unreachable
+        // Fallback gracefully to offline KB prompt if Worker is unreachable or times out
+      } finally {
+        globalThis.clearTimeout(timeoutId);
       }
+    }
+
+    // Return low-confidence offline KB match if worker was unreachable
+    if (kbMatch) {
+      return {
+        id,
+        text: kbMatch.answer,
+        source: 'offline-kb',
+        language: lang,
+        bleedingEmergency: false,
+        medicalGuardrailTriggered: false,
+        matchedTopicTitle: kbMatch.title,
+        disclaimer: DISCLAIMERS[lang],
+      };
     }
 
     // 6. Clean fallback guiding user to covered offline topics
@@ -374,7 +438,7 @@ class HybridChatService {
       language: lang,
       bleedingEmergency: false,
       medicalGuardrailTriggered: false,
-      matchedTopicTitle: 'Offline Knowledge Base',
+      matchedTopicTitle: 'Offline Clinical Database',
       disclaimer: DISCLAIMERS[lang],
     };
   }

@@ -181,7 +181,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <HomeSkeleton />
         ) : effectiveError ? (
           <div className="flex min-h-[60%] flex-col items-center justify-center px-6 py-8 text-center">
-            <div className="ld-glass w-full rounded-[28px] p-6">
+            <div className="ld-glass w-full rounded-[24px] p-6">
               <AlertTriangle className="mx-auto h-10 w-10 text-[#FBBF24]" aria-hidden="true" />
               <h2 className="mt-3 text-[20px] font-medium">Connection issue</h2>
               <p className="mt-1.5 text-[14px] text-slate-700 dark:text-white/78">
@@ -291,12 +291,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Glass Bottom Sheet with peek (~38%) / expanded (~80%) snap */}
             <section
               aria-label="Blood groups, goals, and donation drives"
-              className={`ld-glass-sheet flex flex-col rounded-t-[32px] px-4 pt-2 pb-4 transition-all duration-300 ${
+              className={`ld-glass-sheet flex flex-col rounded-t-[36px] px-4 pt-2 pb-4 transition-all duration-300 ${
                 sheetSnap === 'expanded' ? 'min-h-[80dvh] flex-1' : 'min-h-[38dvh]'
               }`}
             >
               {/* Drag handle & Snap toggle */}
-              <div className="flex items-center justify-center pb-1">
+              <div className="flex items-center justify-center pb-1.5">
                 <button
                   type="button"
                   onClick={() =>
@@ -318,11 +318,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </button>
               </div>
 
-              {/* Sheet Tabs */}
+              {/* Segmented Glass Forecast-Style Pill Tabs */}
               <div
                 role="tablist"
                 aria-label="Home insights"
-                className="flex items-center justify-between border-b border-black/10 pb-2 dark:border-white/15"
+                className="flex items-center gap-1 rounded-full border border-black/10 bg-black/10 p-1 backdrop-blur-md dark:border-white/10 dark:bg-black/20"
               >
                 {(
                   [
@@ -339,16 +339,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       role="tab"
                       aria-selected={isActive}
                       onClick={() => setSheetTab(tab.id)}
-                      className={`relative min-h-[44px] flex-1 px-1.5 text-[13px] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-white ${
+                      className={`min-h-[44px] flex-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-2 focus-visible:outline-white sm:px-4 sm:text-[13px] ${
                         isActive
-                          ? 'text-slate-950 dark:text-white'
-                          : 'text-slate-600 hover:text-slate-900 dark:text-white/65 dark:hover:text-white'
+                          ? 'bg-[#5B3FE0]/90 text-white shadow-sm'
+                          : 'text-slate-700 hover:text-slate-950 dark:text-white/70 dark:hover:text-white'
                       }`}
                     >
                       {tab.label}
-                      {isActive && (
-                        <span className="absolute right-2 -bottom-2 left-2 h-[2.5px] rounded-full bg-[#5B3FE0] dark:bg-white" />
-                      )}
                     </button>
                   );
                 })}
