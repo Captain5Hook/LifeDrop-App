@@ -1,0 +1,25 @@
+# PROMPT FOR GOOGLE APP STUDIO
+
+Reference Design Template: DesignCode iOS 16 Weather App (Meng To):
+https://www.youtube.com/watch?v=48YwaTiYau0&t=1759s
+
+Please refine and polish the frosted-glass UI and mobile layout for LifeDrop-App using the 5 attached files:
+
+1. Segmented Glass Tabs (HomeScreen.tsx):
+   - Wrap the sheet tabs ('Blood Groups', 'Our Goals', 'Donation Drives') inside a sleek pill container (`bg-black/20 p-1 rounded-full border border-white/10`).
+   - Active tab should render as an elevated frosted pill with smooth sliding animation matching the hourly/weekly forecast bar from the tutorial.
+
+2. Blood Group Weather-Style Cards (BloodGroupPills.tsx):
+   - Ensure the 8 blood group cards render as translucent glass metric tiles with colored aura glows (emerald for stable, amber for low, ruby for critical).
+   - Display clear typography, stock units, and instant tap response without horizontal clipping.
+
+3. Curved Floating Wave Bottom Navigation (BottomNav.tsx):
+   - Maintain the SVG wave cutout with `pointer-events-none` on the backdrop and `pointer-events-auto` on the 5 navigation buttons so all buttons are responsive.
+
+4. Atmospheric Glow & Interactive Hero (HeroScene.tsx):
+   - Keep the ambient lighting and touch-drag tilt responsiveness for the glowing drop illustration.
+
+5. Frosted Glass Utility Classes (index.css):
+   - Ensure `.ld-glass-sheet` and `.ld-glass` use `backdrop-filter: blur(20px)` and subtle inner borders (`box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25)`).
+
+Ensure all TypeScript checks (`npm run lint`), `vitest run`, and `npm run build` pass with zero errors.

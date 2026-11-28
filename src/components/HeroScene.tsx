@@ -74,6 +74,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
         );
       }}
       onPointerUp={resetInteraction}
+      onPointerCancel={resetInteraction}
       onPointerLeave={resetInteraction}
       onTouchStart={(e) => {
         setIsPressed(true);
@@ -97,6 +98,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
         }
       }}
       onTouchEnd={resetInteraction}
+      onTouchCancel={resetInteraction}
       className="relative mx-auto flex max-h-[140px] w-full max-w-[230px] touch-pan-y flex-col items-center justify-center select-none [@media(max-height:720px)]:max-h-[112px]"
       aria-label={statusText}
     >
@@ -134,6 +136,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
 
         {/* Ambient floating particles reacting gently to touch/pointer */}
         <g
+          className="transition-transform duration-150 ease-out"
           transform={`translate(${(-touchOffset.x * 0.7).toFixed(2)}, ${(-touchOffset.y * 0.7).toFixed(2)})`}
         >
           <circle cx="44" cy="36" r="2.2" fill={glowColor} opacity="0.55" />
@@ -156,6 +159,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
         />
 
         <g
+          className="transition-transform duration-150 ease-out"
           transform={`translate(${(130 + touchOffset.x).toFixed(2)}, ${(34 + touchOffset.y).toFixed(2)})`}
         >
           <circle cx="0" cy="4" r={isPressed ? 25 : 22} fill={glowColor} opacity={isPressed ? 0.34 : 0.22} />
@@ -170,6 +174,7 @@ export const HeroScene: React.FC<HeroSceneProps> = ({ health, dataSaver }) => {
         </g>
 
         <g
+          className="transition-transform duration-150 ease-out"
           transform={`translate(${(52 + touchOffset.x * 0.35).toFixed(2)}, ${(66 + touchOffset.y * 0.35).toFixed(2)})`}
         >
           <rect x="22" y="26" width="112" height="48" rx="4" fill="url(#ldWallGrad)" />

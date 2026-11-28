@@ -1,4 +1,5 @@
 import React, { Suspense, useMemo, useState } from 'react';
+import { motion } from 'motion/react';
 import {
   AlertTriangle,
   ChevronDown,
@@ -339,13 +340,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       role="tab"
                       aria-selected={isActive}
                       onClick={() => setSheetTab(tab.id)}
-                      className={`min-h-[44px] flex-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-2 focus-visible:outline-white sm:px-4 sm:text-[13px] ${
+                      className={`relative min-h-[44px] flex-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold whitespace-nowrap transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-white sm:px-4 sm:text-[13px] ${
                         isActive
-                          ? 'bg-[#5B3FE0]/90 text-white shadow-sm'
+                          ? 'text-white'
                           : 'text-slate-700 hover:text-slate-950 dark:text-white/70 dark:hover:text-white'
                       }`}
                     >
-                      {tab.label}
+                      {isActive && (
+                        <motion.span
+                          layoutId="homeSheetTabPill"
+                          transition={
+                            dataSaver
+                              ? { duration: 0.01 }
+                              : { type: 'spring', stiffness: 420, damping: 32 }
+                          }
+                          aria-hidden="true"
+                          className="absolute inset-0 rounded-full border border-white/25 bg-[#5B3FE0]/90 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.3),0_4px_14px_rgba(91,63,224,0.45)]"
+                        />
+                      )}
+                      <span className="relative z-10">{tab.label}</span>
                     </button>
                   );
                 })}

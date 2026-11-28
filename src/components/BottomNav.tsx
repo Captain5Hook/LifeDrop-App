@@ -19,7 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
   return (
     <nav
       aria-label="Primary navigation"
-      className="pointer-events-auto absolute right-0 bottom-0 left-0 z-30 select-none"
+      className="pointer-events-none absolute right-0 bottom-0 left-0 z-30 select-none"
     >
       <div className="relative flex h-[calc(72px+env(safe-area-inset-bottom,0px))] items-end justify-between px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
         <svg

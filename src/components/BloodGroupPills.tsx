@@ -40,7 +40,7 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
   return (
     <div className="space-y-3">
       <div
-        className="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto px-0.5 pt-1 pb-1.5"
+        className="no-scrollbar -mx-1 -mb-2 flex items-stretch gap-2.5 overflow-x-auto px-2 pt-2 pb-4"
         role="listbox"
         aria-label={`Blood group availability in ${stateName}`}
       >
@@ -67,7 +67,7 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
               role="option"
               aria-selected={isSelected}
               onClick={() => onSelectGroup(item.group)}
-              className={`group relative flex min-h-[122px] w-[80px] shrink-0 flex-col items-center justify-between overflow-hidden rounded-[24px] border px-2.5 py-2.5 text-center backdrop-blur-md transition-all duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+              className={`group relative flex min-h-[122px] min-w-[82px] shrink-0 flex-col items-center justify-between overflow-hidden rounded-[24px] border px-2.5 py-2.5 text-center backdrop-blur-md transition-all duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                 isSelected
                   ? 'ld-pill-active text-white ring-1 ring-white/40'
                   : `${healthCardTheme} text-slate-900 hover:brightness-105 dark:text-white`
