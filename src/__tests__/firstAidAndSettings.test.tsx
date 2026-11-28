@@ -171,6 +171,75 @@ describe('Location Permission Outcomes, Manual Picker, and Deletion', () => {
     expect(localStorage.getItem('lifedrop_location_v1')).toBeNull();
     expect(result.current.savedLocation).toBeNull();
   });
+
+  it('allows skipping or dismissing on first load (All-India) and shows Try GPS Again on GPS failure', () => {
+    const onAllowLocation = vi.fn();
+    const onOpenManual = vi.fn();
+    const onSelectManual = vi.fn();
+
+    const { unmount } = render(
+      <LocationModals
+        flowStep="explainer"
+        browserPermission="prompt"
+        savedLocation={null}
+        isLocating={false}
+        outcome={{ status: 'timeout', message: 'Location lookup timed out.' }}
+        onAllowLocation={onAllowLocation}
+        onOpenManual={onOpenManual}
+        onOpenExplainer={vi.fn()}
+        onSelectManual={onSelectManual}
+        onClose={vi.fn()}
+      />,
+    );
+
+    const retryBtn = screen.getByRole('button', { name: /try gps again/i });
+    expect(retryBtn).toBeEnabled();
+    fireEvent.click(retryBtn);
+    expect(onAllowLocation).toHaveBeenCalledTimes(1);
+
+    const skipBtn = screen.getByRole('button', { name: /skip for now/i });
+    fireEvent.click(skipBtn);
+    expect(onSelectManual).toHaveBeenCalledWith('ALL', 'All Cities');
+
+    const closeBtn = screen.getByRole('button', {
+      name: /dismiss location setup/i,
+    });
+    fireEvent.click(closeBtn);
+    expect(onSelectManual).toHaveBeenCalledTimes(2);
+    unmount();
+  });
+
+  it('clears search query when picking a state and offers Select Entire State at top of cities', () => {
+    const onSelectManual = vi.fn();
+    render(
+      <LocationModals
+        flowStep="manual"
+        browserPermission="prompt"
+        savedLocation={null}
+        isLocating={false}
+        outcome={null}
+        onAllowLocation={vi.fn()}
+        onOpenManual={vi.fn()}
+        onOpenExplainer={vi.fn()}
+        onSelectManual={onSelectManual}
+        onClose={vi.fn()}
+      />,
+    );
+
+    const searchInput = screen.getByRole('searchbox');
+    fireEvent.change(searchInput, { target: { value: 'Karnataka' } });
+    fireEvent.click(screen.getByRole('button', { name: /Karnataka/i }));
+
+    expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('');
+    const entireStateBtn = screen.getByRole('button', {
+      name: /select entire state \(Karnataka\)/i,
+    });
+    expect(entireStateBtn).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Bengaluru/i })).toBeInTheDocument();
+
+    fireEvent.click(entireStateBtn);
+    expect(onSelectManual).toHaveBeenCalledWith('KA', 'All Cities');
+  });
 });
 
 describe('App Settings Hook (Theme, Data Saver, Language, Theme-Color)', () => {

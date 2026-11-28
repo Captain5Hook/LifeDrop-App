@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ALL_INDIA_CODE } from '../data/indiaLocations';
 import {
   type BrowserPermissionState,
   type GeolocationAttemptResult,
@@ -19,6 +20,7 @@ export function useLocationFlow() {
     locationService.getSavedLocation() ? 'closed' : 'explainer',
   );
   const [isLocating, setIsLocating] = useState(false);
+  const isLocatingRef = useRef(false);
   const [outcome, setOutcome] = useState<{
     status: LocationOutcomeStatus;
     message: string;
@@ -44,22 +46,29 @@ export function useLocationFlow() {
   }, []);
 
   const requestGpsLocation = useCallback(async () => {
+    if (isLocatingRef.current) return;
+    isLocatingRef.current = true;
     setIsLocating(true);
     setOutcome(null);
-    const res: GeolocationAttemptResult =
-      await locationService.requestCurrentLocation(10000);
-    setIsLocating(false);
 
-    if (res.status === 'granted' && res.location) {
-      setSavedLocation(res.location);
-      setOutcome({ status: 'granted', message: res.message });
-      setFlowStep('closed');
-      return;
-    }
+    try {
+      const res: GeolocationAttemptResult =
+        await locationService.requestCurrentLocation(10000);
 
-    setOutcome({ status: res.status, message: res.message });
-    if (res.status === 'outside-india') {
-      setFlowStep('manual');
+      if (res.status === 'granted' && res.location) {
+        setSavedLocation(res.location);
+        setOutcome({ status: 'granted', message: res.message });
+        setFlowStep('closed');
+        return;
+      }
+
+      setOutcome({ status: res.status, message: res.message });
+      if (res.status === 'outside-india') {
+        setFlowStep('manual');
+      }
+    } finally {
+      isLocatingRef.current = false;
+      setIsLocating(false);
     }
   }, []);
 
@@ -69,6 +78,10 @@ export function useLocationFlow() {
     setOutcome(null);
     setFlowStep('closed');
   }, []);
+
+  const skipToAllIndia = useCallback(() => {
+    selectManualLocation(ALL_INDIA_CODE, 'All Cities');
+  }, [selectManualLocation]);
 
   const turnOffSharing = useCallback(() => {
     const updated = locationService.turnOffSharing();
@@ -92,6 +105,7 @@ export function useLocationFlow() {
     closeFlow,
     requestGpsLocation,
     selectManualLocation,
+    skipToAllIndia,
     turnOffSharing,
     deleteLocationData,
   };

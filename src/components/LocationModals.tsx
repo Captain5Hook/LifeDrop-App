@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   ChevronLeft,
@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Loader2,
   MapPin,
+  RefreshCw,
   Search,
   ShieldCheck,
   Smartphone,
@@ -56,6 +57,13 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
   const [selectedState, setSelectedState] = useState<IndiaState | null>(null);
   const [showHelpCard, setShowHelpCard] = useState(false);
   const vvHeight = useVisualViewportHeight();
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+  }, [selectedState, flowStep]);
 
   const filteredStates = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -77,7 +85,21 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
 
   if (flowStep === 'closed') return null;
 
-  const canDismiss = Boolean(savedLocation);
+  const handleSkipToAllIndia = () => {
+    setSearchQuery('');
+    setSelectedState(null);
+    onSelectManual(ALL_INDIA_CODE, 'All Cities');
+  };
+
+  const handleDismiss = () => {
+    setSearchQuery('');
+    setSelectedState(null);
+    if (savedLocation) {
+      onClose();
+    } else {
+      onSelectManual(ALL_INDIA_CODE, 'All Cities');
+    }
+  };
 
   const renderOutcomeBanner = () => {
     if (!outcome) return null;
@@ -89,7 +111,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
     return (
       <div
         role="alert"
-        className={`mt-3 rounded-2xl border p-3.5 text-[13px] ${
+        className={`mt-3 shrink-0 rounded-2xl border p-3.5 text-[13px] ${
           isOutside || isDenied
             ? 'border-[#F43F5E]/40 bg-[#F43F5E]/15 text-slate-900 dark:text-white'
             : 'border-[#FBBF24]/40 bg-[#FBBF24]/15 text-slate-900 dark:text-white'
@@ -101,8 +123,39 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
           ) : (
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#F43F5E]" aria-hidden="true" />
           )}
-          <div className="space-y-1">
+          <div className="min-w-0 flex-1 space-y-2">
             <p className="font-medium leading-snug">{outcome.message}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={onAllowLocation}
+                disabled={isLocating}
+                className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#5B3FE0] px-3.5 py-2 text-[12px] font-semibold text-white transition hover:bg-[#6A4FF0] disabled:opacity-70"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                    Retrying GPS...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                    Try GPS Again
+                  </>
+                )}
+              </button>
+
+              {flowStep === 'explainer' && (
+                <button
+                  type="button"
+                  onClick={onOpenManual}
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-black/15 bg-white/80 px-3.5 py-2 text-[12px] font-semibold text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/[0.12] dark:text-white dark:hover:bg-white/[0.18]"
+                >
+                  Choose manually
+                </button>
+              )}
+            </div>
+
             {(isDenied || outcome.status === 'dismissed') && (
               <button
                 type="button"
@@ -125,7 +178,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
     }
 
     return (
-      <div className="mt-3 rounded-2xl border border-black/10 bg-white/65 p-3.5 text-[13px] text-slate-800 dark:border-white/15 dark:bg-white/[0.08] dark:text-white/90">
+      <div className="mt-3 shrink-0 rounded-2xl border border-black/10 bg-white/65 p-3.5 text-[13px] text-slate-800 dark:border-white/15 dark:bg-white/[0.08] dark:text-white/90">
         <div className="flex items-center gap-2 font-semibold">
           <Smartphone className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
           <span>How to enable location</span>
@@ -134,7 +187,7 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
           <div>
             <p className="font-semibold text-slate-900 dark:text-white">Android Chrome:</p>
             <p>
-              Tap the lock or tune icon in the address bar → Permissions → Location → Allow, then tap &ldquo;Allow location&rdquo; again.
+              Tap the lock or tune icon in the address bar → Permissions → Location → Allow, then tap &ldquo;Try GPS Again&rdquo;.
             </p>
           </div>
           <div>
@@ -156,11 +209,11 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
       aria-labelledby="location-modal-title"
     >
       <div
-        style={vvHeight ? { maxHeight: `${vvHeight}px` } : undefined}
-        className="ld-glass-sheet relative flex max-h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[32px] border border-white/20 text-slate-900 shadow-2xl sm:max-h-[90dvh] sm:rounded-[32px] dark:text-white"
+        style={vvHeight ? { maxHeight: `${Math.min(vvHeight, Math.round(vvHeight * 0.92))}px` } : undefined}
+        className="ld-glass-sheet relative flex max-h-[85dvh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-[32px] border border-white/20 text-slate-900 shadow-2xl sm:max-h-[90dvh] sm:rounded-[32px] dark:text-white"
       >
-        {/* Fixed header */}
-        <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-2">
+        {/* Sticky top header */}
+        <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between px-5 pt-4 pb-2">
           {flowStep === 'manual' && selectedState ? (
             <button
               type="button"
@@ -188,20 +241,22 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
             </span>
           )}
 
-          {canDismiss && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close location modal"
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-slate-700 hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/10"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label={
+              savedLocation
+                ? 'Close location modal'
+                : 'Dismiss location setup and use All India'
+            }
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-slate-700 hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/10"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {flowStep === 'explainer' ? (
-          <div className="ld-scroll-area flex-1 min-h-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <div className="ld-scroll-area flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#5B3FE0]/20 text-[#5B3FE0] dark:bg-[#5B3FE0]/40 dark:text-white">
               <Compass className="h-6 w-6" aria-hidden="true" />
             </div>
@@ -234,28 +289,41 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
             {renderHelpCard()}
 
             <div className="mt-4 flex flex-col gap-2.5">
-              <button
-                type="button"
-                onClick={onAllowLocation}
-                disabled={isLocating}
-                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#5B3FE0] px-5 py-3 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(91,63,224,0.45)] transition hover:bg-[#6A4FF0] disabled:opacity-70"
-              >
-                {isLocating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    Detecting your area in India...
-                  </>
-                ) : (
-                  'Allow location'
-                )}
-              </button>
+              {!outcome && (
+                <>
+                  <button
+                    type="button"
+                    onClick={onAllowLocation}
+                    disabled={isLocating}
+                    className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#5B3FE0] px-5 py-3 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(91,63,224,0.45)] transition hover:bg-[#6A4FF0] disabled:opacity-70"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        Detecting your area in India...
+                      </>
+                    ) : (
+                      'Allow location'
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onOpenManual}
+                    className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/15 bg-white/70 px-5 py-3 text-[15px] font-medium text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:hover:bg-white/[0.16]"
+                  >
+                    Choose manually
+                  </button>
+                </>
+              )}
 
               <button
                 type="button"
-                onClick={onOpenManual}
-                className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-black/15 bg-white/70 px-5 py-3 text-[15px] font-medium text-slate-900 transition hover:bg-white dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:hover:bg-white/[0.16]"
+                onClick={handleSkipToAllIndia}
+                className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium text-slate-700 hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/10"
               >
-                Choose manually
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                Skip for now (Use All-India)
               </button>
 
               {!showHelpCard && browserPermission !== 'denied' && (
@@ -270,83 +338,107 @@ export const LocationModals: React.FC<LocationModalsProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <h2
-              id="location-modal-title"
-              className="shrink-0 text-[20px] font-light tracking-tight text-slate-900 dark:text-white"
-            >
-              {selectedState
-                ? `Select city in ${selectedState.name}`
-                : 'Select your state or union territory'}
-            </h2>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="shrink-0">
+              <h2
+                id="location-modal-title"
+                className="text-[20px] font-light tracking-tight text-slate-900 dark:text-white"
+              >
+                {selectedState
+                  ? `Select city in ${selectedState.name}`
+                  : 'Select your state or union territory'}
+              </h2>
 
-            {renderOutcomeBanner()}
+              {renderOutcomeBanner()}
 
-            <div className="relative mt-3 shrink-0">
-              <Search
-                className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  selectedState
-                    ? `Search city in ${selectedState.name}...`
-                    : 'Search any of 28 states or 8 UTs...'
-                }
-                aria-label={
-                  selectedState
-                    ? `Search city in ${selectedState.name}`
-                    : 'Search Indian state or union territory'
-                }
-                className="min-h-[44px] w-full rounded-full border border-black/15 bg-white/75 py-2.5 pr-4 pl-10 text-[14px] text-slate-900 placeholder:text-slate-500 focus:border-[#5B3FE0] focus:outline-none dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:placeholder:text-white/55"
-              />
+              <div className="relative mt-3">
+                <Search
+                  className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={
+                    selectedState
+                      ? `Search city in ${selectedState.name}...`
+                      : 'Search any of 28 states or 8 UTs...'
+                  }
+                  aria-label={
+                    selectedState
+                      ? `Search city in ${selectedState.name}`
+                      : 'Search Indian state or union territory'
+                  }
+                  className="min-h-[44px] w-full rounded-full border border-black/15 bg-white/75 py-2.5 pr-4 pl-10 text-[14px] text-slate-900 placeholder:text-slate-500 focus:border-[#5B3FE0] focus:outline-none dark:border-white/20 dark:bg-white/[0.10] dark:text-white dark:placeholder:text-white/55"
+                />
+              </div>
+
+              {!selectedState && (
+                <button
+                  type="button"
+                  onClick={handleSkipToAllIndia}
+                  className="mt-2.5 flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
+                    All India (National Overview)
+                  </span>
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
             </div>
 
-            {!selectedState && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  onSelectManual(ALL_INDIA_CODE, 'All Cities');
-                }}
-                className="mt-2.5 flex min-h-[46px] w-full shrink-0 items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
-                  All India (National Overview)
-                </span>
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-
-            <div className="ld-scroll-area mt-2.5 min-h-[160px] flex-1 space-y-1.5 pr-1 pb-2">
+            <div
+              ref={listRef}
+              className="ld-scroll-area mt-2.5 flex-1 min-h-0 space-y-1.5 overflow-y-auto overscroll-y-contain pr-1 pb-2"
+            >
               {selectedState ? (
-                filteredCities.length > 0 ? (
-                  filteredCities.map((city) => (
-                    <button
-                      key={city.name}
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery('');
-                        setSelectedState(null);
-                        onSelectManual(selectedState.code, city.name);
-                      }}
-                      className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/60 px-4 py-2.5 text-left text-[14px] hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.15]"
-                    >
-                      <span className="font-medium">{city.name}</span>
-                      <span className="text-[12px] text-slate-600 dark:text-white/65">
-                        {selectedState.code}
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="py-6 text-center text-[13px] text-slate-600 dark:text-white/70">
-                    No matching cities found in {selectedState.name}.
-                  </p>
-                )
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = selectedState.code;
+                      setSearchQuery('');
+                      setSelectedState(null);
+                      onSelectManual(code, 'All Cities');
+                    }}
+                    className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-[#5B3FE0]/40 bg-[#5B3FE0]/15 px-4 py-2.5 text-left text-[14px] font-medium text-slate-900 hover:bg-[#5B3FE0]/25 dark:text-white"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
+                      Select Entire State ({selectedState.name})
+                    </span>
+                    <span className="text-[12px] text-[#5B3FE0] dark:text-[#C4B5FD]">
+                      All Cities
+                    </span>
+                  </button>
+
+                  {filteredCities.length > 0 ? (
+                    filteredCities.map((city) => (
+                      <button
+                        key={city.name}
+                        type="button"
+                        onClick={() => {
+                          const code = selectedState.code;
+                          setSearchQuery('');
+                          setSelectedState(null);
+                          onSelectManual(code, city.name);
+                        }}
+                        className="flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-black/10 bg-white/60 px-4 py-2.5 text-left text-[14px] hover:bg-white/90 dark:border-white/10 dark:bg-white/[0.07] dark:hover:bg-white/[0.15]"
+                      >
+                        <span className="font-medium">{city.name}</span>
+                        <span className="text-[12px] text-slate-600 dark:text-white/65">
+                          {selectedState.code}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="py-6 text-center text-[13px] text-slate-600 dark:text-white/70">
+                      No matching cities found in {selectedState.name}.
+                    </p>
+                  )}
+                </>
               ) : filteredStates.length > 0 ? (
                 filteredStates.map((st) => (
                   <button

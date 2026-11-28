@@ -177,7 +177,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </header>
 
       {/* ONE Scrollable Content Area with safe bottom nav clearance */}
-      <div className="ld-scroll-area flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain pb-[calc(88px+env(safe-area-inset-bottom,0px))]">
+      <div className="ld-scroll-area flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain pb-[calc(94px+env(safe-area-inset-bottom,12px))]">
         {effectiveLoading ? (
           <HomeSkeleton />
         ) : effectiveError ? (
@@ -217,7 +217,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <button
                     type="button"
                     onClick={onOpenLocationPicker}
-                    className="inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-full px-3 py-0.5 text-[clamp(1.3rem,5.5vw,1.75rem)] font-light leading-tight tracking-tight text-slate-900 hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
+                    className="inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-full px-3 py-0.5 text-[clamp(1.25rem,5.2vw,1.65rem)] font-bold leading-tight tracking-tight text-slate-900 hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
                     aria-label={`Current location: ${locationTitle}. Tap to change state or city`}
                   >
                     <MapPin className="h-4 w-4 shrink-0 text-[#5B3FE0] dark:text-[#C4B5FD]" aria-hidden="true" />
@@ -239,13 +239,34 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </p>
                   )}
 
-                  {/* Huge thin counter scaled smoothly via clamp() for compact mobile screens */}
-                  <div className="mt-0.5 flex flex-col items-center">
-                    <p className="text-[clamp(2.5rem,min(13vw,8.5vh),4.75rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">
+                  {/* Active Regional Blood Health badge directly below the city */}
+                  <div className="ld-glass mt-1 inline-flex max-w-full flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 rounded-full px-3 py-1 text-[12px] font-medium text-slate-900 dark:text-white">
+                    <span className="inline-flex items-center gap-1.5 text-[#E11D48] dark:text-[#FB7185]">
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full bg-[#F43F5E] shadow-[0_0_8px_rgba(244,63,94,0.85)]"
+                        aria-hidden="true"
+                      />
+                      <span>Critical: {stateStats.criticalGroups.join(', ') || 'None'}</span>
+                    </span>
+                    <span className="text-slate-400 dark:text-white/30" aria-hidden="true">
+                      |
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[#059669] dark:text-[#34D399]">
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full bg-[#34D399] shadow-[0_0_8px_rgba(52,211,153,0.85)]"
+                        aria-hidden="true"
+                      />
+                      <span>Stable: {stateStats.stableGroups.slice(0, 2).join(', ') || 'A+, O+'}</span>
+                    </span>
+                  </div>
+
+                  {/* Huge thin counter scaled smoothly via clamp() for 360px-412px Android screens */}
+                  <div className="mt-1.5 flex w-full flex-col items-center">
+                    <p className="whitespace-nowrap text-[clamp(2.25rem,min(11.5vw,7.5vh),4.25rem)] font-extralight leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">
                       {effectiveEmpty ? '0' : displayUsers.toLocaleString('en-IN')}
                     </p>
 
-                    <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-[15px] font-normal text-slate-700 dark:text-white/85">
+                    <div className="mt-1 flex max-w-full items-center justify-center gap-1.5 whitespace-nowrap text-[clamp(0.8125rem,3.6vw,0.95rem)] font-normal text-slate-700 dark:text-white/85">
                       <span>Lifesavers on LifeDrop</span>
                       {(isAllIndia ? globalStats.isDemo : stateStats.isDemo) && (
                         <span className="rounded-full border border-black/15 bg-white/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white/85">
@@ -256,18 +277,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                     <p className="mt-0.5 text-[12px] text-slate-600 tabular-nums dark:text-white/75">
                       +{displayJoinedToday} joined today · {formatUpdatedAgo(stateStats.updatedAt)}
-                    </p>
-
-                    <p className="mt-1 text-[13px] font-medium text-slate-900 dark:text-white">
-                      <span className="text-[#E11D48] dark:text-[#FB7185]">
-                        Critical: {stateStats.criticalGroups.join(', ') || 'None'}
-                      </span>
-                      <span className="mx-2 text-slate-400 dark:text-white/40" aria-hidden="true">
-                        |
-                      </span>
-                      <span className="text-[#059669] dark:text-[#34D399]">
-                        Stable: {stateStats.stableGroups.slice(0, 2).join(', ') || 'O+, A+'}
-                      </span>
                     </p>
                   </div>
                 </section>
@@ -327,8 +336,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               >
                 {(
                   [
-                    { id: 'groups', label: 'Blood Groups' },
-                    { id: 'goals', label: 'Our Goals' },
+                    { id: 'groups', label: 'Blood Stock' },
+                    { id: 'goals', label: 'Mission Goals' },
                     { id: 'drives', label: 'Donation Drives' },
                   ] as const
                 ).map((tab) => {
@@ -340,7 +349,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       role="tab"
                       aria-selected={isActive}
                       onClick={() => setSheetTab(tab.id)}
-                      className={`relative min-h-[44px] flex-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold whitespace-nowrap transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-white sm:px-4 sm:text-[13px] ${
+                      className={`relative min-h-[44px] flex-1 rounded-full px-2 py-1.5 text-[11.5px] font-semibold whitespace-nowrap transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-white sm:px-3.5 sm:text-[13px] ${
                         isActive
                           ? 'text-white'
                           : 'text-slate-700 hover:text-slate-950 dark:text-white/70 dark:hover:text-white'
@@ -355,7 +364,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                               : { type: 'spring', stiffness: 420, damping: 32 }
                           }
                           aria-hidden="true"
-                          className="absolute inset-0 rounded-full border border-white/25 bg-[#5B3FE0]/90 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.3),0_4px_14px_rgba(91,63,224,0.45)]"
+                          className="absolute inset-0 rounded-full border border-white/25 bg-[#5B3FE0] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.3),0_4px_14px_rgba(91,63,224,0.45)]"
                         />
                       )}
                       <span className="relative z-10">{tab.label}</span>

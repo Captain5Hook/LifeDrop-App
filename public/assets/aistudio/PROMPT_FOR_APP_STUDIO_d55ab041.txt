@@ -1,0 +1,58 @@
+# PROMPT FOR GOOGLE APP STUDIO: LIFEDROP BLOOD BANK SYSTEM
+# Premium Frosted-Glass Mobile UI (Medical Emergency & Blood Bank Finder)
+
+Please refine the mobile UI of LifeDrop-App so that all screens, tiles, and widgets are tailored specifically for LifeDrop (Blood Donation, Donor SOS, and Emergency Blood Bank Management) while utilizing the modern frosted-glass mobile aesthetic:
+
+---
+
+### 1. Header & Regional Blood Stock Status (`HomeScreen.tsx`):
+- Clean medical geographic header:
+  - Selected City & State in bold typography with a location pin (`Bengaluru, Karnataka`).
+  - Active Regional Blood Health badge directly below the city:
+    - Glowing Red Dot: `Critical: O-, B-`
+    - Glowing Green Dot: `Stable: A+, O+`
+  - Big thin lifesaver counter: `14,280 Lifesavers on LifeDrop` scaled with `clamp()` to fit all Android widths (360px–412px) without breaking onto multiple lines.
+
+---
+
+### 2. Blood Group Stock Tiles (`BloodGroupPills.tsx`):
+- Redesign the 8 Blood Group cards (O+, A+, B+, AB+, O-, A-, B-, AB-):
+  - Card Header: Blood Group letter (bold `22px`) on the left, droplet icon with stock status indicator on the right.
+  - Middle: Blood stock percentage / availability (e.g., `O+ · 38% of donors`, `AB- · Critical`).
+  - Bottom: Mini Blood Supply Level Bar:
+    - Stable: 80% filled in emerald green (`#34D399`)
+    - Low: 35% filled in warm amber (`#FBBF24`)
+    - Critical: 15% filled in ruby red (`#F43F5E`) with gentle pulse glow.
+  - Interactive: Tapping a card highlights it and updates the quick details panel below.
+
+---
+
+### 3. Emergency Bleeding First Aid Button (`HomeScreen.tsx`):
+- High-visibility emergency action banner:
+  - Prominent red/rose gradient button: `🚨 Bleeding Emergency · First Aid & 108`
+  - Placed directly above the sliding sheet so it is always visible above the fold on all Android phones.
+
+---
+
+### 4. LifeDrop Segmented Information Sheet (`HomeScreen.tsx`):
+- Segmented tabs in an enclosed frosted pill container:
+  - Tab 1: `Blood Stock` (The 8 blood group cards)
+  - Tab 2: `Mission Goals` (Annual blood collection progress in India)
+  - Tab 3: `Donation Drives` (Upcoming blood donation camps near the user)
+- Active tab has a smooth sliding pill indicator (`bg-[#5B3FE0] text-white`).
+
+---
+
+### 5. Floating Curved Emergency SOS Navigation Bar (`BottomNav.tsx`):
+- Floating wave navigation with 5 LifeDrop core tabs:
+  1. `Home` (Dashboard & Blood Stock)
+  2. `Map` (India Blood Banks Directory)
+  3. `SOS` (Center raised circular '+' Emergency Blood Request button in vivid red `#F43F5E`)
+  4. `Chatbot` (Offline Clinical Medical Assistant)
+  5. `Profile` (Donor card, 90-day eligibility timer & DPDP settings)
+- Ensure proper clearance for Android system gesture bars (`pb-[max(0.75rem, env(safe-area-inset-bottom, 12px))]`).
+
+---
+
+### Verification:
+Ensure all TypeScript checks (`npm run lint`), `vitest run`, and `npm run build` pass cleanly without errors.

@@ -53,12 +53,33 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
                 ? 'text-[#B45309] dark:text-[#FCD34D]'
                 : 'text-[#047857] dark:text-[#6EE7B7]';
 
+          const statusDotClass =
+            item.status === 'critical'
+              ? 'bg-[#F43F5E] shadow-[0_0_6px_rgba(244,63,94,0.85)]'
+              : item.status === 'low'
+                ? 'bg-[#FBBF24] shadow-[0_0_6px_rgba(251,191,36,0.75)]'
+                : 'bg-[#34D399] shadow-[0_0_6px_rgba(52,211,153,0.75)]';
+
+          const supplyBarFillClass =
+            item.status === 'critical'
+              ? 'w-[15%] bg-[#F43F5E] shadow-[0_0_8px_rgba(244,63,94,0.7)]'
+              : item.status === 'low'
+                ? 'w-[35%] bg-[#FBBF24]'
+                : 'w-[80%] bg-[#34D399]';
+
           const healthCardTheme =
             item.status === 'critical'
               ? 'border-[#F43F5E]/45 bg-gradient-to-b from-[#F43F5E]/15 to-white/60 dark:from-[#F43F5E]/20 dark:to-[#2A215C]/65 ld-critical-glow'
               : item.status === 'low'
                 ? 'border-[#FBBF24]/45 bg-gradient-to-b from-[#FBBF24]/15 to-white/60 dark:from-[#FBBF24]/18 dark:to-[#2A215C]/65 shadow-[0_4px_16px_rgba(251,191,36,0.2)]'
                 : 'border-[#34D399]/40 bg-gradient-to-b from-[#34D399]/14 to-white/60 dark:from-[#34D399]/16 dark:to-[#2A215C]/65 shadow-[0_4px_16px_rgba(52,211,153,0.2)]';
+
+          const statusLabel =
+            item.status === 'critical'
+              ? 'Critical'
+              : item.status === 'low'
+                ? 'Low'
+                : 'Stable';
 
           return (
             <button
@@ -67,61 +88,70 @@ export const BloodGroupPills: React.FC<BloodGroupPillsProps> = ({
               role="option"
               aria-selected={isSelected}
               onClick={() => onSelectGroup(item.group)}
-              className={`group relative flex min-h-[122px] min-w-[82px] shrink-0 flex-col items-center justify-between overflow-hidden rounded-[24px] border px-2.5 py-2.5 text-center backdrop-blur-md transition-all duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+              className={`group relative flex min-h-[118px] min-w-[116px] shrink-0 flex-col justify-between overflow-hidden rounded-[24px] border p-3 text-left backdrop-blur-md transition-all duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                 isSelected
                   ? 'ld-pill-active text-white ring-1 ring-white/40'
                   : `${healthCardTheme} text-slate-900 hover:brightness-105 dark:text-white`
               }`}
             >
-              {/* Top-left metric badge + icon */}
-              <div className="flex w-full items-center justify-between gap-1">
-                <span
-                  className={`truncate text-[10px] font-semibold tracking-tight ${
-                    isSelected ? 'text-white/90' : statusColor
-                  }`}
-                >
-                  {item.isMostCommon ? 'Top' : `${item.sharePercent}%`}
-                </span>
-                <Droplet
-                  className={`h-3.5 w-3.5 shrink-0 ${
-                    isSelected ? 'text-white' : statusColor
-                  }`}
-                  fill="currentColor"
-                  fillOpacity={0.3}
-                  aria-hidden="true"
-                />
-              </div>
-
-              {/* Center bold blood group */}
-              <div className="my-0.5 flex flex-col items-center">
-                <span className="text-[20px] font-bold leading-none tracking-tight tabular-nums">
+              {/* Card Header: bold 22px blood group left, droplet + status dot right */}
+              <div className="flex w-full items-center justify-between gap-2">
+                <span className="text-[22px] font-bold leading-none tracking-tight tabular-nums">
                   {item.group}
                 </span>
-                <span
-                  className={`mt-1 text-[10px] font-medium capitalize ${
-                    isSelected
-                      ? 'text-white/85'
-                      : 'text-slate-600 dark:text-white/70'
-                  }`}
-                >
-                  {item.status}
+                <span className="inline-flex items-center gap-1">
+                  <span
+                    className={`h-2 w-2 rounded-full ${statusDotClass}`}
+                    aria-hidden="true"
+                  />
+                  <Droplet
+                    className={`h-4 w-4 shrink-0 ${
+                      isSelected ? 'text-white' : statusColor
+                    }`}
+                    fill="currentColor"
+                    fillOpacity={0.35}
+                    aria-hidden="true"
+                  />
                 </span>
               </div>
 
-              {/* Bottom units & compact donor count */}
-              <div className="flex w-full flex-col items-center leading-tight">
-                <span className="text-[12px] font-semibold tabular-nums">
-                  {item.unitsInStock} u
+              {/* Middle: stock percentage & availability */}
+              <div className="my-1.5 flex flex-col gap-0.5 leading-tight">
+                <span
+                  className={`text-[11px] font-medium tabular-nums ${
+                    isSelected
+                      ? 'text-white/95'
+                      : 'text-slate-700 dark:text-white/85'
+                  }`}
+                >
+                  {item.sharePercent}% of donors
+                </span>
+                <span
+                  className={`text-[11px] font-semibold tabular-nums ${
+                    isSelected ? 'text-white' : statusColor
+                  }`}
+                >
+                  {statusLabel} · {item.unitsInStock} u
                 </span>
                 <span
                   className={`text-[10px] tabular-nums ${
                     isSelected
-                      ? 'text-white/80'
-                      : 'text-slate-600 dark:text-white/65'
+                      ? 'text-white/75'
+                      : 'text-slate-600 dark:text-white/60'
                   }`}
                 >
                   {formatCompactUsers(item.users)} donors
                 </span>
+              </div>
+
+              {/* Bottom: Mini Blood Supply Level Bar (80% stable / 35% low / 15% critical) */}
+              <div
+                className={`h-1.5 w-full overflow-hidden rounded-full ${
+                  isSelected ? 'bg-white/25' : 'bg-black/10 dark:bg-white/15'
+                }`}
+                aria-hidden="true"
+              >
+                <div className={`h-full rounded-full ${supplyBarFillClass}`} />
               </div>
             </button>
           );

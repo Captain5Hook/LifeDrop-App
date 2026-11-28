@@ -1,0 +1,33 @@
+# PROMPT FOR GOOGLE APP STUDIO: FIX LOCATION MODAL ISSUES
+
+Please fix the Location Setup and Manual Picker modal in LifeDrop-App using the attached files (rename .txt back to .ts/.tsx in the project):
+- LocationModals.tsx.txt (src/components/LocationModals.tsx)
+- useLocationFlow.ts.txt (src/hooks/useLocationFlow.ts)
+- locationService.ts.txt (src/services/locationService.ts)
+- indiaLocations.ts.txt (src/data/indiaLocations.ts)
+
+---
+
+### Issues Identified on Mobile/Android:
+
+1. Dismiss / Skip Option on First Load (LocationModals.tsx):
+   - Currently, if the user doesn't have a saved location (savedLocation === null), canDismiss is false, so there is NO close ("X") or "Skip for now" button.
+   - Users who do not want to grant GPS permission immediately get trapped on this screen unless they select a state manually.
+   - Fix: Add a clear "Skip for now (Use All-India)" or dismiss button so first-time users can explore the app immediately without being forced into GPS or manual picker.
+
+2. Keyboard Push-Up & Scroll Overlap (LocationModals.tsx):
+   - On Android devices, when the user taps the search input to search for states or cities, the virtual soft keyboard opens and shrinks the viewport.
+   - Because of fixed heights, the state list gets squished or hidden behind the keyboard, and the back button ("< All States & UTs") gets displaced.
+   - Fix: Ensure the modal uses max-h-[85dvh] on mobile with a flexible scrollable list (flex-1 min-h-0 overflow-y-auto overscroll-y-contain) and keep the search input and header shrink-0 sticky at the top.
+
+3. Smooth State-to-City Transition:
+   - When tapping a state (e.g. Karnataka), clear the search input query automatically (setSearchQuery('')) and scroll the city list to the top so users immediately see the cities (Bengaluru, Mysuru, Hubballi, etc.) without having to backspace their state search term.
+   - Include a "Select Entire State" quick option at the top of the city list so users don't have to pick a single city if they want state-wide blood bank results.
+
+4. GPS Error Recovery & Retries (useLocationFlow.ts, LocationModals.tsx):
+   - If GPS times out or is denied on mobile browsers, provide an immediate "Try GPS Again" button right inside the error banner alongside "Choose manually".
+
+---
+
+### Verification:
+Ensure all TypeScript checks (npm run lint), vitest run, and npm run build pass with zero errors.
