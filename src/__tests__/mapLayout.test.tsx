@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MapScreen } from '../screens/MapScreen';
+import App from '../App';
 
 const { mockFitBounds, mockSetView, mockFlyTo, mockZoomControl } = vi.hoisted(() => ({
   mockFitBounds: vi.fn(),
@@ -57,6 +58,22 @@ vi.mock('leaflet', () => {
   };
 });
 
+vi.mock('../hooks/usePWA', () => ({
+  usePWA: () => ({
+    isInstallable: false,
+    isInstalled: false,
+    isIOS: false,
+    dismissedInstallBanner: false,
+    dismissInstallBanner: vi.fn(),
+    installApp: vi.fn().mockResolvedValue(false),
+    needRefresh: false,
+    offlineReady: false,
+    dismissUpdate: vi.fn(),
+    dismissOfflineReady: vi.fn(),
+    applyUpdate: vi.fn(),
+  }),
+}));
+
 beforeAll(() => {
   if (typeof globalThis.ResizeObserver === 'undefined') {
     globalThis.ResizeObserver = class {
@@ -64,6 +81,21 @@ beforeAll(() => {
       unobserve() {}
       disconnect() {}
     };
+  }
+  if (!window.matchMedia) {
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = vi.fn();
   }
 });
 
@@ -128,5 +160,46 @@ describe('MapScreen GUI & Viewport Layout Fixes', () => {
         }),
       ).toBeInTheDocument();
     });
+  });
+
+  it('keeps all 5 tab screens inside tab-viewport-stage above BottomNav and raised SOS', async () => {
+    render(<App />);
+
+    const stage = screen.getByTestId('tab-viewport-stage');
+    expect(stage).toHaveClass(
+      'overflow-hidden',
+      'pb-[calc(92px+env(safe-area-inset-bottom,12px))]',
+    );
+
+    const nav = screen.getByRole('navigation', { name: 'Primary navigation' });
+    expect(stage.contains(nav)).toBe(false);
+
+    // Home tab renders inside stage
+    expect(screen.getByText(/Lifesavers on LifeDrop/i)).toBeInTheDocument();
+    expect(stage.contains(screen.getByLabelText('LifeDrop national impact summary'))).toBe(true);
+
+    // Map tab renders inside stage
+    fireEvent.click(screen.getByRole('button', { name: 'India Blood Bank Map' }));
+    const mapHeaderTrigger = await screen.findByRole('button', {
+      name: 'Select Indian state or union territory',
+    });
+    expect(stage.contains(mapHeaderTrigger)).toBe(true);
+
+    // SOS tab renders inside stage
+    fireEvent.click(screen.getByRole('button', { name: 'Emergency SOS blood request' }));
+    const sosHeading = await screen.findByRole('heading', { name: 'Emergency SOS' });
+    expect(stage.contains(sosHeading)).toBe(true);
+
+    // Chatbot tab renders inside stage
+    fireEvent.click(screen.getByRole('button', { name: 'LifeDrop Assistant' }));
+    const chatInput = await screen.findByLabelText('Ask LifeDrop Assistant');
+    expect(stage.contains(chatInput)).toBe(true);
+
+    // Profile tab renders inside stage
+    fireEvent.click(screen.getByRole('button', { name: 'Profile and Settings' }));
+    const profileHeading = await screen.findByRole('heading', {
+      name: /Profile & Eligibility/i,
+    });
+    expect(stage.contains(profileHeading)).toBe(true);
   });
 });

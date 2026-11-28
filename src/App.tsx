@@ -177,124 +177,130 @@ function LifeDropApp() {
               </div>
             )}
 
-          {activeTab === 'home' && (
-            <HomeScreen
-              savedLocation={locationFlow.savedLocation}
-              activeScopeCode={activeScopeCode}
-              onToggleAllIndia={() => setAllIndiaView((v) => !v)}
-              onOpenLocationPicker={() => {
-                setAllIndiaView(false);
-                locationFlow.openExplainer();
-              }}
-              onOpenManualPicker={() => {
-                setAllIndiaView(false);
-                locationFlow.openManualPicker();
-              }}
-              onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onFindGroupOnMap={(group) => {
-                setMapBloodGroup(group);
-                setActiveTab('map');
-              }}
-              onOpenCompatibilityChecker={openCompatibilityChecker}
-              globalStats={homeStats.globalStats}
-              stateStats={homeStats.stateStats}
-              goals={homeStats.goals}
-              drives={homeStats.drives}
-              attendedDriveIds={homeStats.attendedDriveIds}
-              onToggleAttendDrive={homeStats.toggleAttendDrive}
-              isLoading={homeStats.isLoading}
-              error={homeStats.error}
-              onRetry={homeStats.retry}
-              isOnline={isOnline}
-              dataSaver={dataSaver}
-              previewState={previewState}
-            />
-          )}
-
-          {activeTab === 'map' && (
-            <Suspense fallback={<HomeSkeleton />}>
-              <LazyMapScreen
-                initialBloodGroup={mapBloodGroup}
+          {/* All 5 tab screens render inside a clipped stage strictly above BottomNav & raised SOS */}
+          <div
+            data-testid="tab-viewport-stage"
+            className="relative flex min-h-0 flex-1 flex-col overflow-hidden pb-[calc(92px+env(safe-area-inset-bottom,12px))]"
+          >
+            {activeTab === 'home' && (
+              <HomeScreen
                 savedLocation={locationFlow.savedLocation}
-                browserPermission={locationFlow.browserPermission}
-                onRequestNearMe={locationFlow.requestGpsLocation}
-                onOpenManualLocation={locationFlow.openManualPicker}
-                theme={theme}
-                dataSaver={dataSaver}
-                isOnline={isOnline}
-                previewState={previewState}
-              />
-            </Suspense>
-          )}
-
-          {activeTab === 'sos' && (
-            <Suspense fallback={<HomeSkeleton />}>
-              <LazySosScreen
-                user={authProfile.user}
-                profile={authProfile.profile}
                 activeScopeCode={activeScopeCode}
-                savedLocation={locationFlow.savedLocation}
-                isOnline={isOnline}
-                dataSaver={dataSaver}
-                onOpenAuthOnboarding={() => setIsAuthOpen(true)}
-                onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
-                onOpenMapWithGroup={(group) => {
-                  setMapBloodGroup(group);
-                  setActiveTab('map');
+                onToggleAllIndia={() => setAllIndiaView((v) => !v)}
+                onOpenLocationPicker={() => {
+                  setAllIndiaView(false);
+                  locationFlow.openExplainer();
                 }}
-              />
-            </Suspense>
-          )}
-
-          {activeTab === 'chat' && (
-            <Suspense fallback={<HomeSkeleton />}>
-              <LazyChatScreen
-                language={language}
-                onChangeLanguage={setLanguage}
-                isOnline={isOnline}
+                onOpenManualPicker={() => {
+                  setAllIndiaView(false);
+                  locationFlow.openManualPicker();
+                }}
                 onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
+                onOpenSettings={() => setIsSettingsOpen(true)}
                 onFindGroupOnMap={(group) => {
                   setMapBloodGroup(group);
                   setActiveTab('map');
                 }}
                 onOpenCompatibilityChecker={openCompatibilityChecker}
+                globalStats={homeStats.globalStats}
+                stateStats={homeStats.stateStats}
+                goals={homeStats.goals}
+                drives={homeStats.drives}
+                attendedDriveIds={homeStats.attendedDriveIds}
+                onToggleAttendDrive={homeStats.toggleAttendDrive}
+                isLoading={homeStats.isLoading}
+                error={homeStats.error}
+                onRetry={homeStats.retry}
+                isOnline={isOnline}
+                dataSaver={dataSaver}
+                previewState={previewState}
               />
-            </Suspense>
-          )}
+            )}
 
-          {activeTab === 'profile' && (
-            <Suspense fallback={<HomeSkeleton />}>
-              <LazyProfileScreen
-                user={authProfile.user}
-                authLoading={authProfile.authLoading}
-                profileLoading={authProfile.profileLoading}
-                profile={authProfile.profile}
-                consent={authProfile.consent}
-                effectiveRole={authProfile.effectiveRole}
-                devRoleOverride={authProfile.devRoleOverride}
-                savedLocation={locationFlow.savedLocation}
-                onSetDevRoleOverride={authProfile.setDevRoleOverride}
-                onOpenAuthOnboarding={() => setIsAuthOpen(true)}
-                onOpenEligibility={() => setIsEligibilityOpen(true)}
-                onOpenSettings={() => setIsSettingsOpen(true)}
-                onOpenAbout={() => setIsAboutOpen(true)}
-                onOpenLegal={(tab) => setLegalTab(tab)}
-                onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
-                onOpenCompatibilityChecker={() =>
-                  openCompatibilityChecker(authProfile.profile?.bloodGroup ?? 'O+')
-                }
-                onOpenBankDashboard={() => setIsBankDashboardOpen(true)}
-                onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
-                onToggleCanDonate={authProfile.toggleCanDonate}
-                onLogSelfDonation={authProfile.logSelfDonation}
-                onWithdrawConsent={authProfile.withdrawConsent}
-                onRefreshUserAndProfile={authProfile.refreshUserAndProfile}
-                onSignOut={authProfile.signOut}
-                onDeleteAccount={authProfile.deleteAccount}
-              />
-            </Suspense>
-          )}
+            {activeTab === 'map' && (
+              <Suspense fallback={<HomeSkeleton />}>
+                <LazyMapScreen
+                  initialBloodGroup={mapBloodGroup}
+                  savedLocation={locationFlow.savedLocation}
+                  browserPermission={locationFlow.browserPermission}
+                  onRequestNearMe={locationFlow.requestGpsLocation}
+                  onOpenManualLocation={locationFlow.openManualPicker}
+                  theme={theme}
+                  dataSaver={dataSaver}
+                  isOnline={isOnline}
+                  previewState={previewState}
+                />
+              </Suspense>
+            )}
+
+            {activeTab === 'sos' && (
+              <Suspense fallback={<HomeSkeleton />}>
+                <LazySosScreen
+                  user={authProfile.user}
+                  profile={authProfile.profile}
+                  activeScopeCode={activeScopeCode}
+                  savedLocation={locationFlow.savedLocation}
+                  isOnline={isOnline}
+                  dataSaver={dataSaver}
+                  onOpenAuthOnboarding={() => setIsAuthOpen(true)}
+                  onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
+                  onOpenMapWithGroup={(group) => {
+                    setMapBloodGroup(group);
+                    setActiveTab('map');
+                  }}
+                />
+              </Suspense>
+            )}
+
+            {activeTab === 'chat' && (
+              <Suspense fallback={<HomeSkeleton />}>
+                <LazyChatScreen
+                  language={language}
+                  onChangeLanguage={setLanguage}
+                  isOnline={isOnline}
+                  onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
+                  onFindGroupOnMap={(group) => {
+                    setMapBloodGroup(group);
+                    setActiveTab('map');
+                  }}
+                  onOpenCompatibilityChecker={openCompatibilityChecker}
+                />
+              </Suspense>
+            )}
+
+            {activeTab === 'profile' && (
+              <Suspense fallback={<HomeSkeleton />}>
+                <LazyProfileScreen
+                  user={authProfile.user}
+                  authLoading={authProfile.authLoading}
+                  profileLoading={authProfile.profileLoading}
+                  profile={authProfile.profile}
+                  consent={authProfile.consent}
+                  effectiveRole={authProfile.effectiveRole}
+                  devRoleOverride={authProfile.devRoleOverride}
+                  savedLocation={locationFlow.savedLocation}
+                  onSetDevRoleOverride={authProfile.setDevRoleOverride}
+                  onOpenAuthOnboarding={() => setIsAuthOpen(true)}
+                  onOpenEligibility={() => setIsEligibilityOpen(true)}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onOpenAbout={() => setIsAboutOpen(true)}
+                  onOpenLegal={(tab) => setLegalTab(tab)}
+                  onOpenBleedingEmergency={() => setIsBleedingOpen(true)}
+                  onOpenCompatibilityChecker={() =>
+                    openCompatibilityChecker(authProfile.profile?.bloodGroup ?? 'O+')
+                  }
+                  onOpenBankDashboard={() => setIsBankDashboardOpen(true)}
+                  onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
+                  onToggleCanDonate={authProfile.toggleCanDonate}
+                  onLogSelfDonation={authProfile.logSelfDonation}
+                  onWithdrawConsent={authProfile.withdrawConsent}
+                  onRefreshUserAndProfile={authProfile.refreshUserAndProfile}
+                  onSignOut={authProfile.signOut}
+                  onDeleteAccount={authProfile.deleteAccount}
+                />
+              </Suspense>
+            )}
+          </div>
 
           <BottomNav activeTab={activeTab} onSelectTab={setActiveTab} />
 

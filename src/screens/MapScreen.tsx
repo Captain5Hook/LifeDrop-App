@@ -697,7 +697,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
         : 'h-[112px]';
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[calc(72px+env(safe-area-inset-bottom,0px))]">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Fixed Top Map Header */}
       <header className="shrink-0 space-y-2 border-b border-black/10 px-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] pb-2.5 dark:border-white/15">
         {effectiveOffline && (
@@ -961,7 +961,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
         </div>
       ) : (
         /* B1–B3. Map View + Draggable/Snapping Glass Sheet */
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-[24px]">
           {/* Leaflet Canvas OR Screen-reader Accessible List */}
           <div
             ref={mapContainerRef}
@@ -976,7 +976,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           />
 
           {srListMode && (
-            <div className="ld-scroll-area flex-1 p-3 space-y-2">
+            <div className="ld-scroll-area flex-1 p-3 pb-4 space-y-2">
               <p className="text-[12px] text-slate-600 dark:text-white/75">
                 Screen-reader accessible directory view
               </p>
@@ -1034,7 +1034,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           {!srListMode && (
             <section
               aria-label="Blood bank list and filters"
-              className={`ld-glass-sheet overscroll-contain touch-pan-y absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[36px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
+              className={`ld-glass-sheet overscroll-contain touch-pan-y absolute right-0 bottom-0 left-0 z-[450] flex flex-col rounded-t-[32px] rounded-b-[24px] px-4 pt-2 pb-2 transition-all duration-300 ${sheetHeightClass}`}
             >
               {/* Snap handle */}
               <div className="flex shrink-0 items-center justify-between gap-2 pb-1.5 overscroll-contain touch-pan-y">

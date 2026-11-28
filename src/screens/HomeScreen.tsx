@@ -176,8 +176,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </header>
 
-      {/* ONE Scrollable Content Area with safe bottom nav clearance */}
-      <div className="ld-scroll-area flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain pb-[calc(94px+env(safe-area-inset-bottom,12px))]">
+      {/* ONE Scrollable Content Area clipped cleanly above BottomNav stage */}
+      <div className="ld-scroll-area flex-1 min-h-0 pb-2">
         {effectiveLoading ? (
           <HomeSkeleton />
         ) : effectiveError ? (
@@ -209,10 +209,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-full flex-col justify-between">
+          <div className="flex min-h-full flex-col justify-between gap-3 pb-2">
             {/* Hero Header & Counter (hidden when sheet is expanded to 80% so sheet stays prominent) */}
             {sheetSnap === 'peek' && (
-              <div>
+              <div className="shrink-0">
                 <section className="flex flex-col items-center px-4 text-center">
                   <button
                     type="button"
@@ -298,11 +298,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             )}
 
-            {/* Glass Bottom Sheet with peek (~38%) / expanded (~80%) snap */}
+            {/* Glass Bottom Sheet with peek / expanded snap, safely above BottomNav */}
             <section
               aria-label="Blood groups, goals, and donation drives"
-              className={`ld-glass-sheet flex flex-col rounded-t-[36px] px-4 pt-2 pb-4 transition-all duration-300 ${
-                sheetSnap === 'expanded' ? 'min-h-[80dvh] flex-1' : 'min-h-[38dvh]'
+              className={`ld-glass-sheet mx-2.5 flex shrink-0 flex-col rounded-[30px] border border-black/10 px-4 pt-2 pb-4 transition-all duration-300 dark:border-white/15 ${
+                sheetSnap === 'expanded' ? 'min-h-[75dvh] flex-1' : 'min-h-[34dvh]'
               }`}
             >
               {/* Drag handle & Snap toggle */}

@@ -136,7 +136,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   );
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[calc(76px+env(safe-area-inset-bottom,0px))]">
+    <div className="flex flex-1 min-h-0 flex-col pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
       {/* Fixed Header */}
       <header className="shrink-0 space-y-2 border-b border-black/10 px-4 pb-3 dark:border-white/15">
         <div className="flex items-center justify-between gap-2">

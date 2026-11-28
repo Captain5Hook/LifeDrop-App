@@ -208,8 +208,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   ];
 
   return (
-    <div className="ld-scroll-area flex-1 min-h-0 px-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[calc(92px+env(safe-area-inset-bottom,0px))]">
-      <div className="mx-auto w-full max-w-[400px] space-y-4">
+    <div className="ld-scroll-area flex-1 min-h-0 px-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-4">
+      <div className="mx-auto w-full max-w-[400px] space-y-4 pb-2">
         {/* Header */}
         <header className="flex items-center justify-between pt-1">
           <div>

@@ -3,6 +3,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --ld-bg-start: #ECE9FC;
     --ld-bg-end: #CFC4F8;
     --ld-surface: rgba(255, 255, 255, 0.70);
@@ -18,6 +19,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --ld-bg-start: #1B1740;
     --ld-bg-end: #6B4FBB;
     --ld-surface: rgba(42, 33, 92, 0.65);
@@ -123,13 +125,54 @@
     radial-gradient(1px 1px at 88% 9%, rgba(91, 63, 224, 0.15) 50%, transparent 100%);
 }
 
-/* Smooth touch scroll container */
+/* Smooth touch scroll container with hidden native scrollbar chrome */
 .ld-scroll-area {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.ld-scroll-area::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Custom translucent themed scrollbars for any non-hidden scrollable containers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, 0.28) transparent;
+}
+:root:not(.dark) * {
+  scrollbar-color: rgba(91, 63, 224, 0.24) transparent;
+}
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(196, 181, 253, 0.28);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 181, 253, 0.45);
+}
+:root:not(.dark) *::-webkit-scrollbar-thumb {
+  background: rgba(91, 63, 224, 0.24);
+}
+:root:not(.dark) *::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 63, 224, 0.42);
 }
 
 /* Hide scrollbars cleanly for horizontal pill scrollers while preserving scroll */
@@ -163,9 +206,9 @@
   filter: invert(100%) hue-rotate(195deg) brightness(92%) contrast(92%) saturate(75%);
 }
 
-/* Offset Leaflet controls above the fixed 72px BottomNav and 112px sheet peek zone */
+/* Offset Leaflet controls above the 112px sheet peek zone (MapScreen is already above BottomNav) */
 .ld-map-canvas .leaflet-bottom {
-  bottom: max(118px, calc(72px + env(safe-area-inset-bottom, 0px)));
+  bottom: 118px;
   transition: bottom 260ms ease;
 }
 
